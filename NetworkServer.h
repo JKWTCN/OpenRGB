@@ -248,6 +248,8 @@ private:
     void                                ProcessRequest_RGBController_UpdateZoneLEDs(unsigned int controller_id, unsigned char* data_ptr, unsigned int protocol_version);
     void                                ProcessRequest_RGBController_UpdateZoneMode(unsigned int controller_id, unsigned char * data_ptr, unsigned int protocol_version);
 
+    void                                SendAck(SOCKET client_sock, unsigned int acked_pkt_dev_id, unsigned int acked_pkt_id, NetPacketStatus status, unsigned int protocol_version);
+
     void                                SendReply_ControllerCount(SOCKET client_sock, unsigned int protocol_version);
     void                                SendReply_ControllerData(SOCKET client_sock, unsigned int dev_id, unsigned int protocol_version);
     void                                SendReply_ProtocolVersion(SOCKET client_sock);

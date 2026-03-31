@@ -911,6 +911,7 @@ void NetworkServer::ControllerListenThread(NetworkServerControllerThread * this_
             while(this_thread->queue.size() > 0)
             {
                 NetworkServerControllerThreadQueueEntry queue_entry;
+                NetPacketStatus                         status      = NET_PACKET_STATUS_OK;
 
                 this_thread->queue_mutex.lock();
                 queue_entry = this_thread->queue.front();
@@ -940,11 +941,17 @@ void NetworkServer::ControllerListenThread(NetworkServerControllerThread * this_
                     case NET_PACKET_ID_RGBCONTROLLER_UPDATEZONEMODE:
                         ProcessRequest_RGBController_UpdateZoneMode(this_thread->id, (unsigned char *)queue_entry.data, queue_entry.client_protocol_version);
                         break;
+
+                    default:
+                        status = NET_PACKET_STATUS_ERROR_UNSUPPORTED;
+                        break;
                 }
 
                 controller_ids_mutex.unlock_shared();
 
                 delete[] queue_entry.data;
+
+                SendAck(queue_entry.client_sock, queue_entry.header.pkt_id, queue_entry.header.pkt_id, status, queue_entry.client_protocol_version);
             }
         }
         else
@@ -1025,6 +1032,7 @@ void NetworkServer::ListenThreadFunction(NetworkClientInfo * client_info)
         int             bytes_read  = 0;
         char *          data        = NULL;
         bool            delete_data = true;
+        NetPacketStatus status      = NET_PACKET_STATUS_OK;
 
         for(unsigned int i = 0; i < 4; i++)
         {
@@ -1431,12 +1439,18 @@ void NetworkServer::ListenThreadFunction(NetworkClientInfo * client_info)
                     goto listen_done;
                 }
                 break;
+
+            default:
+                status = NET_PACKET_STATUS_ERROR_UNSUPPORTED;
+                break;
         }
 
         if(delete_data)
         {
             delete[] data;
         }
+
+        SendAck(client_info->client_sock, header.pkt_dev_id, header.pkt_id, status, client_info->client_protocol_version);
     }
 
 listen_done:
@@ -2185,6 +2199,30 @@ void NetworkServer::ProcessRequest_RGBController_UpdateZoneMode(unsigned int con
     | Update zone mode                                      |
     \*-----------------------------------------------------*/
     controllers[controller_idx]->UpdateZoneMode(zone_idx);
+}
+
+void NetworkServer::SendAck(SOCKET client_sock, unsigned int acked_pkt_dev_id, unsigned int acked_pkt_id, NetPacketStatus status, unsigned int protocol_version)
+{
+    /*-----------------------------------------------------*\
+    | ACKs were introduced in protocol version 6            |
+    \*-----------------------------------------------------*/
+    if(protocol_version < 6)
+    {
+        return;
+    }
+
+    NetPacketHeader ack_hdr;
+    NetPacketAck    ack_data;
+
+    InitNetPacketHeader(&ack_hdr, acked_pkt_dev_id, NET_PACKET_ID_ACK, sizeof(NetPacketAck));
+
+    ack_data.acked_pkt_id   = acked_pkt_id;
+    ack_data.status         = status;
+
+    send_in_progress.lock();
+    send(client_sock, (const char *)&ack_hdr, sizeof(NetPacketHeader), MSG_NOSIGNAL);
+    send(client_sock, (const char *)&ack_data, sizeof(ack_data), MSG_NOSIGNAL);
+    send_in_progress.unlock();
 }
 
 void NetworkServer::SendReply_ControllerCount(SOCKET client_sock, unsigned int protocol_version)
