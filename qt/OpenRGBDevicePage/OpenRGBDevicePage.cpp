@@ -13,11 +13,41 @@
 #include "SettingsManager.h"
 #include "ui_OpenRGBDevicePage.h"
 
+#include <map>
+#include <mutex>
+
+/*---------------------------------------------------------*\
+| Global map to track valid OpenRGBDevicePage instances     |
+| This allows safe checking in static callbacks without    |
+| dereferencing potentially dangling pointers              |
+\*---------------------------------------------------------*/
+static std::map<OpenRGBDevicePage*, bool> g_valid_pages;
+static std::mutex g_valid_pages_mutex;
+
 static void UpdateCallback(void * this_ptr)
 {
-    OpenRGBDevicePage * this_obj = (OpenRGBDevicePage *)this_ptr;
+    OpenRGBDevicePage * this_obj = static_cast<OpenRGBDevicePage*>(this_ptr);
 
-    QMetaObject::invokeMethod(this_obj, "UpdateInterface", Qt::QueuedConnection);
+    /*-----------------------------------------------------*\
+    | Check if the object is still valid by looking it up   |
+    | in the global map. This avoids dereferencing a       |
+    | potentially dangling pointer.                        |
+    \*-----------------------------------------------------*/
+    bool is_valid = false;
+
+    {
+        std::lock_guard<std::mutex> lock(g_valid_pages_mutex);
+        auto it = g_valid_pages.find(this_obj);
+        if(it != g_valid_pages.end())
+        {
+            is_valid = it->second;
+        }
+    }
+
+    if(is_valid)
+    {
+        QMetaObject::invokeMethod(this_obj, "UpdateInterface", Qt::QueuedConnection);
+    }
 }
 
 QString OpenRGBDevicePage::ModeDescription(const mode& m)
@@ -62,6 +92,15 @@ OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
     | Store device pointer                                  |
     \*-----------------------------------------------------*/
     device = dev;
+
+    /*-----------------------------------------------------*\
+    | Register this instance in the global valid pages map  |
+    | Must be done BEFORE registering the callback          |
+    \*-----------------------------------------------------*/
+    {
+        std::lock_guard<std::mutex> lock(g_valid_pages_mutex);
+        g_valid_pages[this] = true;
+    }
 
     /*-----------------------------------------------------*\
     | Register update callback with the device              |
@@ -138,6 +177,16 @@ OpenRGBDevicePage::OpenRGBDevicePage(RGBController *dev, QWidget *parent) :
 OpenRGBDevicePage::~OpenRGBDevicePage()
 {
     /*-----------------------------------------------------*\
+    | Mark this instance as invalid in the global map       |
+    | This prevents in-flight callbacks from executing      |
+    | MUST be done BEFORE unregistering the callback        |
+    \*-----------------------------------------------------*/
+    {
+        std::lock_guard<std::mutex> lock(g_valid_pages_mutex);
+        g_valid_pages[this] = false;
+    }
+
+    /*-----------------------------------------------------*\
     | Unregister update callback from the controller if the |
     | controller still exists                               |
     \*-----------------------------------------------------*/
@@ -148,6 +197,15 @@ OpenRGBDevicePage::~OpenRGBDevicePage()
             device->UnregisterUpdateCallback(this);
             break;
         }
+    }
+
+    /*-----------------------------------------------------*\
+    | Remove from global map after unregistering callback  |
+    | and before deleting ui                                |
+    \*-----------------------------------------------------*/
+    {
+        std::lock_guard<std::mutex> lock(g_valid_pages_mutex);
+        g_valid_pages.erase(this);
     }
 
     delete ui;

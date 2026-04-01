@@ -203,6 +203,7 @@ private:
     bool AttemptLocalConnection();
     bool ProcessPreDetection();
     void ProcessPostDetection();
+    bool MatchExistingController(RGBController* new_controller);
     bool IsAnyDimmDetectorEnabled(json &detector_settings);
     void RunInBackgroundThread(std::function<void()>);
     void BackgroundThreadFunction();
@@ -283,6 +284,8 @@ private:
     std::vector<RGBController*>                 rgb_controllers_sizes;
     std::vector<RGBController*>                 rgb_controllers_hw;
     std::vector<RGBController*>                 rgb_controllers;
+    std::vector<RGBController*>                 rgb_controllers_hw_cleanup_pending;
+    std::vector<RGBController*>                 rgb_controllers_hw_matched;
 
     /*-----------------------------------------------------*\
     | Network Server                                        |

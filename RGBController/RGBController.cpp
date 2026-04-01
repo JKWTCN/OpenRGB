@@ -2036,17 +2036,26 @@ void RGBController::ClearCallbacks()
 
 void RGBController::SignalUpdate()
 {
-    UpdateMutex.lock();
+    /*-----------------------------------------------------*\
+    | Copy callbacks under lock to minimize lock hold time  |
+    | and prevent race conditions during callback execution|
+    \*-----------------------------------------------------*/
+    std::vector<RGBControllerCallback> callbacks_copy;
+    std::vector<void*> callback_args_copy;
 
-    /*-------------------------------------------------*\
-    | Client info has changed, call the callbacks       |
-    \*-------------------------------------------------*/
-    for(unsigned int callback_idx = 0; callback_idx < UpdateCallbacks.size(); callback_idx++)
     {
-        UpdateCallbacks[callback_idx](UpdateCallbackArgs[callback_idx]);
+        std::lock_guard<std::mutex> lock(UpdateMutex);
+        callbacks_copy = UpdateCallbacks;
+        callback_args_copy = UpdateCallbackArgs;
     }
 
-    UpdateMutex.unlock();
+    /*-----------------------------------------------------*\
+    | Execute callbacks without holding the mutex           |
+    \*-----------------------------------------------------*/
+    for(size_t callback_idx = 0; callback_idx < callbacks_copy.size(); callback_idx++)
+    {
+        callbacks_copy[callback_idx](callback_args_copy[callback_idx]);
+    }
 }
 void RGBController::UpdateLEDs()
 {

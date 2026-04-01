@@ -247,6 +247,96 @@ std::vector<i2c_smbus_interface*> & ResourceManager::GetI2CBusses()
 void ResourceManager::RegisterRGBController(RGBController *rgb_controller)
 {
     /*-----------------------------------------------------*\
+    | Check if we can reuse an existing controller          |
+    \*-----------------------------------------------------*/
+    if(rgb_controllers_hw_cleanup_pending.size() > 0)
+    {
+        RGBController* reused_controller = nullptr;
+
+        for(RGBController* existing_controller : rgb_controllers_hw_cleanup_pending)
+        {
+            /*-------------------------------------------------*\
+            | Check if this controller has already been matched  |
+            \*-------------------------------------------------*/
+            bool already_matched = false;
+            for(RGBController* matched : rgb_controllers_hw_matched)
+            {
+                if(matched == existing_controller)
+                {
+                    already_matched = true;
+                    break;
+                }
+            }
+
+            if(already_matched)
+            {
+                continue;
+            }
+
+            /*-------------------------------------------------*\
+            | Perform device matching (same logic as ProfileManager) |
+            \*-------------------------------------------------*/
+            bool location_check;
+
+            if(rgb_controller->GetLocation().find("HID: ") == 0)
+            {
+                /* HID devices: don't compare location (path may change) */
+                location_check = true;
+            }
+            else if(rgb_controller->GetLocation().find("I2C: ") == 0)
+            {
+                /* I2C devices: compare only address, not bus number */
+                std::size_t loc = rgb_controller->GetLocation().rfind(", ");
+                if(loc == std::string::npos)
+                {
+                    location_check = false;
+                }
+                else
+                {
+                    std::string i2c_address = rgb_controller->GetLocation().substr(loc + 2);
+                    location_check = existing_controller->GetLocation().find(i2c_address) != std::string::npos;
+                }
+            }
+            else
+            {
+                /* Other devices: exact location match required */
+                location_check = (existing_controller->GetLocation() == rgb_controller->GetLocation());
+            }
+
+            /*-------------------------------------------------*\
+            | Test if controllers match                          |
+            \*-------------------------------------------------*/
+            if((existing_controller->type             == rgb_controller->type            )
+            && (existing_controller->GetName()        == rgb_controller->GetName()       )
+            && (existing_controller->GetDescription() == rgb_controller->GetDescription())
+            && (existing_controller->GetVersion()     == rgb_controller->GetVersion()    )
+            && (existing_controller->GetSerial()      == rgb_controller->GetSerial()     )
+            && (location_check                        == true                             ))
+            {
+                reused_controller = existing_controller;
+                rgb_controllers_hw_matched.push_back(existing_controller);
+
+                LOG_INFO("[%s] Reusing existing controller (preserving mode and colors)",
+                         rgb_controller->GetName().c_str());
+
+                break;
+            }
+        }
+
+        /*-------------------------------------------------*\
+        | If we found a match, reuse the old controller        |
+        \*-------------------------------------------------*/
+        if(reused_controller != nullptr)
+        {
+            /* Delete the new controller that was just created */
+            delete rgb_controller;
+
+            /* Reuse the existing controller */
+            rgb_controller = reused_controller;
+        }
+    }
+
+    /*-----------------------------------------------------*\
     | Mark this controller as locally owned                 |
     \*-----------------------------------------------------*/
     rgb_controller->flags &= ~CONTROLLER_FLAG_REMOTE;
@@ -563,12 +653,14 @@ void ResourceManager::UpdateDeviceList()
         | If not, check if the controller is already in the |
         | list at a different index                         |
         \*-------------------------------------------------*/
+        bool found = false;
         for(unsigned int controller_idx = 0; controller_idx < rgb_controllers.size(); controller_idx++)
         {
             if(rgb_controllers[controller_idx] == rgb_controllers_hw[hw_controller_idx])
             {
                 rgb_controllers.erase(rgb_controllers.begin() + controller_idx);
                 rgb_controllers.insert(rgb_controllers.begin() + hw_controller_idx, rgb_controllers_hw[hw_controller_idx]);
+                found = true;
                 break;
             }
         }
@@ -576,7 +668,45 @@ void ResourceManager::UpdateDeviceList()
         /*-------------------------------------------------*\
         | If it still hasn't been found, add it to the list |
         \*-------------------------------------------------*/
-        rgb_controllers.insert(rgb_controllers.begin() + hw_controller_idx, rgb_controllers_hw[hw_controller_idx]);
+        if(!found)
+        {
+            rgb_controllers.insert(rgb_controllers.begin() + hw_controller_idx, rgb_controllers_hw[hw_controller_idx]);
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Remove controllers that are no longer in the hardware |
+    | list (devices that were unplugged)                    |
+    \*-----------------------------------------------------*/
+    std::vector<RGBController*> to_remove;
+    for(unsigned int controller_idx = 0; controller_idx < rgb_controllers.size(); controller_idx++)
+    {
+        bool still_exists = false;
+        for(unsigned int hw_controller_idx = 0; hw_controller_idx < rgb_controllers_hw.size(); hw_controller_idx++)
+        {
+            if(rgb_controllers[controller_idx] == rgb_controllers_hw[hw_controller_idx])
+            {
+                still_exists = true;
+                break;
+            }
+        }
+
+        if(!still_exists)
+        {
+            to_remove.push_back(rgb_controllers[controller_idx]);
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Remove the controllers that are no longer present     |
+    \*-----------------------------------------------------*/
+    for(RGBController* controller : to_remove)
+    {
+        auto it = std::find(rgb_controllers.begin(), rgb_controllers.end(), controller);
+        if(it != rgb_controllers.end())
+        {
+            rgb_controllers.erase(it);
+        }
     }
 
     /*-----------------------------------------------------*\
@@ -873,31 +1003,30 @@ void ResourceManager::Cleanup()
 {
     ResourceManager::get()->WaitForDeviceDetection();
 
-    std::vector<RGBController *> rgb_controllers_hw_copy = rgb_controllers_hw;
-
-    for(std::size_t hw_controller_idx = 0; hw_controller_idx < rgb_controllers_hw.size(); hw_controller_idx++)
+    /*-----------------------------------------------------*\
+    | Save old controllers to cleanup pending list         |
+    | Don't clear them yet - they remain accessible        |
+    | during device detection                             |
+    \*-----------------------------------------------------*/
+    if(rgb_controllers_hw_cleanup_pending.size() == 0)
     {
-        for(std::size_t controller_idx = 0; controller_idx < rgb_controllers.size(); controller_idx++)
-        {
-            if(rgb_controllers[controller_idx] == rgb_controllers_hw[hw_controller_idx])
-            {
-                rgb_controllers.erase(rgb_controllers.begin() + controller_idx);
-                break;
-            }
-        }
+        rgb_controllers_hw_cleanup_pending = rgb_controllers_hw;
     }
+
+    /*-----------------------------------------------------*\
+    | Clear the matched controllers list for new detection  |
+    \*-----------------------------------------------------*/
+    rgb_controllers_hw_matched.clear();
 
     /*-----------------------------------------------------*\
     | Clear the hardware controllers list and set the       |
     | previous hardware controllers list size to zero       |
+    | NOTE: rgb_controllers_hw is cleared, but devices     |
+    | remain in rgb_controllers until UpdateDeviceList()   |
+    | replaces them with newly detected devices            |
     \*-----------------------------------------------------*/
     rgb_controllers_hw.clear();
     detection_prev_size = 0;
-
-    for(RGBController* rgb_controller : rgb_controllers_hw_copy)
-    {
-        delete rgb_controller;
-    }
 
     std::vector<i2c_smbus_interface *> busses_copy = busses;
 
@@ -909,6 +1038,89 @@ void ResourceManager::Cleanup()
     }
 
     RunInBackgroundThread(std::bind(&ResourceManager::HidExitCoroutine, this));
+}
+
+/*---------------------------------------------------------*\
+| MatchExistingController                                   |
+| Attempts to find a matching controller in cleanup_pending |
+| and reuse it instead of creating a new one                |
+\*---------------------------------------------------------*/
+bool ResourceManager::MatchExistingController(RGBController* new_controller)
+{
+    for(RGBController* existing_controller : rgb_controllers_hw_cleanup_pending)
+    {
+        /*-------------------------------------------------*\
+        | Check if this controller has already been matched  |
+        \*-------------------------------------------------*/
+        bool already_matched = false;
+        for(RGBController* matched : rgb_controllers_hw_matched)
+        {
+            if(matched == existing_controller)
+            {
+                already_matched = true;
+                break;
+            }
+        }
+
+        if(already_matched)
+        {
+            continue;
+        }
+
+        /*-------------------------------------------------*\
+        | Perform device matching (same logic as ProfileManager) |
+        \*-------------------------------------------------*/
+        bool location_check;
+
+        if(new_controller->GetLocation().find("HID: ") == 0)
+        {
+            /* HID devices: don't compare location (path may change) */
+            location_check = true;
+        }
+        else if(new_controller->GetLocation().find("I2C: ") == 0)
+        {
+            /* I2C devices: compare only address, not bus number */
+            std::size_t loc = new_controller->GetLocation().rfind(", ");
+            if(loc == std::string::npos)
+            {
+                location_check = false;
+            }
+            else
+            {
+                std::string i2c_address = new_controller->GetLocation().substr(loc + 2);
+                location_check = existing_controller->GetLocation().find(i2c_address) != std::string::npos;
+            }
+        }
+        else
+        {
+            /* Other devices: exact location match required */
+            location_check = (existing_controller->GetLocation() == new_controller->GetLocation());
+        }
+
+        /*-------------------------------------------------*\
+        | Test if controllers match                          |
+        \*-------------------------------------------------*/
+        if((existing_controller->type             == new_controller->type            )
+        && (existing_controller->GetName()        == new_controller->GetName()       )
+        && (existing_controller->GetDescription() == new_controller->GetDescription())
+        && (existing_controller->GetVersion()     == new_controller->GetVersion()    )
+        && (existing_controller->GetSerial()      == new_controller->GetSerial()     )
+        && (location_check                        == true                             ))
+        {
+            /*-------------------------------------------------*\
+            | Found a match! Mark as matched and return it      |
+            \*-------------------------------------------------*/
+            rgb_controllers_hw_matched.push_back(existing_controller);
+
+            LOG_INFO("[ResourceManager] Reusing existing controller: %s (location: %s)",
+                     existing_controller->GetName().c_str(),
+                     existing_controller->GetLocation().c_str());
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void ResourceManager::ProcessPreDetectionHooks()
@@ -1065,6 +1277,43 @@ void ResourceManager::ProcessPostDetection()
     }
 
     detection_is_required = false;
+
+    /*-----------------------------------------------------*\
+    | Clean up old devices that are no longer in use       |
+    \*-----------------------------------------------------*/
+    if(rgb_controllers_hw_cleanup_pending.size() > 0)
+    {
+        for(RGBController* controller : rgb_controllers_hw_cleanup_pending)
+        {
+            /*-------------------------------------------------*\
+            | Check if the controller is still in the active   |
+            | device list                                      |
+            \*-------------------------------------------------*/
+            bool still_in_use = false;
+            for(RGBController* current : rgb_controllers)
+            {
+                if(current == controller)
+                {
+                    still_in_use = true;
+                    break;
+                }
+            }
+
+            /*-------------------------------------------------*\
+            | If not in use, delete the controller              |
+            \*-------------------------------------------------*/
+            if(!still_in_use)
+            {
+                delete controller;
+            }
+        }
+        rgb_controllers_hw_cleanup_pending.clear();
+    }
+
+    /*-----------------------------------------------------*\
+    | Clear the matched controllers list                    |
+    \*-----------------------------------------------------*/
+    rgb_controllers_hw_matched.clear();
 
     /*-----------------------------------------------------*\
     | Notify WebSocket clients that scan is complete      |
