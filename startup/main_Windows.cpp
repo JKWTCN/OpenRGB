@@ -23,6 +23,7 @@
 #include "NetworkServer.h"
 #include "ResourceManager.h"
 #include "StringUtils.h"
+#include "WebSocketServer.h"
 
 using namespace std::chrono_literals;
 
@@ -607,22 +608,6 @@ static int common_main(int argc, char* argv[])
         ResourceManager::get()->UnregisterDetectionProgressCallback(ServiceStartupProgress, NULL);
     }
 
-    /*-----------------------------------------------------*\
-    | If started in headless server mode, wait until server |
-    | shuts down before closing application.                |
-    \*-----------------------------------------------------*/
-    if((ret_flags & RET_FLAG_START_SERVER) && !(ret_flags & RET_FLAG_START_GUI))
-    {
-        NetworkServer* server = ResourceManager::get()->GetServer();
-        if(server && server->GetOnline())
-        {
-            if(started_as_service)
-            {
-                ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
-            }
-            WaitWhileServerOnline(server);
-        }
-    }
 
     /*-----------------------------------------------------*\
     | Perform ResourceManager cleanup before exiting        |

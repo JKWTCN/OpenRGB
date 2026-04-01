@@ -36,8 +36,8 @@ public:
     ~WebSocketServer();
 
     // Server control
-    void            StartServer();
-    void            StopServer();
+    Q_INVOKABLE void StartServer();
+    Q_INVOKABLE void StopServer();
 
     // Configuration
     void            SetHost(const std::string& host);

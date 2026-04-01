@@ -25,20 +25,6 @@ io_connect_t macUSPCIO_driver_connection;
 using namespace std::chrono_literals;
 
 /*---------------------------------------------------------*\
-| WaitWhileServerOnline                                     |
-|                                                           |
-|   Wait while NetworkServer is online and return only when |
-|   it has shut down                                        |
-\*---------------------------------------------------------*/
-void WaitWhileServerOnline(NetworkServer* srv)
-{
-    while(srv->GetOnline())
-    {
-        std::this_thread::sleep_for(1s);
-    };
-}
-
-/*---------------------------------------------------------*\
 | main                                                      |
 |                                                           |
 |   Entry point, calls the startup processing               |
@@ -73,19 +59,6 @@ int main(int argc, char* argv[])
     | closing or if not running the GUI.                    |
     \*-----------------------------------------------------*/
     int exitval = startup(argc, argv, ret_flags);
-
-    /*-----------------------------------------------------*\
-    | If started in headless server mode, wait until server |
-    | shuts down before closing application.                |
-    \*-----------------------------------------------------*/
-    if((ret_flags & RET_FLAG_START_SERVER) && !(ret_flags & RET_FLAG_START_GUI))
-    {
-        NetworkServer* server = ResourceManager::get()->GetServer();
-        if(server)
-        {
-            WaitWhileServerOnline(server);
-        }
-    }
 
     /*-----------------------------------------------------*\
     | Perform ResourceManager cleanup before exiting        |

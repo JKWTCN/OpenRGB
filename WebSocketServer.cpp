@@ -12,6 +12,7 @@
 #include <QUrlQuery>
 #include <QCoreApplication>
 #include <QJsonDocument>
+#include <QThread>
 
 WebSocketServer::WebSocketServer(std::vector<RGBController*>& controllers,
                                  ResourceManager* resource_manager,
@@ -47,6 +48,13 @@ WebSocketServer::~WebSocketServer()
 \*---------------------------------------------------------*/
 void WebSocketServer::StartServer()
 {
+    // If called from a different thread, invoke in the correct thread
+    if(QThread::currentThread() != this->thread())
+    {
+        QMetaObject::invokeMethod(this, "StartServer", Qt::QueuedConnection);
+        return;
+    }
+
     if(server_online)
     {
         return;
@@ -57,10 +65,10 @@ void WebSocketServer::StartServer()
         return;
     }
 
-    // Create WebSocket server
+    // Create WebSocket server (no parent to avoid threading issues)
     ws_server = new QWebSocketServer(QStringLiteral("OpenRGB WebSocket Server"),
                                     QWebSocketServer::NonSecureMode,
-                                    this);
+                                    nullptr);
 
     // Connect signals
     connect(ws_server, &QWebSocketServer::newConnection,
@@ -92,11 +100,19 @@ void WebSocketServer::StartServer()
         ws_server = nullptr;
         server_online = false;
         server_listening = false;
+        emit ServerStateChanged();
     }
 }
 
 void WebSocketServer::StopServer()
 {
+    // If called from a different thread, invoke in the correct thread
+    if(QThread::currentThread() != this->thread())
+    {
+        QMetaObject::invokeMethod(this, "StopServer", Qt::QueuedConnection);
+        return;
+    }
+
     if(!server_online)
     {
         return;

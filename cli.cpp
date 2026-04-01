@@ -7,6 +7,7 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+#include "cli.h"
 #include <vector>
 #include <cstring>
 #include <string>
@@ -41,19 +42,6 @@ const unsigned int                 speed_percentage      = 100;
 
 static int preserve_argc = 0;
 static char** preserve_argv = nullptr;
-
-enum
-{
-    RET_FLAG_PRINT_HELP         = 1,
-    RET_FLAG_START_GUI          = 2,
-    RET_FLAG_I2C_TOOLS          = 4,
-    RET_FLAG_START_MINIMIZED    = 8,
-    RET_FLAG_NO_DETECT          = 16,
-    RET_FLAG_CLI_POST_DETECTION = 32,
-    RET_FLAG_START_SERVER       = 64,
-    RET_FLAG_NO_AUTO_CONNECT    = 128,
-    RET_FLAG_START_WEBSOCKET_SERVER = 256,
-};
 
 struct DeviceOptions
 {

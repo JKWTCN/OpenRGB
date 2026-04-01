@@ -10,9 +10,12 @@
 #include "cli.h"
 #include "ResourceManager.h"
 #include "NetworkServer.h"
+#include "WebSocketServer.h"
 #include "startup.h"
 
 #include <QApplication>
+#include <QCoreApplication>
+#include <QTimer>
 
 #include "OpenRGBDialog.h"
 
@@ -135,9 +138,15 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
     else
     {
         /*-------------------------------------------------*\
-        | If no GUI is needed, we let the background        |
-        | threads run as long as they need, but we need to  |
-        | AT LEAST wait for initialization to finish        |
+        | CLI mode: Create QCoreApplication to provide     |
+        | event loop for WebSocketServer and other Qt      |
+        | network services                                 |
+        \*-------------------------------------------------*/
+        QCoreApplication cli_app(argc, argv);
+        LOG_TRACE("[startup] QCoreApplication created for CLI mode");
+
+        /*-------------------------------------------------*\
+        | Wait for initialization to finish                 |
         \*-------------------------------------------------*/
         ResourceManager::get()->WaitForInitialization();
 
@@ -146,12 +155,73 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             NetworkServer* server = ResourceManager::get()->GetServer();
             if(server)
             {
-                exitval = !server->GetOnline();
+                /*-----------------------------------------*\
+                | Start the event loop to process Qt events |
+                | Exit when server is stopped               |
+                \*-----------------------------------------*/
+                QTimer::singleShot(0, [&cli_app, server]() {
+                    if(!server->GetOnline())
+                    {
+                        cli_app.quit();
+                    }
+                });
+
+                QTimer* server_check_timer = new QTimer(&cli_app);
+                QObject::connect(server_check_timer, &QTimer::timeout, [&cli_app, server]() {
+                    if(!server->GetOnline())
+                    {
+                        cli_app.quit();
+                    }
+                });
+                server_check_timer->start(1000);
+
+                exitval = cli_app.exec();
+                delete server_check_timer;
             }
             else
             {
                 exitval = EXIT_FAILURE;
             }
+        }
+        else if(ret_flags & RET_FLAG_START_WEBSOCKET_SERVER)
+        {
+            WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
+            if(ws_server)
+            {
+                /*-----------------------------------------*\
+                | Start the event loop to process Qt events |
+                | Exit when WebSocket server is stopped    |
+                \*-----------------------------------------*/
+                QTimer::singleShot(0, [&cli_app, ws_server]() {
+                    if(!ws_server->GetOnline())
+                    {
+                        cli_app.quit();
+                    }
+                });
+
+                QTimer* server_check_timer = new QTimer(&cli_app);
+                QObject::connect(server_check_timer, &QTimer::timeout, [&cli_app, ws_server]() {
+                    if(!ws_server->GetOnline())
+                    {
+                        cli_app.quit();
+                    }
+                });
+                server_check_timer->start(1000);
+
+                exitval = cli_app.exec();
+                delete server_check_timer;
+            }
+            else
+            {
+                exitval = EXIT_FAILURE;
+            }
+        }
+        else
+        {
+            /*-----------------------------------------*\
+            | No server mode, process any pending events |
+            \*-----------------------------------------*/
+            cli_app.processEvents();
         }
     }
 
