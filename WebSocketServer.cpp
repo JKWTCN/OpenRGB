@@ -70,6 +70,11 @@ void WebSocketServer::StartServer()
     connect(ws_server, &QWebSocketServer::serverError,
             this, &WebSocketServer::OnSocketError);
 
+    // Connect internal signal-slot for thread-safe broadcasting
+    connect(this, &WebSocketServer::SignalBroadcastNotification,
+            this, &WebSocketServer::OnBroadcastNotification,
+            Qt::QueuedConnection);
+
     // Start listening
     QString host_str = QString::fromStdString(host);
     if(ws_server->listen(QHostAddress(host_str), port))
@@ -242,7 +247,12 @@ void WebSocketServer::DeviceListChanged()
     nlohmann::json data;
     data["controllerCount"] = controllers.size();
 
-    BroadcastNotification(JSONRPCProtocol::Events::DEVICE_LIST_CHANGED, data);
+    // Emit signal instead of calling BroadcastNotification directly
+    // This ensures the broadcast happens in the main thread
+    emit SignalBroadcastNotification(
+        QString::fromStdString(JSONRPCProtocol::Events::DEVICE_LIST_CHANGED),
+        QString::fromStdString(data.dump())
+    );
 }
 
 void WebSocketServer::ProfileListChanged()
@@ -250,7 +260,26 @@ void WebSocketServer::ProfileListChanged()
     nlohmann::json data;
     data["message"] = "Profile list changed";
 
-    BroadcastNotification(JSONRPCProtocol::Events::PROFILE_SAVED, data);
+    // Emit signal instead of calling BroadcastNotification directly
+    emit SignalBroadcastNotification(
+        QString::fromStdString(JSONRPCProtocol::Events::PROFILE_SAVED),
+        QString::fromStdString(data.dump())
+    );
+}
+
+void WebSocketServer::ScanComplete(unsigned int device_count)
+{
+    nlohmann::json data;
+    data["controllerCount"] = device_count;
+    data["message"] = "Device scan completed";
+
+    qDebug() << "[WebSocketServer] ScanComplete: emitting signal for" << device_count << "devices";
+
+    // Emit signal instead of calling BroadcastNotification directly
+    emit SignalBroadcastNotification(
+        QString::fromStdString(JSONRPCProtocol::Events::SCAN_COMPLETE),
+        QString::fromStdString(data.dump())
+    );
 }
 
 void WebSocketServer::SetProfileManager(ProfileManagerInterface* profile_manager)
@@ -341,7 +370,10 @@ void WebSocketServer::OnNewConnection()
     // Send client connected notification
     nlohmann::json data;
     data["clientIP"] = client_info->GetClientIP().toStdString();
-    BroadcastNotification(JSONRPCProtocol::Events::CLIENT_CONNECTED, data);
+    emit SignalBroadcastNotification(
+        QString::fromStdString(JSONRPCProtocol::Events::CLIENT_CONNECTED),
+        QString::fromStdString(data.dump())
+    );
 }
 
 void WebSocketServer::OnClientDisconnected()
@@ -381,7 +413,10 @@ void WebSocketServer::OnClientDisconnected()
     // Broadcast notification AFTER releasing the lock
     if(client_found)
     {
-        BroadcastNotification(JSONRPCProtocol::Events::CLIENT_DISCONNECTED, disconnect_data);
+        emit SignalBroadcastNotification(
+            QString::fromStdString(JSONRPCProtocol::Events::CLIENT_DISCONNECTED),
+            QString::fromStdString(disconnect_data.dump())
+        );
     }
 
     socket->deleteLater();
@@ -463,6 +498,27 @@ void WebSocketServer::OnSocketError()
 {
     printf("[WebSocketServer] Socket error: %s\n",
            ws_server->errorString().toStdString().c_str());
+}
+
+void WebSocketServer::OnBroadcastNotification(const QString& event, const QString& data)
+{
+    nlohmann::json notification;
+    notification["jsonrpc"] = "2.0";
+    notification["method"] = "notification";
+    notification["params"]["event"] = event.toStdString();
+    notification["params"]["data"] = nlohmann::json::parse(data.toStdString());
+
+    QString message = QString::fromStdString(notification.dump());
+
+    std::lock_guard<std::mutex> lock(clients_mutex);
+
+    for(auto client_info : clients)
+    {
+        if(client_info && client_info->GetSocket())
+        {
+            client_info->GetSocket()->sendTextMessage(message);
+        }
+    }
 }
 
 /*---------------------------------------------------------*\

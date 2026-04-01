@@ -63,6 +63,7 @@ public:
     void            RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void* arg);
     void            DeviceListChanged();
     void            ProfileListChanged();
+    void            ScanComplete(unsigned int device_count);
 
     // Settings integration
     void            SetProfileManager(ProfileManagerInterface* profile_manager);
@@ -71,6 +72,7 @@ signals:
     void            ClientConnected();
     void            ClientDisconnected();
     void            ServerStateChanged();
+    void            SignalBroadcastNotification(const QString& event, const QString& data);
 
 private slots:
     void            OnNewConnection();
@@ -78,6 +80,7 @@ private slots:
     void            OnTextMessageReceived(const QString& message);
     void            OnBinaryMessageReceived(const QByteArray& message);
     void            OnSocketError();
+    void            OnBroadcastNotification(const QString& event, const QString& data);
 
 private:
     void            BroadcastNotification(const std::string& event,

@@ -1066,9 +1066,13 @@ void ResourceManager::ProcessPostDetection()
 
     detection_is_required = false;
 
-    LOG_INFO("------------------------------------------------------");
-    LOG_INFO("|                Detection completed                 |");
-    LOG_INFO("------------------------------------------------------");
+    /*-----------------------------------------------------*\
+    | Notify WebSocket clients that scan is complete      |
+    \*-----------------------------------------------------*/
+    if(websocket_server)
+    {
+        websocket_server->ScanComplete(rgb_controllers.size());
+    }
 }
 
 void ResourceManager::DisableDetection()
