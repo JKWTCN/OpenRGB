@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="nb_NO">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished">0x {192.168.1.100?}</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Antall av LEDer:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished">Lystyrkekanal:</translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished">Blå kanal:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished">Grønn kanal:</translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished">Rød kanal:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Keepalive Time:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Type:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Lineær</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Enkel</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>På</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">Startkanal:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Antall av LEDer:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">Start univers:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">Matrix rekkefølge:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">Matrix høyde:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">Matrix bredde:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Type:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (Unicast):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Univers størrelse:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Keepalive Time:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">RGB rekkefølge:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Enkel</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Lineær</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">Matrix</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">Horisontal opp venstre</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">Horisontal opp høyre</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">Horisontal ned venstre</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">Horisontal ned høyre</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">Vertikal opp venstre</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">Vertikal opp høyre</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">Vertikal ned venstre</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">Vertikal ned høyre</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Navn</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Navn</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Fjern</translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">Ny Nanoleaf enhet</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">IP adresse:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">Skann</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Fjern</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">Auth Key:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">Koble fra</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">Koble til</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>Koble fra</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">Skann enheter på nytt</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -62,46 +468,46 @@
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>Navn:</translation>
+        <translation type="vanished">Navn:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Port:</translation>
+        <translation type="vanished">Port:</translation>
     </message>
     <message>
         <source>Red Channel:</source>
-        <translation>Rød kanal:</translation>
+        <translation type="vanished">Rød kanal:</translation>
     </message>
     <message>
         <source>Green Channel:</source>
-        <translation>Grønn kanal:</translation>
+        <translation type="vanished">Grønn kanal:</translation>
     </message>
     <message>
         <source>Blue Channel:</source>
-        <translation>Blå kanal:</translation>
+        <translation type="vanished">Blå kanal:</translation>
     </message>
     <message>
         <source>Brightness Channel:</source>
-        <translation>Lystyrkekanal:</translation>
+        <translation type="vanished">Lystyrkekanal:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Keepalive Time:</translation>
+        <translation type="vanished">Keepalive Time:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
@@ -438,35 +844,35 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>DMX enheter</translation>
+        <translation type="vanished">DMX enheter</translation>
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>E1.31 enheter</translation>
+        <translation type="vanished">E1.31 enheter</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Kasa Smart enheter</translation>
+        <translation type="vanished">Kasa Smart enheter</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>Philips Hue enheter</translation>
+        <translation type="vanished">Philips Hue enheter</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>Philips Wiz enheter</translation>
+        <translation type="vanished">Philips Wiz enheter</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>OpenRGB QMK Protokoll</translation>
+        <translation type="vanished">OpenRGB QMK Protokoll</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>Serielle enheter</translation>
+        <translation type="vanished">Serielle enheter</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Yeelight enheter</translation>
+        <translation type="vanished">Yeelight enheter</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -490,26 +896,30 @@
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>LIFX enheter</translation>
+        <translation type="vanished">LIFX enheter</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Nanoleaf enheter</translation>
+        <translation type="vanished">Nanoleaf enheter</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Elgato KeyLight enheter</translation>
+        <translation type="vanished">Elgato KeyLight enheter</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Elgato LightStrip enheter</translation>
+        <translation type="vanished">Elgato LightStrip enheter</translation>
     </message>
     <message>
         <source>About OpenRGB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Govee Devices</source>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -517,176 +927,172 @@
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>Startkanal:</translation>
+        <translation type="vanished">Startkanal:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Antall av LEDer:</translation>
+        <translation type="vanished">Antall av LEDer:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>Start univers:</translation>
+        <translation type="vanished">Start univers:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Navn:</translation>
+        <translation type="vanished">Navn:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>Matrix rekkefølge:</translation>
+        <translation type="vanished">Matrix rekkefølge:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>Matrix høyde:</translation>
+        <translation type="vanished">Matrix høyde:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>Matrix bredde:</translation>
+        <translation type="vanished">Matrix bredde:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>Type:</translation>
+        <translation type="vanished">Type:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (Unicast):</translation>
+        <translation type="vanished">IP (Unicast):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Univers størrelse:</translation>
+        <translation type="vanished">Univers størrelse:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Keepalive Time:</translation>
+        <translation type="vanished">Keepalive Time:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>RGB rekkefølge:</translation>
+        <translation type="vanished">RGB rekkefølge:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Enkel</translation>
+        <translation type="vanished">Enkel</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>Lineær</translation>
+        <translation type="vanished">Lineær</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>Matrix</translation>
+        <translation type="vanished">Matrix</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>Horisontal opp venstre</translation>
+        <translation type="vanished">Horisontal opp venstre</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>Horisontal opp høyre</translation>
+        <translation type="vanished">Horisontal opp høyre</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>Horisontal ned venstre</translation>
+        <translation type="vanished">Horisontal ned venstre</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>Horisontal ned høyre</translation>
+        <translation type="vanished">Horisontal ned høyre</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>Vertikal opp venstre</translation>
+        <translation type="vanished">Vertikal opp venstre</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>Vertikal opp høyre</translation>
+        <translation type="vanished">Vertikal opp høyre</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>Vertikal ned venstre</translation>
+        <translation type="vanished">Vertikal ned venstre</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>Vertikal ned høyre</translation>
+        <translation type="vanished">Vertikal ned høyre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation type="unfinished">IP:</translation>
+        <translation type="obsolete">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Remove</source>
-        <translation type="unfinished">Fjern</translation>
+        <translation type="obsolete">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Lagre</translation>
+        <translation type="obsolete">Lagre</translation>
     </message>
 </context>
 <context>
@@ -716,201 +1122,201 @@
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Navn</translation>
+        <translation type="vanished">Navn</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg Til</translation>
+        <translation type="vanished">Legg Til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Navn</translation>
+        <translation type="vanished">Navn</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>Ny Nanoleaf enhet</translation>
+        <translation type="vanished">Ny Nanoleaf enhet</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>IP adresse:</translation>
+        <translation type="vanished">IP adresse:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Port:</translation>
+        <translation type="vanished">Port:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Port:</translation>
+        <translation type="vanished">Port:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>Auth Key:</translation>
+        <translation type="vanished">Auth Key:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>Koble fra</translation>
+        <translation type="vanished">Koble fra</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>Koble til</translation>
+        <translation type="vanished">Koble til</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Scan</source>
-        <translation>Skann</translation>
+        <translation type="vanished">Skann</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>For å pare, hold på-av-knappen nede i 5-7 sekunder til LED-lampen begynner å blinke i et mønster, og klikk deretter på &quot;Koble til&quot; knappen innen 30 sekunder.</translation>
+        <translation type="vanished">For å pare, hold på-av-knappen nede i 5-7 sekunder til LED-lampen begynner å blinke i et mønster, og klikk deretter på &quot;Koble til&quot; knappen innen 30 sekunder.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Entertainment Mode:</source>
-        <translation>Kinomodus:</translation>
+        <translation type="vanished">Kinomodus:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Brukernavn:</translation>
+        <translation type="vanished">Brukernavn:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>Klient nøkkel:</translation>
+        <translation type="vanished">Klient nøkkel:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>Koble fra bridge</translation>
+        <translation type="vanished">Koble fra bridge</translation>
     </message>
     <message>
         <source>MAC:</source>
-        <translation>MAC:</translation>
+        <translation type="vanished">MAC:</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>Auto connect gruppe:</translation>
+        <translation type="vanished">Auto connect gruppe:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
     <message>
         <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translation>Etter å ha lagt til en Hue-oppføring og lagret, start OpenRGB på nytt og trykk på Sync-knappen på Hue-broen for å pare den.</translation>
+        <translation type="vanished">Etter å ha lagt til en Hue-oppføring og lagret, start OpenRGB på nytt og trykk på Sync-knappen på Hue-broen for å pare den.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Use Cool White</source>
-        <translation>Bruk kalthvit</translation>
+        <translation type="vanished">Bruk kalthvit</translation>
     </message>
     <message>
         <source>Use Warm White</source>
-        <translation>Bruk varmhvit</translation>
+        <translation type="vanished">Bruk varmhvit</translation>
     </message>
     <message>
         <source>White Strategy:</source>
-        <translation>Hvit strategi:</translation>
+        <translation type="vanished">Hvit strategi:</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation>Gjennomsnitt</translation>
+        <translation type="vanished">Gjennomsnitt</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation>Minimum</translation>
+        <translation type="vanished">Minimum</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
@@ -1014,68 +1420,68 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>Navn:</translation>
+        <translation type="vanished">Navn:</translation>
     </message>
     <message>
         <source>USB PID:</source>
-        <translation>USB PID:</translation>
+        <translation type="vanished">USB PID:</translation>
     </message>
     <message>
         <source>USB VID:</source>
-        <translation>USB VID:</translation>
+        <translation type="vanished">USB VID:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Baud:</translation>
+        <translation type="vanished">Baud:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Navn:</translation>
+        <translation type="vanished">Navn:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Antall av LEDer:</translation>
+        <translation type="vanished">Antall av LEDer:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Port:</translation>
+        <translation type="vanished">Port:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>Protokoll:</translation>
+        <translation type="vanished">Protokoll:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
@@ -1137,7 +1543,7 @@
     </message>
     <message>
         <source>90000</source>
-        <translation>90000</translation>
+        <translation type="vanished">90000</translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1217,7 +1623,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>Driverinnstillinger</translation>
+        <translation type="vanished">Driverinnstillinger</translation>
     </message>
     <message>
         <source>AMD SMBus: Reduce CPU Usage (restart required)</source>
@@ -1270,6 +1676,34 @@
     <message>
         <source>System Default</source>
         <translation>System standard</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1430,49 +1864,124 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">Server status:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">Offline</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">Start server</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">Server host:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">Server port:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">Stop server</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">Tilkoblede Klienter:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">Klient IP</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">Stopper...</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">Online</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>?</source>
-        <translation>?</translation>
+        <translation type="vanished">?</translation>
     </message>
     <message>
         <source>Music Mode:</source>
-        <translation>Musikkmodus:</translation>
+        <translation type="vanished">Musikkmodus:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>Override host IP:</translation>
+        <translation type="vanished">Override host IP:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>Las tomt for automatisk oppdagelse av host IPen</translation>
+        <translation type="vanished">Las tomt for automatisk oppdagelse av host IPen</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>Velg en IP...</translation>
+        <translation type="vanished">Velg en IP...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>Velg riktig IP for hosten</translation>
+        <translation type="vanished">Velg riktig IP for hosten</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Legg til</translation>
+        <translation type="vanished">Legg til</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Fjern</translation>
+        <translation type="vanished">Fjern</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lagre</translation>
+        <translation type="vanished">Lagre</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +2001,10 @@
     <message>
         <source>Length</source>
         <translation>Lengde</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1534,10 +2047,114 @@
     </message>
 </context>
 <context>
+    <name>PhilipsHueSettingsEntry</name>
+    <message>
+        <source>Philips Hue Bridge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">Kinomodus:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">Auto connect gruppe:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">Klient nøkkel:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Brukernavn:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished">MAC:</translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">Koble fra bridge</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished">Bruk kalthvit</translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished">Bruk varmhvit</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished">Hvit strategi:</translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished">Gjennomsnitt</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Minimum</translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
     <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
-        <translation>&lt;h2&gt;Noen interne enheter blir muligens ikke oppdaget:&lt;/h2&gt;&lt;p&gt;Ett eller flere I2C eller SMBus grensesnitt kunne ikke initialiseres.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM moduler, noen hovedkorts&apos; interne RGB lys, og RGB grafikkkort vil ikke være tilgjengelig i OpenRGB&lt;/b&gt; uten I2C eller SMBus.&lt;/p&gt;&lt;h4&gt;Hvordan fikse dette:&lt;/h4&gt;&lt;p&gt;På Windows er dette vanligvis forårsaket av en feil med å laste WinRing0 driveren.&lt;/p&gt;&lt;p&gt;Du må kjøre OpenRGB som administrator minst én gang for å tillate at WinRing0 konfigureres.&lt;/p&gt;&lt;p&gt;Se &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for flere feilsøkingstrinn hvis du fortsatt ser denne meldingen.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Hvis du ikke bruker internt RGB er ikke denne meldingen viktig for deg.&lt;/h3&gt;</translation>
+        <translation type="vanished">&lt;h2&gt;Noen interne enheter blir muligens ikke oppdaget:&lt;/h2&gt;&lt;p&gt;Ett eller flere I2C eller SMBus grensesnitt kunne ikke initialiseres.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM moduler, noen hovedkorts&apos; interne RGB lys, og RGB grafikkkort vil ikke være tilgjengelig i OpenRGB&lt;/b&gt; uten I2C eller SMBus.&lt;/p&gt;&lt;h4&gt;Hvordan fikse dette:&lt;/h4&gt;&lt;p&gt;På Windows er dette vanligvis forårsaket av en feil med å laste WinRing0 driveren.&lt;/p&gt;&lt;p&gt;Du må kjøre OpenRGB som administrator minst én gang for å tillate at WinRing0 konfigureres.&lt;/p&gt;&lt;p&gt;Se &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for flere feilsøkingstrinn hvis du fortsatt ser denne meldingen.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Hvis du ikke bruker internt RGB er ikke denne meldingen viktig for deg.&lt;/h3&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
@@ -1551,12 +2168,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;ADVARSEL:&lt;/h2&gt;&lt;p&gt;Flere OpenRGB udev regler er installert.&lt;/p&gt;&lt;p&gt;Udev regelfilen 60-openrgb.rules er installert i både /etc/udev/rules.d og /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Flere udev-regelfiler kan komme i konflikt, det anbefales å fjerne en av dem.&lt;/p&gt;</translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Antall av LEDer:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Baud:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Navn:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">Protokoll:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>Enhetsnavn</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished">?</translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">Musikkmodus:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">Override host IP:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">Las tomt for automatisk oppdagelse av host IPen</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">Velg en IP...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">Velg riktig IP for hosten</translation>
     </message>
 </context>
 </TS>

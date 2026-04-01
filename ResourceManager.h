@@ -19,7 +19,7 @@
 #include <thread>
 #include <string>
 #include <vector>
-#include "SPDWrapper.h"
+#include "SPDAccessor/SPDWrapper.h"
 #include "hidapi_wrapper.h"
 #include "i2c_smbus.h"
 #include "ResourceManagerInterface.h"
@@ -35,6 +35,7 @@ using json = nlohmann::json;
 struct hid_device_info;
 class NetworkClient;
 class NetworkServer;
+class WebSocketServer;
 class ProfileManager;
 class RGBController;
 class SettingsManager;
@@ -166,6 +167,7 @@ public:
 
     std::vector<NetworkClient*>&    GetClients();
     NetworkServer*                  GetServer();
+    WebSocketServer*                GetWebSocketServer();
 
     ProfileManager*                 GetProfileManager();
     SettingsManager*                GetSettingsManager();
@@ -243,6 +245,7 @@ private:
     | Auto connection permitting flag                       |
     \*-----------------------------------------------------*/
     bool                                        start_server;
+    bool                                        start_websocket_server;
 
     /*-----------------------------------------------------*\
     | Auto connection permitting flag                       |
@@ -285,6 +288,7 @@ private:
     | Network Server                                        |
     \*-----------------------------------------------------*/
     NetworkServer*                              server;
+    WebSocketServer*                            websocket_server;
 
     /*-----------------------------------------------------*\
     | Network Clients                                       |

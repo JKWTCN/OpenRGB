@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="pt_BR">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished">0x {192.168.1.100?}</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Porta:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Número de LEDs:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished">Canal de brilho:</translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished">Canal azul:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished">Canal verde:</translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished">Canal vermelho:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Tempo de vida máximo:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Porta:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Tipo:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Linear</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Individual</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>Ativado</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">Canal inicial:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Número de LEDs:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">Universo inicial:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">Ordem da matriz:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">Altura da matriz:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">Largura da matriz:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Tipo:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (Unicast):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Tamanho do universo:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Tempo de vida máximo:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">Ordem do RGB:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Individual</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Linear</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">Matriz</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">Parte superior esquerda horizontal</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">Parte superior direita horizontal</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">Parte inferior esquerda horizontal</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">Parte inferior direita horizontal</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">Parte superior esquerda vertical</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">Parte superior direita vertical</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">Parte inferior esquerda vertical</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">Parte inferior direita vertical</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nome</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nome</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Remover</translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">Novo dispositivo Nanoleaf</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Porta:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">Buscar</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Remover</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Porta:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">Chave de autenticação:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">Desparear</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">Parear</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>Desconectar</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">Buscar dispositivos</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -62,46 +468,46 @@
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
         <source>Brightness Channel:</source>
-        <translation>Canal de brilho:</translation>
+        <translation type="vanished">Canal de brilho:</translation>
     </message>
     <message>
         <source>Blue Channel:</source>
-        <translation>Canal azul:</translation>
+        <translation type="vanished">Canal azul:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Nome:</translation>
+        <translation type="vanished">Nome:</translation>
     </message>
     <message>
         <source>Green Channel:</source>
-        <translation>Canal verde:</translation>
+        <translation type="vanished">Canal verde:</translation>
     </message>
     <message>
         <source>Red Channel:</source>
-        <translation>Canal vermelho:</translation>
+        <translation type="vanished">Canal vermelho:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Tempo de vida máximo:</translation>
+        <translation type="vanished">Tempo de vida máximo:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Porta:</translation>
+        <translation type="vanished">Porta:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
@@ -430,35 +836,35 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>Dispositivos DMX</translation>
+        <translation type="vanished">Dispositivos DMX</translation>
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>Dispositivos E1.31</translation>
+        <translation type="vanished">Dispositivos E1.31</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Dispositivos Kasa Smart</translation>
+        <translation type="vanished">Dispositivos Kasa Smart</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>Dispositivos Philips Hue</translation>
+        <translation type="vanished">Dispositivos Philips Hue</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>Dispositivos Philips Wiz</translation>
+        <translation type="vanished">Dispositivos Philips Wiz</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>Protocolo OpenRGB QMK</translation>
+        <translation type="vanished">Protocolo OpenRGB QMK</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>Dispositivos seriais</translation>
+        <translation type="vanished">Dispositivos seriais</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Dispositivos Yeelight</translation>
+        <translation type="vanished">Dispositivos Yeelight</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -482,19 +888,19 @@
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>Dispositivos LIFX</translation>
+        <translation type="vanished">Dispositivos LIFX</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Dispositivos Nanoleaf</translation>
+        <translation type="vanished">Dispositivos Nanoleaf</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Dispositivos Elgato KeyLight</translation>
+        <translation type="vanished">Dispositivos Elgato KeyLight</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Dispositivos Elgato LightStrip</translation>
+        <translation type="vanished">Dispositivos Elgato LightStrip</translation>
     </message>
     <message>
         <source>Supported Devices</source>
@@ -510,183 +916,191 @@
     </message>
     <message>
         <source>Govee Devices</source>
-        <translation>Dispositivos Govee</translation>
+        <translation type="vanished">Dispositivos Govee</translation>
+    </message>
+    <message>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>Canal inicial:</translation>
+        <translation type="vanished">Canal inicial:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Número de LEDs:</translation>
+        <translation type="vanished">Número de LEDs:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>Universo inicial:</translation>
+        <translation type="vanished">Universo inicial:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Nome:</translation>
+        <translation type="vanished">Nome:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>Ordem da matriz:</translation>
+        <translation type="vanished">Ordem da matriz:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>Altura da matriz:</translation>
+        <translation type="vanished">Altura da matriz:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>Largura da matriz:</translation>
+        <translation type="vanished">Largura da matriz:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>Tipo:</translation>
+        <translation type="vanished">Tipo:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (Unicast):</translation>
+        <translation type="vanished">IP (Unicast):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Tamanho do universo:</translation>
+        <translation type="vanished">Tamanho do universo:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Tempo de vida máximo:</translation>
+        <translation type="vanished">Tempo de vida máximo:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>Ordem do RGB:</translation>
+        <translation type="vanished">Ordem do RGB:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Individual</translation>
+        <translation type="vanished">Individual</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>Linear</translation>
+        <translation type="vanished">Linear</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>Matriz</translation>
+        <translation type="vanished">Matriz</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>Parte superior esquerda horizontal</translation>
+        <translation type="vanished">Parte superior esquerda horizontal</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>Parte superior direita horizontal</translation>
+        <translation type="vanished">Parte superior direita horizontal</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>Parte inferior esquerda horizontal</translation>
+        <translation type="vanished">Parte inferior esquerda horizontal</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>Parte inferior direita horizontal</translation>
+        <translation type="vanished">Parte inferior direita horizontal</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>Parte superior esquerda vertical</translation>
+        <translation type="vanished">Parte superior esquerda vertical</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>Parte superior direita vertical</translation>
+        <translation type="vanished">Parte superior direita vertical</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>Parte inferior esquerda vertical</translation>
+        <translation type="vanished">Parte inferior esquerda vertical</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>Parte inferior direita vertical</translation>
+        <translation type="vanished">Parte inferior direita vertical</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
@@ -716,201 +1130,201 @@
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation type="vanished">Nome</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation type="vanished">Nome</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>Novo dispositivo Nanoleaf</translation>
+        <translation type="vanished">Novo dispositivo Nanoleaf</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Porta:</translation>
+        <translation type="vanished">Porta:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Porta:</translation>
+        <translation type="vanished">Porta:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>Chave de autenticação:</translation>
+        <translation type="vanished">Chave de autenticação:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>Desparear</translation>
+        <translation type="vanished">Desparear</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>Parear</translation>
+        <translation type="vanished">Parear</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Scan</source>
-        <translation>Buscar</translation>
+        <translation type="vanished">Buscar</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>Para parear, segure o botão liga/desliga por 5 à 7 segundos até que o LED comece a piscar em um padrão, então clique bo botão &quot;Parear&quot; dentro de 30 segundos.</translation>
+        <translation type="vanished">Para parear, segure o botão liga/desliga por 5 à 7 segundos até que o LED comece a piscar em um padrão, então clique bo botão &quot;Parear&quot; dentro de 30 segundos.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Entertainment Mode:</source>
-        <translation>Modo de entretenimento:</translation>
+        <translation type="vanished">Modo de entretenimento:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Nome de usuário:</translation>
+        <translation type="vanished">Nome de usuário:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>Chave de cliente:</translation>
+        <translation type="vanished">Chave de cliente:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>Desparear ponte</translation>
+        <translation type="vanished">Desparear ponte</translation>
     </message>
     <message>
         <source>MAC:</source>
-        <translation>MAC:</translation>
+        <translation type="vanished">MAC:</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>Grupo de conexão automática:</translation>
+        <translation type="vanished">Grupo de conexão automática:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
     <message>
         <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translation>Após de adicionar e salvar uma entrada do Hue, reinicie o OpenRGB e pressione o botão de sincronização na sua ponte do Hue para emparelhá-los.</translation>
+        <translation type="vanished">Após de adicionar e salvar uma entrada do Hue, reinicie o OpenRGB e pressione o botão de sincronização na sua ponte do Hue para emparelhá-los.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>Use Cool White</source>
-        <translation>Usar branco frio</translation>
+        <translation type="vanished">Usar branco frio</translation>
     </message>
     <message>
         <source>Use Warm White</source>
-        <translation>Usar branco quente</translation>
+        <translation type="vanished">Usar branco quente</translation>
     </message>
     <message>
         <source>White Strategy:</source>
-        <translation>Estratégia do branco:</translation>
+        <translation type="vanished">Estratégia do branco:</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation>Média</translation>
+        <translation type="vanished">Média</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation>Mínimo</translation>
+        <translation type="vanished">Mínimo</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
@@ -1014,68 +1428,68 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>Nome:</translation>
+        <translation type="vanished">Nome:</translation>
     </message>
     <message>
         <source>USB PID:</source>
-        <translation>PID USB:</translation>
+        <translation type="vanished">PID USB:</translation>
     </message>
     <message>
         <source>USB VID:</source>
-        <translation>VID USB:</translation>
+        <translation type="vanished">VID USB:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Bauds:</translation>
+        <translation type="vanished">Bauds:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Nome:</translation>
+        <translation type="vanished">Nome:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Número de LEDs:</translation>
+        <translation type="vanished">Número de LEDs:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Porta:</translation>
+        <translation type="vanished">Porta:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>Protocolo:</translation>
+        <translation type="vanished">Protocolo:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
@@ -1137,7 +1551,7 @@
     </message>
     <message>
         <source>90000</source>
-        <translation>90000</translation>
+        <translation type="vanished">90000</translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1209,7 +1623,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>Configurações de drivers</translation>
+        <translation type="vanished">Configurações de drivers</translation>
     </message>
     <message>
         <source>Greyscale Tray Icon</source>
@@ -1270,6 +1684,34 @@
     <message>
         <source>System Default</source>
         <translation>Padrão do sistema</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1430,49 +1872,124 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">Status do servidor:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">Off-line</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">Iniciar servidor</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">Host do servidor:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">Porta do servidor:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">Parar servidor</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>Autenticação (Opcional)</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>Exigir Autenticação</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>Token de Autenticação:</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>Conectar com: ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">Clientes conectados:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">IP do cliente</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>Tempo de Conexão</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">Parando...</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">On-line</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Conectado</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>Ativo</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>Endereço de IP:</translation>
+        <translation type="vanished">Endereço de IP:</translation>
     </message>
     <message>
         <source>?</source>
-        <translation>?</translation>
+        <translation type="vanished">?</translation>
     </message>
     <message>
         <source>Music Mode:</source>
-        <translation>Modo música:</translation>
+        <translation type="vanished">Modo música:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>Sobrescrever IP do host:</translation>
+        <translation type="vanished">Sobrescrever IP do host:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>Deixe em branco para detecção automática do IP do host</translation>
+        <translation type="vanished">Deixe em branco para detecção automática do IP do host</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>Selecione um IP...</translation>
+        <translation type="vanished">Selecione um IP...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>Selecione o IP correto para o host</translation>
+        <translation type="vanished">Selecione o IP correto para o host</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Adicionar</translation>
+        <translation type="vanished">Adicionar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Remover</translation>
+        <translation type="vanished">Remover</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salvar</translation>
+        <translation type="vanished">Salvar</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +2009,10 @@
     <message>
         <source>Length</source>
         <translation>Comprimento</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1534,10 +2055,114 @@
     </message>
 </context>
 <context>
+    <name>PhilipsHueSettingsEntry</name>
+    <message>
+        <source>Philips Hue Bridge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">Modo de entretenimento:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">Grupo de conexão automática:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">Chave de cliente:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Nome de usuário:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished">MAC:</translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">Desparear ponte</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished">Usar branco frio</translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished">Usar branco quente</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished">Estratégia do branco:</translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished">Média</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Mínimo</translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">PID USB:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">VID USB:</translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">PID USB:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">VID USB:</translation>
+    </message>
+</context>
+<context>
     <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
-        <translation>&lt;h2&gt;Alguns dispositivos internos podem não ser detectados:&lt;/h2&gt;&lt;p&gt;Uma ou mais interfaces I2C ou SMBus falharam ao inicializar.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Módulos de RAM RGB, os de algumas placas-mãe, iluminação RGB integrada, e placas gráficas RGB não estarão disponíveis no OpenRGB&lt;/b&gt; sem I2C ou SMBus.&lt;/p&gt;&lt;h4&gt;Como resolver isto:&lt;/h4&gt;&lt;p&gt;No Windows, isso normalmente ocorre por causa de uma falha ao carregar o driver do WinRing0.&lt;/p&gt;&lt;p&gt;Você deve executar o OpenRGB como administrador pelo menos uma vez para permitir que o WinRing0 seja configurado.&lt;/p&gt;&lt;p&gt;Visite &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; para mais passos de solução do problema, caso você continue vendo esta mensagem.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Se você não está usando o RGB interno de um computador, essa mensagem não é importante para você.&lt;/h3&gt;</translation>
+        <translation type="vanished">&lt;h2&gt;Alguns dispositivos internos podem não ser detectados:&lt;/h2&gt;&lt;p&gt;Uma ou mais interfaces I2C ou SMBus falharam ao inicializar.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Módulos de RAM RGB, os de algumas placas-mãe, iluminação RGB integrada, e placas gráficas RGB não estarão disponíveis no OpenRGB&lt;/b&gt; sem I2C ou SMBus.&lt;/p&gt;&lt;h4&gt;Como resolver isto:&lt;/h4&gt;&lt;p&gt;No Windows, isso normalmente ocorre por causa de uma falha ao carregar o driver do WinRing0.&lt;/p&gt;&lt;p&gt;Você deve executar o OpenRGB como administrador pelo menos uma vez para permitir que o WinRing0 seja configurado.&lt;/p&gt;&lt;p&gt;Visite &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; para mais passos de solução do problema, caso você continue vendo esta mensagem.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Se você não está usando o RGB interno de um computador, essa mensagem não é importante para você.&lt;/h3&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
@@ -1551,12 +2176,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;ALERTA:&lt;/h2&gt;&lt;p&gt;Várias regras udev do OpenRGB estão instaladas.&lt;/p&gt;&lt;p&gt;O arquivo de regras udev 60-openrgb.rules está instalado tanto em /etc/udev/rules.d como em /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Ter vários arquivos de regras udev pode causar conflitos, é recomendado remover um deles.&lt;/p&gt;</translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Número de LEDs:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Bauds:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Nome:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">Protocolo:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Porta:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>nome do dispositivo</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">Endereço de IP:</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished">?</translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">Modo música:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">Sobrescrever IP do host:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">Deixe em branco para detecção automática do IP do host</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">Selecione um IP...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">Selecione o IP correto para o host</translation>
     </message>
 </context>
 </TS>

@@ -13,6 +13,7 @@
 #include "OpenRGBDevicePage.h"
 #include "OpenRGBDeviceInfoPage.h"
 #include "OpenRGBServerInfoPage.h"
+#include "OpenRGBWebSocketInfoPage/OpenRGBWebSocketInfoPage.h"
 #include "OpenRGBConsolePage.h"
 #include "OpenRGBPluginContainer.h"
 #include "OpenRGBProfileSaveDialog.h"
@@ -474,6 +475,11 @@ OpenRGBDialog::OpenRGBDialog(QWidget *parent) : QMainWindow(parent), ui(new Ui::
     | Add Server Tab                                        |
     \*-----------------------------------------------------*/
     AddServerTab();
+
+    /*-----------------------------------------------------*\
+    | Add WebSocket Server Tab                              |
+    \*-----------------------------------------------------*/
+    AddWebSocketServerTab();
 
     /*-----------------------------------------------------*\
     | Add the Software Info page                            |
@@ -974,6 +980,16 @@ void OpenRGBDialog::AddServerTab()
     OpenRGBServerInfoPage *ServerInfoPage = new OpenRGBServerInfoPage(ResourceManager::get()->GetServer());
     ServerInfoPage->setObjectName(QString("SDK Server"));
     ui->MainTabBar->insertTab(2, ServerInfoPage, tr("SDK Server"));
+}
+
+void OpenRGBDialog::AddWebSocketServerTab()
+{
+    /*-----------------------------------------------------*\
+    | Add WebSocket server information tab                   |
+    \*-----------------------------------------------------*/
+    OpenRGBWebSocketInfoPage *WebSocketServerInfoPage = new OpenRGBWebSocketInfoPage(ResourceManager::get()->GetWebSocketServer());
+    WebSocketServerInfoPage->setObjectName(QString("WebSocket Server"));
+    ui->MainTabBar->insertTab(3, WebSocketServerInfoPage, tr("WebSocket Server"));
 }
 
 void OpenRGBDialog::ClearDevicesList()

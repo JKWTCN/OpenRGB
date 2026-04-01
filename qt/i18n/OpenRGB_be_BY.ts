@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="be_BY">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Колькасць святлодыёдаў:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished">Канал яркасці:</translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished">Канал сіняга:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished">Канал зялёнага:</translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished">Канал чырвонага:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Час падтр. актыўнасці:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Тып:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Аднамерная зона</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Адзіночная зона</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>Уключана</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">Пачатковы канал:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Колькасць святлодыёдаў:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">Пачатковая Universe:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">Парадак матрыцы:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">Вышыня матрыцы:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">Шырыня матрыцы:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Тып:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (аднаадрасны):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Памер Universe:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Час падтр. актыўнасці:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">Парадак RGB:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Адзіночная зона</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Аднамерная зона</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">Матрыца</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">Гарызантальна → ↓</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">Гарызантальна ← ↓</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">Гарызантальна → ↑</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">Гарызантальна ← ↑</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">Вертыкальна ↓ →</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">Вертыкальна ↓ ←</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">Вертыкальна ↑ →</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">Вертыкальна ↑ ←</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Назва</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Назва</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Выдаліць</translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">Дадаць прыладу Nanoleaf</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">IP-адрас:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">Сканіраваць</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Выдаліць</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">Ключ аўтарызацыі:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">Разлучыць</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">Спалучыць</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>Адлучыць</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">Перасканаваць прылады</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -62,46 +468,46 @@
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
         <source>Brightness Channel:</source>
-        <translation>Канал яркасці:</translation>
+        <translation type="vanished">Канал яркасці:</translation>
     </message>
     <message>
         <source>Blue Channel:</source>
-        <translation>Канал сіняга:</translation>
+        <translation type="vanished">Канал сіняга:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Назва:</translation>
+        <translation type="vanished">Назва:</translation>
     </message>
     <message>
         <source>Green Channel:</source>
-        <translation>Канал зялёнага:</translation>
+        <translation type="vanished">Канал зялёнага:</translation>
     </message>
     <message>
         <source>Red Channel:</source>
-        <translation>Канал чырвонага:</translation>
+        <translation type="vanished">Канал чырвонага:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Час падтр. актыўнасці:</translation>
+        <translation type="vanished">Час падтр. актыўнасці:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Порт:</translation>
+        <translation type="vanished">Порт:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
@@ -430,35 +836,35 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>Прылады DMX</translation>
+        <translation type="vanished">Прылады DMX</translation>
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>Прылады E1.31</translation>
+        <translation type="vanished">Прылады E1.31</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Прылады Kasa Smart</translation>
+        <translation type="vanished">Прылады Kasa Smart</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>Прылады Philips Hue</translation>
+        <translation type="vanished">Прылады Philips Hue</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>Прылады Philips Wiz</translation>
+        <translation type="vanished">Прылады Philips Wiz</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>Пратакол OpenRGB QMK</translation>
+        <translation type="vanished">Пратакол OpenRGB QMK</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>Прылады паслядоўнага порта (Serial)</translation>
+        <translation type="vanished">Прылады паслядоўнага порта (Serial)</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Прылады Yeelight</translation>
+        <translation type="vanished">Прылады Yeelight</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -482,19 +888,19 @@
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>Прылады LIFX</translation>
+        <translation type="vanished">Прылады LIFX</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Прылады Nanoleaf</translation>
+        <translation type="vanished">Прылады Nanoleaf</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Прылады Elgato KeyLight</translation>
+        <translation type="vanished">Прылады Elgato KeyLight</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Прылады Elgato LightStrip</translation>
+        <translation type="vanished">Прылады Elgato LightStrip</translation>
     </message>
     <message>
         <source>Supported Devices</source>
@@ -509,7 +915,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Govee Devices</source>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -517,176 +927,155 @@
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>Пачатковы канал:</translation>
+        <translation type="vanished">Пачатковы канал:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Колькасць святлодыёдаў:</translation>
+        <translation type="vanished">Колькасць святлодыёдаў:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>Пачатковая Universe:</translation>
+        <translation type="vanished">Пачатковая Universe:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Назва:</translation>
+        <translation type="vanished">Назва:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>Парадак матрыцы:</translation>
+        <translation type="vanished">Парадак матрыцы:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>Вышыня матрыцы:</translation>
+        <translation type="vanished">Вышыня матрыцы:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>Шырыня матрыцы:</translation>
+        <translation type="vanished">Шырыня матрыцы:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>Тып:</translation>
+        <translation type="vanished">Тып:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (аднаадрасны):</translation>
+        <translation type="vanished">IP (аднаадрасны):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Памер Universe:</translation>
+        <translation type="vanished">Памер Universe:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Час падтр. актыўнасці:</translation>
+        <translation type="vanished">Час падтр. актыўнасці:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>Парадак RGB:</translation>
+        <translation type="vanished">Парадак RGB:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Адзіночная зона</translation>
+        <translation type="vanished">Адзіночная зона</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>Аднамерная зона</translation>
+        <translation type="vanished">Аднамерная зона</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>Матрыца</translation>
+        <translation type="vanished">Матрыца</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>Гарызантальна → ↓</translation>
+        <translation type="vanished">Гарызантальна → ↓</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>Гарызантальна ← ↓</translation>
+        <translation type="vanished">Гарызантальна ← ↓</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>Гарызантальна → ↑</translation>
+        <translation type="vanished">Гарызантальна → ↑</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>Гарызантальна ← ↑</translation>
+        <translation type="vanished">Гарызантальна ← ↑</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>Вертыкальна ↓ →</translation>
+        <translation type="vanished">Вертыкальна ↓ →</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>Вертыкальна ↓ ←</translation>
+        <translation type="vanished">Вертыкальна ↓ ←</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>Вертыкальна ↑ →</translation>
+        <translation type="vanished">Вертыкальна ↑ →</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>Вертыкальна ↑ ←</translation>
+        <translation type="vanished">Вертыкальна ↑ ←</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
-    </message>
-</context>
-<context>
-    <name>OpenRGBElgatoKeyLightSettingsEntry</name>
-    <message>
-        <source>IP:</source>
-        <translation></translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
-    </message>
-</context>
-<context>
-    <name>OpenRGBElgatoLightStripSettingsEntry</name>
-    <message>
-        <source>IP:</source>
-        <translation></translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
-    </message>
-</context>
-<context>
-    <name>OpenRGBGoveeSettingsEntry</name>
-    <message>
-        <source>IP:</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Дадаць</translation>
+        <translation type="obsolete">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished">Выдаліць</translation>
+        <translation type="obsolete">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Захаваць</translation>
+        <translation type="obsolete">Захаваць</translation>
     </message>
 </context>
 <context>
@@ -715,202 +1104,178 @@
 <context>
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Name</source>
-        <translation>Назва</translation>
+        <translation type="vanished">Назва</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Name</source>
-        <translation>Назва</translation>
+        <translation type="vanished">Назва</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>Дадаць прыладу Nanoleaf</translation>
+        <translation type="vanished">Дадаць прыладу Nanoleaf</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>IP-адрас:</translation>
+        <translation type="vanished">IP-адрас:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Порт:</translation>
+        <translation type="vanished">Порт:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Port:</source>
-        <translation>Порт:</translation>
+        <translation type="vanished">Порт:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>Ключ аўтарызацыі:</translation>
+        <translation type="vanished">Ключ аўтарызацыі:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>Разлучыць</translation>
+        <translation type="vanished">Разлучыць</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>Спалучыць</translation>
+        <translation type="vanished">Спалучыць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Scan</source>
-        <translation>Сканіраваць</translation>
+        <translation type="vanished">Сканіраваць</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>Для спалучэння ўтрымлівайце кнопку ўкл./выкл на працягу 5-7 секунд, пакуль святлодыёд не пачне перыядычна міргаць, затым на працягу 30 секунднага інтэрвалу націсніце кнопку &quot;Спалучыць&quot; (&quot;Pair&quot;).</translation>
+        <translation type="vanished">Для спалучэння ўтрымлівайце кнопку ўкл./выкл на працягу 5-7 секунд, пакуль святлодыёд не пачне перыядычна міргаць, затым на працягу 30 секунднага інтэрвалу націсніце кнопку &quot;Спалучыць&quot; (&quot;Pair&quot;).</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Entertainment Mode:</source>
-        <translation>Рэжым забавы:</translation>
+        <translation type="vanished">Рэжым забавы:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Імя карыстальніка:</translation>
+        <translation type="vanished">Імя карыстальніка:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>Ключ кліента:</translation>
+        <translation type="vanished">Ключ кліента:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>Разлучыць мост</translation>
-    </message>
-    <message>
-        <source>MAC:</source>
-        <translation></translation>
+        <translation type="vanished">Разлучыць мост</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>Група для аўтаматычнага злучэння:</translation>
+        <translation type="vanished">Група для аўтаматычнага злучэння:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
     <message>
         <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translation>Пасля дадання прылад Hue і захавання, перазапусціце OpenRGB і націсніце кнопку Sync на Hue масце, каб спалучыць яго.</translation>
+        <translation type="vanished">Пасля дадання прылад Hue і захавання, перазапусціце OpenRGB і націсніце кнопку Sync на Hue масце, каб спалучыць яго.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Use Cool White</source>
-        <translation>Халодны белы</translation>
+        <translation type="vanished">Халодны белы</translation>
     </message>
     <message>
         <source>Use Warm White</source>
-        <translation>Цёплы белы</translation>
+        <translation type="vanished">Цёплы белы</translation>
     </message>
     <message>
         <source>White Strategy:</source>
-        <translation>Вызначэнне белага:</translation>
+        <translation type="vanished">Вызначэнне белага:</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation>Па сярэдняму</translation>
+        <translation type="vanished">Па сярэдняму</translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation>Па мінімуму</translation>
+        <translation type="vanished">Па мінімуму</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
@@ -1014,68 +1379,60 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>Назва:</translation>
-    </message>
-    <message>
-        <source>USB PID:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>USB VID:</source>
-        <translation></translation>
+        <translation type="vanished">Назва:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Baud (хуткасць перадачы):</translation>
+        <translation type="vanished">Baud (хуткасць перадачы):</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Назва:</translation>
+        <translation type="vanished">Назва:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Колькасць святлодыёдаў:</translation>
+        <translation type="vanished">Колькасць святлодыёдаў:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Порт:</translation>
+        <translation type="vanished">Порт:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>Пратакол:</translation>
+        <translation type="vanished">Пратакол:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
@@ -1134,10 +1491,6 @@
     <message>
         <source>Load Window Geometry</source>
         <translation>Загружаць геаметрыю акна</translation>
-    </message>
-    <message>
-        <source>90000</source>
-        <translation></translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1209,7 +1562,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>Налады драйвераў</translation>
+        <translation type="vanished">Налады драйвераў</translation>
     </message>
     <message>
         <source>Greyscale Tray Icon</source>
@@ -1270,6 +1623,34 @@
     <message>
         <source>System Default</source>
         <translation>Прадвызначана сістэмай</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1430,49 +1811,116 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">Статус сервера:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">Па-за сеткай</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">Запусціць сервер</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">Хост сервера:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">Порт сервера:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">Cпыніць сервер</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>Аўтэнтыфікацыя (неабавязкова)</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>Патрабуецца аўтэнтыфікацыя</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>Токен аўтэнтыфікацыі:</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>Падключыцца праз: ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">Злучаныя кліенты:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">IP кліента</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>Час падключэння</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Статус</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">Спыненне…</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">У сетцы</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Падключана</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>Актыўна</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
-        <source>IP:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>?</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Music Mode:</source>
-        <translation>Музычны рэжым:</translation>
+        <translation type="vanished">Музычны рэжым:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>Перавызначыць IP хаста:</translation>
+        <translation type="vanished">Перавызначыць IP хаста:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>Пакіньце пустым для аўтаматычнага выяўлення IP хаста</translation>
+        <translation type="vanished">Пакіньце пустым для аўтаматычнага выяўлення IP хаста</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>Выбраць IP...</translation>
+        <translation type="vanished">Выбраць IP...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>Выбраць правільны IP для хаста</translation>
+        <translation type="vanished">Выбраць правільны IP для хаста</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Дадаць</translation>
+        <translation type="vanished">Дадаць</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Выдаліць</translation>
+        <translation type="vanished">Выдаліць</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Захаваць</translation>
+        <translation type="vanished">Захаваць</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +1940,10 @@
     <message>
         <source>Length</source>
         <translation>Даўжыня</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1534,10 +1986,114 @@
     </message>
 </context>
 <context>
+    <name>PhilipsHueSettingsEntry</name>
+    <message>
+        <source>Philips Hue Bridge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">Рэжым забавы:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">Група для аўтаматычнага злучэння:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">Ключ кліента:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Імя карыстальніка:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">Разлучыць мост</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished">Халодны белы</translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished">Цёплы белы</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished">Вызначэнне белага:</translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished">Па сярэдняму</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Па мінімуму</translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
-        <translation>&lt;h2&gt;Частка ўбудаванага абсталявання магла быць не вызначана:&lt;/h2&gt;&lt;p&gt;Не ўдалося ініцыялізаваць адзін або некалькі інтэрфейсаў I2C або SMBus.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Модулі RGB DRAM, убудаваная RGB-падсветка некаторых мацярынскіх плат і відэакарт не будуць даступныя ў OpenRGB&lt;/b&gt; без доступу да інтэрфейсаў I2C або SMBus.&lt;/p&gt;&lt;h4&gt;Як выправіць гэтую праблему:&lt;/h4&gt;&lt;p&gt;На Windows прычынай гэтага звычайна з&apos;яўляецца збой загрузкі драйвера WinRing0.&lt;/p&gt;&lt;p&gt;Вам трэба запусціць OpenRGB ад імя адміністратара як мінімум адзін раз, каб WinRing0 змог усталявацца.&lt;/p&gt;&lt;p&gt;Калі вы працягваеце бачыць гэтае паведамленне - глядзіце старонку &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; для атрымання дадатковых звестак па выяўленню і ўстараненню праблемы.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Калі вы не выкарыстоўваеце ўбудаваную RGB-падсветку на настольным камп’ютары, гэтае паведамленне можна праігнараваць.&lt;/h3&gt;</translation>
+        <translation type="vanished">&lt;h2&gt;Частка ўбудаванага абсталявання магла быць не вызначана:&lt;/h2&gt;&lt;p&gt;Не ўдалося ініцыялізаваць адзін або некалькі інтэрфейсаў I2C або SMBus.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Модулі RGB DRAM, убудаваная RGB-падсветка некаторых мацярынскіх плат і відэакарт не будуць даступныя ў OpenRGB&lt;/b&gt; без доступу да інтэрфейсаў I2C або SMBus.&lt;/p&gt;&lt;h4&gt;Як выправіць гэтую праблему:&lt;/h4&gt;&lt;p&gt;На Windows прычынай гэтага звычайна з&apos;яўляецца збой загрузкі драйвера WinRing0.&lt;/p&gt;&lt;p&gt;Вам трэба запусціць OpenRGB ад імя адміністратара як мінімум адзін раз, каб WinRing0 змог усталявацца.&lt;/p&gt;&lt;p&gt;Калі вы працягваеце бачыць гэтае паведамленне - глядзіце старонку &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; для атрымання дадатковых звестак па выяўленню і ўстараненню праблемы.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Калі вы не выкарыстоўваеце ўбудаваную RGB-падсветку на настольным камп’ютары, гэтае паведамленне можна праігнараваць.&lt;/h3&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
@@ -1551,12 +2107,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;ПАПЯРЭДЖАННЕ:&lt;/h2&gt;&lt;p&gt;Усталявана некалькі правілаў OpenRGB udev.&lt;/p&gt;&lt;p&gt;Файл правілаў udev 60-openrgb.rules усталяваны у /etc/udev/rules.d, так і ў /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Некалькі файлаў правілаў udev могуць канфліктаваць паміж сабой, рэкамендуецца выдаліць адзін з іх.&lt;/p&gt;</translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Колькасць святлодыёдаў:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Baud (хуткасць перадачы):</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Назва:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">Пратакол:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>назва прылады</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">Музычны рэжым:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">Перавызначыць IP хаста:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">Пакіньце пустым для аўтаматычнага выяўлення IP хаста</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">Выбраць IP...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">Выбраць правільны IP для хаста</translation>
     </message>
 </context>
 </TS>

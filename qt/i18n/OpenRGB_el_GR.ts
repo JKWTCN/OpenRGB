@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="el_GR" sourcelanguage="en_US">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished">0x {192.168.1.100?}</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Θύρα:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Αριθμός LED:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Χρόνος διατήρησης:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Θύρα:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Τύπος:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Γραμμικά</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Ενιαία</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>Ενεργοποιημένο</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">Έναρξη καναλιού:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Αριθμός LED:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">Έναρξη Σύμπαντος:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">Τάξη μήτρας:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">Ύψος Μήτρας:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">Πλάτος Μήτρας:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Τύπος:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (μονοεκπομπή):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Μέγεθος Σύμπαντος:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Χρόνος διατήρησης:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">Διάταξη RGB:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Ενιαία</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Γραμμικά</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">Μήτρα</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">Οριζόντια Επάνω αριστερά</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">Οριζόντια Πάνω δεξιά</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">Οριζόντια Κάτω αριστερά</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">Οριζόντια Κάτω Δεξιά</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">Κάθετα Επάνω αριστερά</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">Κάθετα Επάνω δεξιά</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">Κάθετα κάτω αριστερά</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">Κάθετα κάτω δεξιά</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Όνομα</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Όνομα</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Αφαίρεση</translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">Νέα συσκευή Nanoleaf</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">Διεύθυνση IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Θύρα:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">Σάρωση</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Αφαίρεση</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Θύρα:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">Κλειδί εξουσιοδότησης:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">Απόζευξη</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">Ζεύξη</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>Αποσύνδεση</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">Επανασάρωση συσκευών</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -61,47 +467,31 @@
 <context>
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
-        <source>Brightness Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Blue Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name:</source>
-        <translation type="unfinished">Όνομα:</translation>
-    </message>
-    <message>
-        <source>Green Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Red Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Όνομα:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation type="unfinished">Χρόνος διατήρησης:</translation>
+        <translation type="obsolete">Χρόνος διατήρησης:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation type="unfinished">Θύρα:</translation>
+        <translation type="obsolete">Θύρα:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
@@ -430,35 +820,35 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>Συσκευές DMX</translation>
+        <translation type="vanished">Συσκευές DMX</translation>
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>Συσκευές E1.31</translation>
+        <translation type="vanished">Συσκευές E1.31</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Συσκευές Kasa Smart</translation>
+        <translation type="vanished">Συσκευές Kasa Smart</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>Συσκευές Hue της Philips</translation>
+        <translation type="vanished">Συσκευές Hue της Philips</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>Συσκευές Wiz της Philips</translation>
+        <translation type="vanished">Συσκευές Wiz της Philips</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>OpenRGB Πρωτόκολλο QMK</translation>
+        <translation type="vanished">OpenRGB Πρωτόκολλο QMK</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>Σειριακές συσκευές</translation>
+        <translation type="vanished">Σειριακές συσκευές</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Συσκευές Yeelight</translation>
+        <translation type="vanished">Συσκευές Yeelight</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -482,19 +872,19 @@
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>Συσκευές LIFX</translation>
+        <translation type="vanished">Συσκευές LIFX</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Συσκευές Nanoleaf</translation>
+        <translation type="vanished">Συσκευές Nanoleaf</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Συσκευές Elgato KeyLight</translation>
+        <translation type="vanished">Συσκευές Elgato KeyLight</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Συσκευές Elgato LightStrip</translation>
+        <translation type="vanished">Συσκευές Elgato LightStrip</translation>
     </message>
     <message>
         <source>Supported Devices</source>
@@ -509,7 +899,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Govee Devices</source>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -517,176 +911,176 @@
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>Έναρξη καναλιού:</translation>
+        <translation type="vanished">Έναρξη καναλιού:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Αριθμός LED:</translation>
+        <translation type="vanished">Αριθμός LED:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>Έναρξη Σύμπαντος:</translation>
+        <translation type="vanished">Έναρξη Σύμπαντος:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Όνομα:</translation>
+        <translation type="vanished">Όνομα:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>Τάξη μήτρας:</translation>
+        <translation type="vanished">Τάξη μήτρας:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>Ύψος Μήτρας:</translation>
+        <translation type="vanished">Ύψος Μήτρας:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>Πλάτος Μήτρας:</translation>
+        <translation type="vanished">Πλάτος Μήτρας:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>Τύπος:</translation>
+        <translation type="vanished">Τύπος:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (μονοεκπομπή):</translation>
+        <translation type="vanished">IP (μονοεκπομπή):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Μέγεθος Σύμπαντος:</translation>
+        <translation type="vanished">Μέγεθος Σύμπαντος:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Χρόνος διατήρησης:</translation>
+        <translation type="vanished">Χρόνος διατήρησης:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>Διάταξη RGB:</translation>
+        <translation type="vanished">Διάταξη RGB:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Ενιαία</translation>
+        <translation type="vanished">Ενιαία</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>Γραμμικά</translation>
+        <translation type="vanished">Γραμμικά</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>Μήτρα</translation>
+        <translation type="vanished">Μήτρα</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>Οριζόντια Επάνω αριστερά</translation>
+        <translation type="vanished">Οριζόντια Επάνω αριστερά</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>Οριζόντια Πάνω δεξιά</translation>
+        <translation type="vanished">Οριζόντια Πάνω δεξιά</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>Οριζόντια Κάτω αριστερά</translation>
+        <translation type="vanished">Οριζόντια Κάτω αριστερά</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>Οριζόντια Κάτω Δεξιά</translation>
+        <translation type="vanished">Οριζόντια Κάτω Δεξιά</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>Κάθετα Επάνω αριστερά</translation>
+        <translation type="vanished">Κάθετα Επάνω αριστερά</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>Κάθετα Επάνω δεξιά</translation>
+        <translation type="vanished">Κάθετα Επάνω δεξιά</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>Κάθετα κάτω αριστερά</translation>
+        <translation type="vanished">Κάθετα κάτω αριστερά</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>Κάθετα κάτω δεξιά</translation>
+        <translation type="vanished">Κάθετα κάτω δεξιά</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation type="unfinished">IP:</translation>
+        <translation type="obsolete">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Προσθήκη</translation>
+        <translation type="obsolete">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished">Αφαίρεση</translation>
+        <translation type="obsolete">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Αποθήκευση</translation>
+        <translation type="obsolete">Αποθήκευση</translation>
     </message>
 </context>
 <context>
@@ -716,202 +1110,177 @@
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation type="unfinished">IP:</translation>
+        <translation type="obsolete">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished">Όνομα</translation>
+        <translation type="obsolete">Όνομα</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Όνομα</translation>
+        <translation type="vanished">Όνομα</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>Νέα συσκευή Nanoleaf</translation>
+        <translation type="vanished">Νέα συσκευή Nanoleaf</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>Διεύθυνση IP:</translation>
+        <translation type="vanished">Διεύθυνση IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Θύρα:</translation>
+        <translation type="vanished">Θύρα:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Θύρα:</translation>
+        <translation type="vanished">Θύρα:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>Κλειδί εξουσιοδότησης:</translation>
+        <translation type="vanished">Κλειδί εξουσιοδότησης:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>Απόζευξη</translation>
+        <translation type="vanished">Απόζευξη</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>Ζεύξη</translation>
+        <translation type="vanished">Ζεύξη</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Scan</source>
-        <translation>Σάρωση</translation>
+        <translation type="vanished">Σάρωση</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>Για να πραγματοποιήσετε ζεύξη, κρατήστε πατημένο το κουμπί on-off για 5-7 δευτερόλεπτα έως ότου η λυχνία LED αρχίσει να αναβοσβήνει σε ένα μοτίβο και, στη συνέχεια, πατήστε το κουμπί &quot;Ζεύξη&quot; εντός 30 δευτερολέπτων.</translation>
+        <translation type="vanished">Για να πραγματοποιήσετε ζεύξη, κρατήστε πατημένο το κουμπί on-off για 5-7 δευτερόλεπτα έως ότου η λυχνία LED αρχίσει να αναβοσβήνει σε ένα μοτίβο και, στη συνέχεια, πατήστε το κουμπί &quot;Ζεύξη&quot; εντός 30 δευτερολέπτων.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Entertainment Mode:</source>
-        <translation>Λειτουργία διασκέδασης:</translation>
+        <translation type="vanished">Λειτουργία διασκέδασης:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Όνομα χρήστη:</translation>
+        <translation type="vanished">Όνομα χρήστη:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>Κλειδί πελάτη:</translation>
+        <translation type="vanished">Κλειδί πελάτη:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>Απόζευξη γέφυρας</translation>
+        <translation type="vanished">Απόζευξη γέφυρας</translation>
     </message>
     <message>
         <source>MAC:</source>
-        <translation>MAC:</translation>
+        <translation type="vanished">MAC:</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>Ομάδα αυτόματης σύνδεσης:</translation>
+        <translation type="vanished">Ομάδα αυτόματης σύνδεσης:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
-    </message>
-    <message>
-        <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translatorcomment>Αφού προσθέσετε μια καταχώρηση αποχρώσης και την αποθηκεύσετε, επανεκκινήστε το OpenRGB και πατήστε το κουμπί Συγχρονισμού στη γέφυρα αποχρώσης  για να τη συνδέσετε.</translatorcomment>
-        <translation></translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
-    </message>
-    <message>
-        <source>Use Cool White</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use Warm White</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>White Strategy:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Average</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
@@ -1015,68 +1384,68 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>Όνομα:</translation>
+        <translation type="vanished">Όνομα:</translation>
     </message>
     <message>
         <source>USB PID:</source>
-        <translation>USB PID:</translation>
+        <translation type="vanished">USB PID:</translation>
     </message>
     <message>
         <source>USB VID:</source>
-        <translation>USB VID:</translation>
+        <translation type="vanished">USB VID:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Baud:</translation>
+        <translation type="vanished">Baud:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>Όνομα:</translation>
+        <translation type="vanished">Όνομα:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>Αριθμός LED:</translation>
+        <translation type="vanished">Αριθμός LED:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>Θύρα:</translation>
+        <translation type="vanished">Θύρα:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>Πρωτόκολλο:</translation>
+        <translation type="vanished">Πρωτόκολλο:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
@@ -1138,7 +1507,7 @@
     </message>
     <message>
         <source>90000</source>
-        <translation>90000</translation>
+        <translation type="vanished">90000</translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1210,7 +1579,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>Ρυθμίσεις οδηγών</translation>
+        <translation type="vanished">Ρυθμίσεις οδηγών</translation>
     </message>
     <message>
         <source>Greyscale Tray Icon</source>
@@ -1271,6 +1640,34 @@
     <message>
         <source>System Default</source>
         <translation>Προεπιλογή συστήματος</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1431,49 +1828,124 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">Κατάσταση διακομιστή:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">Εκτός σύνδεσης</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">Εκκίνηση διακομιστή</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">Υποδοχή διακομιστή:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">Θύρα διακομιστή:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">Διακοπή διακομιστή</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>Ταυτοποίηση (Προαιρετικό)</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>Απαίτηση ταυτοποίησης</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>Διακριτικό ταυτοποίησης:</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>Σύνδεση με: ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">Συνδεδεμένοι πελάτες:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">IP πελάτη</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>Ώρα σύνδεσης</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Κατάσταση</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">Σταμάτημα...</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">Σε σύνδεση</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Συνδεδεμένο</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>Ενεργό</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>?</source>
-        <translation>;</translation>
+        <translation type="vanished">;</translation>
     </message>
     <message>
         <source>Music Mode:</source>
-        <translation>Λειτουργία μουσικής:</translation>
+        <translation type="vanished">Λειτουργία μουσικής:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>Παράκαμψη της IP του υποδοχέα:</translation>
+        <translation type="vanished">Παράκαμψη της IP του υποδοχέα:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>Αφήνεται κενό για αυτόματη ανακάλυψη της ip του κεντρικού υπολογιστή</translation>
+        <translation type="vanished">Αφήνεται κενό για αυτόματη ανακάλυψη της ip του κεντρικού υπολογιστή</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>Επιλογή IP...</translation>
+        <translation type="vanished">Επιλογή IP...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>Επιλέξτε τη σωστή IP για τον υποδοχέα</translation>
+        <translation type="vanished">Επιλέξτε τη σωστή IP για τον υποδοχέα</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>Προσθήκη</translation>
+        <translation type="vanished">Προσθήκη</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>Αφαίρεση</translation>
+        <translation type="vanished">Αφαίρεση</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Αποθήκευση</translation>
+        <translation type="vanished">Αποθήκευση</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +1964,10 @@
     </message>
     <message>
         <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1535,11 +2011,111 @@
     </message>
 </context>
 <context>
-    <name>ResourceManager</name>
+    <name>PhilipsHueSettingsEntry</name>
     <message>
-        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <source>Philips Hue Bridge</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">Λειτουργία διασκέδασης:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">Ομάδα αυτόματης σύνδεσης:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">Κλειδί πελάτη:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Όνομα χρήστη:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished">MAC:</translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">Απόζευξη γέφυρας</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
         <translation type="unfinished"></translation>
@@ -1552,12 +2128,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Αριθμός LED:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Baud:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Όνομα:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">Πρωτόκολλο:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Θύρα:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>όνομα συσκευής</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished">;</translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">Λειτουργία μουσικής:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">Παράκαμψη της IP του υποδοχέα:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">Αφήνεται κενό για αυτόματη ανακάλυψη της ip του κεντρικού υπολογιστή</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">Επιλογή IP...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">Επιλέξτε τη σωστή IP για τον υποδοχέα</translation>
     </message>
 </context>
 </TS>

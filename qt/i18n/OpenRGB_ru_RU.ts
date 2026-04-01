@@ -2,6 +2,45 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru_RU">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Название:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Порт:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">Количество светодиодов:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DMXSettingsEntry</name>
     <message>
         <source>DMX Device</source>
@@ -34,6 +73,57 @@
     <message>
         <source>Port:</source>
         <translation>Порт:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">Тип:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">Линейная область</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Однородная область</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Название:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -208,6 +298,14 @@
         <source>Name</source>
         <translation>Название</translation>
     </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ManualDevice</name>
@@ -217,11 +315,27 @@
     </message>
     <message>
         <source>QMK (built with ORGB support)</source>
-        <translation>QMK (собранное с поддержкой ORGB)</translation>
+        <translation type="vanished">QMK (собранное с поддержкой ORGB)</translation>
     </message>
     <message>
         <source>Serial Device</source>
         <translation>Устройство последовательного порта (Arduino)</translation>
+    </message>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -333,6 +447,10 @@
     <message>
         <source>Disconnect</source>
         <translation>Разъединить</translation>
+    </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">Обновить список устройств</translation>
     </message>
 </context>
 <context>
@@ -707,6 +825,10 @@
         <source>Manually Added Devices</source>
         <translation>Добавляемые вручную устройства</translation>
     </message>
+    <message>
+        <source>WebSocket Server</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBHardwareIDsDialog</name>
@@ -971,7 +1093,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>Параметры драйверов</translation>
+        <translation type="vanished">Параметры драйверов</translation>
     </message>
     <message>
         <source>Greyscale Tray Icon</source>
@@ -1017,6 +1139,34 @@
     <message>
         <source>System Default</source>
         <translation>Определяется ОС</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1177,6 +1327,81 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">Статус сервера:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">Отключен</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation>Запустить сервер</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation>Узел сервера:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">Порт сервера:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">Остановить сервер</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>Аутентификация (необязательно)</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>Требовать аутентификацию</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>Токен аутентификации:</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>Подключение через: ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">Список подключенных клиентов:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">IP клиента</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>Время подключения</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Статус</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">Остановка…</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">Включен</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Подключено</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>Активно</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBZoneResizeDialog</name>
     <message>
         <source>Resize Zone</source>
@@ -1193,6 +1418,10 @@
     <message>
         <source>Length</source>
         <translation>Длина</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1303,10 +1532,6 @@
 <context>
     <name>QMKORGBSettingsEntry</name>
     <message>
-        <source>QMK Device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name:</source>
         <translation>Название:</translation>
     </message>
@@ -1318,13 +1543,36 @@
         <source>USB VID:</source>
         <translation></translation>
     </message>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Название:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
         <translatorcomment>The sentences were rearranged a bit to improve readability</translatorcomment>
-        <translation>&lt;h2&gt;Часть встроенного оборудования ПК могла быть не обнаружена:&lt;/h2&gt;&lt;p&gt;Некоторые интерфейсы I2C или SMBus не инициализировались.&lt;/p&gt;&lt;p&gt;Для доступа к &lt;b&gt;модулям RGB DRAM, встроенной подсветке некоторых материнских плат и видеокарт&lt;/b&gt;, OpenRGB требуется доступ к I2C и SMBus.&lt;/p&gt;&lt;h4&gt;Как это исправить:&lt;/h4&gt;&lt;p&gt;На системах с ОС Windows, это обычно связано с ошибкой загрузки драйвера WinRing0.&lt;/p&gt;&lt;p&gt;Вам нужно запустить OpenRGB от имени Администратора хотя бы один раз, чтобы WinRing0 смог установиться.&lt;/p&gt;&lt;p&gt;Если данное сообщение продолжает появляться - см. &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt;.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Если вы не используете встроенную RGB подсветку на стационарном ПК, это сообщение можно проигнорировать.&lt;/h3&gt;</translation>
+        <translation type="vanished">&lt;h2&gt;Часть встроенного оборудования ПК могла быть не обнаружена:&lt;/h2&gt;&lt;p&gt;Некоторые интерфейсы I2C или SMBus не инициализировались.&lt;/p&gt;&lt;p&gt;Для доступа к &lt;b&gt;модулям RGB DRAM, встроенной подсветке некоторых материнских плат и видеокарт&lt;/b&gt;, OpenRGB требуется доступ к I2C и SMBus.&lt;/p&gt;&lt;h4&gt;Как это исправить:&lt;/h4&gt;&lt;p&gt;На системах с ОС Windows, это обычно связано с ошибкой загрузки драйвера WinRing0.&lt;/p&gt;&lt;p&gt;Вам нужно запустить OpenRGB от имени Администратора хотя бы один раз, чтобы WinRing0 смог установиться.&lt;/p&gt;&lt;p&gt;Если данное сообщение продолжает появляться - см. &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt;.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;Если вы не используете встроенную RGB подсветку на стационарном ПК, это сообщение можно проигнорировать.&lt;/h3&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
@@ -1338,6 +1586,10 @@
     <message>
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;ВНИМАНИЕ:&lt;/h2&gt;&lt;p&gt;Обнаружено несколько файлов с правилами udev для OpenRGB.&lt;/p&gt;&lt;p&gt;Файл 60-openrgb.rules установлен как в /etc/udev/rules.d, так и в /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Несколько наборов правил могут конфликтовать между собой, рекомендуется удалить один из них.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1365,6 +1617,10 @@
     <message>
         <source>Protocol:</source>
         <translation>Протокол:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

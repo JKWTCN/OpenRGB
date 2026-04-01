@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ja_JP">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished">0x {192.168.1.100?}</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">ポート:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED数:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Keepalive Time:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">ポート:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">タイプ:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">リニア</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Single</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>有効</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">Start Channel:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED数:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">Start Universe:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">Matrix Order:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">Matrix Height:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">Matrix Width:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">タイプ:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (ユニキャスト):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Universe Size:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">Keepalive Time:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">RGB順序:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Single</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">リニア</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">マトリックス</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">Horizontal Top Left</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">Horizontal Top Right</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">Horizontal Bottom Left</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">Horizontal Bottom Right</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">Vertical Top Left</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">Vertical Top Right</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">Vertical Bottom Left</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">Vertical Bottom Right</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">名前</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">名前</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">削除</translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">新しいNanoleafデバイス</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">IPアドレス:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">ポート:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">スキャン</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">削除</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">ポート:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">Auth Key:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">ペア解除</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">ペア</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>切断</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">デバイス再検索</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -61,47 +467,31 @@
 <context>
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
-        <source>Brightness Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Blue Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name:</source>
-        <translation>名前:</translation>
-    </message>
-    <message>
-        <source>Green Channel:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Red Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">名前:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation type="unfinished">Keepalive Time:</translation>
+        <translation type="obsolete">Keepalive Time:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>ポート:</translation>
+        <translation type="vanished">ポート:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
@@ -438,51 +828,51 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>DMXデバイス</translation>
+        <translation type="vanished">DMXデバイス</translation>
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>E1.31デバイス</translation>
+        <translation type="vanished">E1.31デバイス</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Kasa Smart デバイス</translation>
+        <translation type="vanished">Kasa Smart デバイス</translation>
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>LIFX デバイス</translation>
+        <translation type="vanished">LIFX デバイス</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>フィリップスHueデバイス</translation>
+        <translation type="vanished">フィリップスHueデバイス</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>フィリップスWizデバイス</translation>
+        <translation type="vanished">フィリップスWizデバイス</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>OpenRGB QMK プロトコル</translation>
+        <translation type="vanished">OpenRGB QMK プロトコル</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>シリアルデバイス</translation>
+        <translation type="vanished">シリアルデバイス</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Yeelightデバイス</translation>
+        <translation type="vanished">Yeelightデバイス</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Nanoleaf デバイス</translation>
+        <translation type="vanished">Nanoleaf デバイス</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Elgato KeyLight デバイス</translation>
+        <translation type="vanished">Elgato KeyLight デバイス</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Elgato LightStrip デバイス</translation>
+        <translation type="vanished">Elgato LightStrip デバイス</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -509,7 +899,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Govee Devices</source>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -517,176 +911,176 @@
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>Start Channel:</translation>
+        <translation type="vanished">Start Channel:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>LED数:</translation>
+        <translation type="vanished">LED数:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>Start Universe:</translation>
+        <translation type="vanished">Start Universe:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>名前:</translation>
+        <translation type="vanished">名前:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>Matrix Order:</translation>
+        <translation type="vanished">Matrix Order:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>Matrix Height:</translation>
+        <translation type="vanished">Matrix Height:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>Matrix Width:</translation>
+        <translation type="vanished">Matrix Width:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>タイプ:</translation>
+        <translation type="vanished">タイプ:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (ユニキャスト):</translation>
+        <translation type="vanished">IP (ユニキャスト):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Universe Size:</translation>
+        <translation type="vanished">Universe Size:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>Keepalive Time:</translation>
+        <translation type="vanished">Keepalive Time:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>RGB順序:</translation>
+        <translation type="vanished">RGB順序:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Single</translation>
+        <translation type="vanished">Single</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>リニア</translation>
+        <translation type="vanished">リニア</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>マトリックス</translation>
+        <translation type="vanished">マトリックス</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>Horizontal Top Left</translation>
+        <translation type="vanished">Horizontal Top Left</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>Horizontal Top Right</translation>
+        <translation type="vanished">Horizontal Top Right</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>Horizontal Bottom Left</translation>
+        <translation type="vanished">Horizontal Bottom Left</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>Horizontal Bottom Right</translation>
+        <translation type="vanished">Horizontal Bottom Right</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>Vertical Top Left</translation>
+        <translation type="vanished">Vertical Top Left</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>Vertical Top Right</translation>
+        <translation type="vanished">Vertical Top Right</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>Vertical Bottom Left</translation>
+        <translation type="vanished">Vertical Bottom Left</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>Vertical Bottom Right</translation>
+        <translation type="vanished">Vertical Bottom Right</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation type="unfinished">IP:</translation>
+        <translation type="obsolete">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation type="unfinished">追加</translation>
+        <translation type="obsolete">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished">削除</translation>
+        <translation type="obsolete">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">保存</translation>
+        <translation type="obsolete">保存</translation>
     </message>
 </context>
 <context>
@@ -716,201 +1110,189 @@
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>名前</translation>
+        <translation type="vanished">名前</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>名前</translation>
+        <translation type="vanished">名前</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>新しいNanoleafデバイス</translation>
+        <translation type="vanished">新しいNanoleafデバイス</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>IPアドレス:</translation>
+        <translation type="vanished">IPアドレス:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>ポート:</translation>
+        <translation type="vanished">ポート:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>ポート:</translation>
+        <translation type="vanished">ポート:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>Auth Key:</translation>
+        <translation type="vanished">Auth Key:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>ペア解除</translation>
+        <translation type="vanished">ペア解除</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>ペア</translation>
+        <translation type="vanished">ペア</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Scan</source>
-        <translation>スキャン</translation>
+        <translation type="vanished">スキャン</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>ペアリングするには、LEDがパターン状に点滅し始めるまでオン-オフボタンを5～7秒間押し続け、30秒以内に&quot;ペア&quot; ボタンをクリックします。</translation>
+        <translation type="vanished">ペアリングするには、LEDがパターン状に点滅し始めるまでオン-オフボタンを5～7秒間押し続け、30秒以内に&quot;ペア&quot; ボタンをクリックします。</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
         <source>Entertainment Mode:</source>
-        <translation>Entertainment Mode:</translation>
+        <translation type="vanished">Entertainment Mode:</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>Auto Connect Group:</translation>
+        <translation type="vanished">Auto Connect Group:</translation>
     </message>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>Client Key:</translation>
+        <translation type="vanished">Client Key:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Username:</translation>
+        <translation type="vanished">Username:</translation>
     </message>
     <message>
         <source>MAC:</source>
-        <translation>MAC:</translation>
+        <translation type="vanished">MAC:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>Unpair Bridge</translation>
+        <translation type="vanished">Unpair Bridge</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
     <message>
         <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translation>Hueエントリーを追加して保存したら、OpenRGBを再起動し、HueブリッジのSyncボタンを押してペアリングします。</translation>
+        <translation type="vanished">Hueエントリーを追加して保存したら、OpenRGBを再起動し、HueブリッジのSyncボタンを押してペアリングします。</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
-    </message>
-    <message>
-        <source>Use Cool White</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use Warm White</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>White Strategy:</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Average</source>
-        <translation>平均 </translation>
+        <translation type="vanished">平均 </translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation>最小限</translation>
+        <translation type="vanished">最小限</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
@@ -1014,68 +1396,68 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>名前:</translation>
+        <translation type="vanished">名前:</translation>
     </message>
     <message>
         <source>USB PID:</source>
-        <translation>USB PID:</translation>
+        <translation type="vanished">USB PID:</translation>
     </message>
     <message>
         <source>USB VID:</source>
-        <translation>USB VID:</translation>
+        <translation type="vanished">USB VID:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Baud:</translation>
+        <translation type="vanished">Baud:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>名前:</translation>
+        <translation type="vanished">名前:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>LED数:</translation>
+        <translation type="vanished">LED数:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>ポート:</translation>
+        <translation type="vanished">ポート:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>プロトコル:</translation>
+        <translation type="vanished">プロトコル:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
@@ -1145,7 +1527,7 @@
     </message>
     <message>
         <source>90000</source>
-        <translation>90000</translation>
+        <translation type="vanished">90000</translation>
     </message>
     <message>
         <source>Start Server</source>
@@ -1205,7 +1587,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>ドライバ設定</translation>
+        <translation type="vanished">ドライバ設定</translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1270,6 +1652,34 @@
     <message>
         <source>A problem occurred enabling Start at Login.</source>
         <translation>Start At Loginを有効にする際に問題が発生しました。</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1430,49 +1840,124 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">サーバーステータス</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">オフライン</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">サーバースタート</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">サーバーホスト:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">サーバーポート:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">サーバー停止</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>認証（オプション）</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>認証を必要とする</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>認証トークン：</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>接続方法：ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">接続中のクライアント:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">クライアントIP</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>接続時間</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>ステータス</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">停止...</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">オンライン</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>接続済み</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>アクティブ</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>?</source>
-        <translation>?</translation>
+        <translation type="vanished">?</translation>
     </message>
     <message>
         <source>Music Mode:</source>
-        <translation>音楽モード:</translation>
+        <translation type="vanished">音楽モード:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>ホストのIPにオーバーライド:</translation>
+        <translation type="vanished">ホストのIPにオーバーライド:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>ホストIPを自動検出する場合は空白にします</translation>
+        <translation type="vanished">ホストIPを自動検出する場合は空白にします</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>IPを一つ選択...</translation>
+        <translation type="vanished">IPを一つ選択...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>ホストのIPを正しく選択する</translation>
+        <translation type="vanished">ホストのIPを正しく選択する</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>追加</translation>
+        <translation type="vanished">追加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>削除</translation>
+        <translation type="vanished">削除</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>保存</translation>
+        <translation type="vanished">保存</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +1977,10 @@
     <message>
         <source>Length</source>
         <translation>長さ</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1534,11 +2023,111 @@
     </message>
 </context>
 <context>
-    <name>ResourceManager</name>
+    <name>PhilipsHueSettingsEntry</name>
     <message>
-        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <source>Philips Hue Bridge</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">Entertainment Mode:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">Auto Connect Group:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">Client Key:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Username:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished">MAC:</translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">Unpair Bridge</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished">平均 </translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">最小限</translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
         <translation type="unfinished"></translation>
@@ -1551,12 +2140,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED数:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Baud:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">名前:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">プロトコル:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">ポート:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>デバイス名</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished">IP:</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished">?</translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">音楽モード:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">ホストのIPにオーバーライド:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">ホストIPを自動検出する場合は空白にします</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">IPを一つ選択...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">ホストのIPを正しく選択する</translation>
     </message>
 </context>
 </TS>

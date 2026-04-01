@@ -20,6 +20,7 @@
 #include "i2c_smbus.h"
 #include "NetworkClient.h"
 #include "NetworkServer.h"
+#include "WebSocketServer.h"
 #include "LogManager.h"
 #include "Colors.h"
 
@@ -51,6 +52,7 @@ enum
     RET_FLAG_CLI_POST_DETECTION = 32,
     RET_FLAG_START_SERVER       = 64,
     RET_FLAG_NO_AUTO_CONNECT    = 128,
+    RET_FLAG_START_WEBSOCKET_SERVER = 256,
 };
 
 struct DeviceOptions
@@ -400,6 +402,9 @@ void OptionHelp()
     help_text += "--server                                 Starts the SDK's server\n";
     help_text += "--server-host                            Sets the SDK's server host. Default: 0.0.0.0 (all network interfaces)\n";
     help_text += "--server-port                            Sets the SDK's server port. Default: 6742 (1024-65535)\n";
+    help_text += "--websocket                              Starts the WebSocket server (JSON-RPC 2.0 API)\n";
+    help_text += "--websocket-host                         Sets the WebSocket server host. Default: 0.0.0.0 (all network interfaces)\n";
+    help_text += "--websocket-port                         Sets the WebSocket server port. Default: 6743 (1024-65535)\n";
     help_text += "-l,  --list-devices                      Lists every compatible device with their number\n";
     help_text += "-d,  --device [0-9 | \"name\"]             Selects device to apply colors and/or effect to, or applies to all devices if omitted\n";
     help_text += "                                           Basic string search is implemented 3 characters or more\n";
@@ -1084,6 +1089,7 @@ int ProcessOptions(Options* options, std::vector<RGBController *>& rgb_controlle
              ||(option == "--nodetect")
              ||(option == "--noautoconnect")
              ||(option == "--server")
+             ||(option == "--websocket")
              ||(option == "--gui")
              ||(option == "--i2c-tools" || option == "--yolo")
              ||(option == "--startminimized")
@@ -1102,6 +1108,8 @@ int ProcessOptions(Options* options, std::vector<RGBController *>& rgb_controlle
             }
             else if((option == "--server-port")
                   ||(option == "--server-host")
+                  ||(option == "--websocket-port")
+                  ||(option == "--websocket-host")
                   ||(option == "--loglevel")
                   ||(option == "--config")
                   ||(option == "--client")
@@ -1291,6 +1299,9 @@ unsigned int cli_pre_detection(int argc, char* argv[])
     std::string     server_host  = OPENRGB_SDK_HOST;
     unsigned short  server_port  = OPENRGB_SDK_PORT;
     bool            server_start = false;
+    std::string     websocket_host  = "0.0.0.0";
+    unsigned short  websocket_port  = 6743;
+    bool            websocket_start = false;
     bool            print_help   = false;
 
     preserve_argc = argc;
@@ -1475,6 +1486,73 @@ unsigned int cli_pre_detection(int argc, char* argv[])
             else
             {
                 std::cout << "Error: Missing argument for --server-host" << std::endl;
+                print_help = true;
+                break;
+            }
+            cfg_args++;
+            arg_index++;
+        }
+        /*---------------------------------------------------------*\
+        | --websocket (no arguments)                                |
+        \*---------------------------------------------------------*/
+        else if(option == "--websocket")
+        {
+            websocket_start = true;
+        }
+        /*---------------------------------------------------------*\
+        | --websocket-port                                          |
+        \*---------------------------------------------------------*/
+        else if(option == "--websocket-port")
+        {
+            if (argument != "")
+            {
+                try
+                {
+                    int port_test = std::stoi(argument);
+
+                    if((port_test < 1024) || (port_test > 65535))
+                    {
+                        std::cout << "Error: WebSocket port out of range (1024-65535)" << std::endl;
+                        print_help = true;
+                        break;
+                    }
+                    else
+                    {
+                        websocket_port = port_test;
+                        websocket_start = true;
+                    }
+                }
+                catch(std::invalid_argument& /*e*/)
+                {
+                    std::cout << "Error: Invalid data in --websocket-port argument (expected a number in range 1024-65535)" << std::endl;
+                    print_help = true;
+                    break;
+                }
+            }
+            else
+            {
+                std::cout << "Error: Missing argument for --websocket-port" << std::endl;
+                print_help = true;
+                break;
+            }
+            cfg_args++;
+            arg_index++;
+        }
+        /*---------------------------------------------------------*\
+        | --websocket-host                                          |
+        \*---------------------------------------------------------*/
+        else if(option == "--websocket-host")
+        {
+            if (argument != "")
+            {
+                std::string host = argument;
+
+                websocket_host = host;
+                websocket_start = true;
+            }
+            else
+            {
+                std::cout << "Error: Missing argument for --websocket-host" << std::endl;
                 print_help = true;
                 break;
             }
@@ -1717,6 +1795,15 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         server->SetHost(server_host);
         server->SetPort(server_port);
         ret_flags |= RET_FLAG_START_SERVER;
+    }
+
+    if(websocket_start)
+    {
+        WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
+        ws_server->SetHost(websocket_host);
+        ws_server->SetPort(websocket_port);
+        ws_server->SetEnabled(true);
+        ret_flags |= RET_FLAG_START_WEBSOCKET_SERVER;
     }
 
     if((argc - cfg_args) <= 1)

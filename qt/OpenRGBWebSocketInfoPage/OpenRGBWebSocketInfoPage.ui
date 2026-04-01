@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>OpenRGBWebSocketInfoPage</class>
+ <widget class="QFrame" name="OpenRGBWebSocketInfoPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>664</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">WebSocket Server Info Page</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="ServerStatusLabel">
+     <property name="text">
+      <string>Server Status:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="ServerStatusValue">
+     <property name="text">
+      <string>Offline</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="3">
+    <widget class="QPushButton" name="ServerStartButton">
+     <property name="text">
+      <string>Start Server</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="ServerHostLabel">
+     <property name="text">
+      <string>Server Host:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="ServerHostValue">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="ServerPortLabel">
+     <property name="text">
+      <string>Server Port:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="ServerPortValue">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="ServerStopButton">
+     <property name="text">
+      <string>Stop Server</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="4">
+    <widget class="QGroupBox" name="AuthGroupBox">
+     <property name="title">
+      <string>Authentication (Optional)</string>
+     </property>
+     <layout class="QGridLayout" name="authLayout">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="RequireAuthCheckBox">
+        <property name="text">
+         <string>Require Authentication</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="AuthTokenLabel">
+        <property name="text">
+         <string>Auth Token:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="AuthTokenValue">
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="AuthHelpLabel">
+        <property name="text">
+         <string>Connect with: ws://host:port?token=YOUR_TOKEN</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="ServerClientsLabel">
+     <property name="text">
+      <string>Connected Clients:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="4">
+    <widget class="QTreeWidget" name="ServerClientTree">
+     <property name="columnCount">
+      <number>3</number>
+     </property>
+     <column>
+      <property name="text">
+       <string>Client IP</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Connected Time</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>ServerHostValue</tabstop>
+  <tabstop>ServerPortValue</tabstop>
+  <tabstop>RequireAuthCheckBox</tabstop>
+  <tabstop>AuthTokenValue</tabstop>
+  <tabstop>ServerStartButton</tabstop>
+  <tabstop>ServerStopButton</tabstop>
+  <tabstop>ServerClientTree</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

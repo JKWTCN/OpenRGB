@@ -10,6 +10,7 @@
 QT +=                                                                                           \
     core                                                                                        \
     gui                                                                                         \
+    websockets                                                                                  \
 
 #-----------------------------------------------------------------------------------------------#
 # Set compiler to use C++17 to make std::filesystem available                                   #
@@ -178,6 +179,10 @@ HEADERS +=                                                                      
     NetworkProtocol.h                                                                           \
     NetworkServer.h                                                                             \
     OpenRGBPluginInterface.h                                                                    \
+    WebSocketClientInfo.h                                                                       \
+    WebSocketServer.h                                                                           \
+    JSONRPCHandler.h                                                                            \
+    JSONRPCProtocol.h                                                                           \
     PluginManager.h                                                                             \
     ProfileManager.h                                                                            \
     ResourceManager.h                                                                           \
@@ -250,6 +255,10 @@ SOURCES +=                                                                      
     NetworkProtocol.cpp                                                                         \
     NetworkServer.cpp                                                                           \
     PluginManager.cpp                                                                           \
+    WebSocketClientInfo.cpp                                                                     \
+    WebSocketServer.cpp                                                                         \
+    JSONRPCHandler.cpp                                                                          \
+    JSONRPCProtocol.cpp                                                                         \
     ProfileManager.cpp                                                                          \
     ResourceManager.cpp                                                                         \
     SPDAccessor/DDR4DirectAccessor.cpp                                                          \

@@ -50,6 +50,7 @@ public:
     void AddClientTab();
     void AddI2CToolsPage();
     void AddServerTab();
+    void AddWebSocketServerTab();
 
     void AddPlugin(OpenRGBPluginEntry* plugin);
     void RemovePlugin(OpenRGBPluginEntry* plugin);

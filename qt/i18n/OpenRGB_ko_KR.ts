@@ -2,6 +2,131 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ko_KR">
 <context>
+    <name>DDPSettingsEntry</name>
+    <message>
+        <source>DDP Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>192.168.1.100</source>
+        <translation type="unfinished">0x {192.168.1.100?}</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">포트:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED 개수:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DMXSettingsEntry</name>
+    <message>
+        <source>DMX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brightness Channel:</source>
+        <translation type="unfinished">밝기 채널:</translation>
+    </message>
+    <message>
+        <source>Blue Channel:</source>
+        <translation type="unfinished">청색 채널:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>Green Channel:</source>
+        <translation type="unfinished">녹색 채널:</translation>
+    </message>
+    <message>
+        <source>Red Channel:</source>
+        <translation type="unfinished">적색 채널:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">지속 시간:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">포트:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DebugSettingsEntry</name>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">유형:</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">선형</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">단일</translation>
+    </message>
+    <message>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Underglow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetectorTableModel</name>
     <message>
         <source>Name</source>
@@ -10,6 +135,283 @@
     <message>
         <source>Enabled</source>
         <translation>활성화</translation>
+    </message>
+</context>
+<context>
+    <name>E131SettingsEntry</name>
+    <message>
+        <source>E1.31 Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Channel:</source>
+        <translation type="unfinished">시작 채널:</translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED 개수:</translation>
+    </message>
+    <message>
+        <source>Start Universe:</source>
+        <translation type="unfinished">시작 Universe:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>Matrix Order:</source>
+        <translation type="unfinished">매트릭스 순서:</translation>
+    </message>
+    <message>
+        <source>Matrix Height:</source>
+        <translation type="unfinished">매트릭스 높이:</translation>
+    </message>
+    <message>
+        <source>Matrix Width:</source>
+        <translation type="unfinished">매트릭스 너비:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished">유형:</translation>
+    </message>
+    <message>
+        <source>IP (Unicast):</source>
+        <translation type="unfinished">IP (Unicast):</translation>
+    </message>
+    <message>
+        <source>Universe Size:</source>
+        <translation type="unfinished">Universe 크기:</translation>
+    </message>
+    <message>
+        <source>Keepalive Time:</source>
+        <translation type="unfinished">지속 시간:</translation>
+    </message>
+    <message>
+        <source>RGB Order:</source>
+        <translation type="unfinished">RGB 순서:</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">단일</translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished">선형</translation>
+    </message>
+    <message>
+        <source>Matrix</source>
+        <translation type="unfinished">매트릭스</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Left</source>
+        <translation type="unfinished">가로 왼쪽 상단</translation>
+    </message>
+    <message>
+        <source>Horizontal Top Right</source>
+        <translation type="unfinished">가로 오른쪽 상단</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Left</source>
+        <translation type="unfinished">가로 왼쪽 하단</translation>
+    </message>
+    <message>
+        <source>Horizontal Bottom Right</source>
+        <translation type="unfinished">가로 오른쪽 하단</translation>
+    </message>
+    <message>
+        <source>Vertical Top Left</source>
+        <translation type="unfinished">세로 왼쪽 상단</translation>
+    </message>
+    <message>
+        <source>Vertical Top Right</source>
+        <translation type="unfinished">세로 오른쪽 상단</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Left</source>
+        <translation type="unfinished">세로 왼쪽 하단</translation>
+    </message>
+    <message>
+        <source>Vertical Bottom Right</source>
+        <translation type="unfinished">세로 오른쪽 하단</translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoKeyLightSettingsEntry</name>
+    <message>
+        <source>Elgato Key Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ElgatoLightStripSettingsEntry</name>
+    <message>
+        <source>Elgato Light Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GoveeSettingsEntry</name>
+    <message>
+        <source>Govee Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>KasaSmartSettingsEntry</name>
+    <message>
+        <source>Kasa Smart Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">이름</translation>
+    </message>
+</context>
+<context>
+    <name>LIFXSettingsEntry</name>
+    <message>
+        <source>LIFX Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">이름</translation>
+    </message>
+    <message>
+        <source>Extended Multizone</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevice</name>
+    <message>
+        <source>DDP (Distributed Display Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E1.31 (including WLED)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (OpenRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QMK (VialRGB Protocol)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ManualDevicesSettingsPage</name>
+    <message>
+        <source>Add Device...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save and Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save without Rescan</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafNewDeviceDialog</name>
+    <message>
+        <source>New Nanoleaf device</source>
+        <translation type="unfinished">새로운 Nanoleaf 장치</translation>
+    </message>
+    <message>
+        <source>IP address:</source>
+        <translation type="unfinished">IP 주소:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">포트:</translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafScanDialog</name>
+    <message>
+        <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, a new entry should appear in the list below, then click the &quot;Pair&quot; button on the entry within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scan</source>
+        <translation type="unfinished">스캔</translation>
+    </message>
+    <message>
+        <source>Add manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NanoleafSettingsEntry</name>
+    <message>
+        <source>Nanoleaf Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">포트:</translation>
+    </message>
+    <message>
+        <source>Auth Key:</source>
+        <translation type="unfinished">인증 키:</translation>
+    </message>
+    <message>
+        <source>Unpair</source>
+        <translation type="unfinished">페어링 해제</translation>
+    </message>
+    <message>
+        <source>Pair</source>
+        <translation type="unfinished">페어링</translation>
     </message>
 </context>
 <context>
@@ -42,6 +444,10 @@
         <source>Disconnect</source>
         <translation>연결 끊기</translation>
     </message>
+    <message>
+        <source>Rescan Devices</source>
+        <translation type="unfinished">장치 다시 스캔</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBConsolePage</name>
@@ -62,46 +468,46 @@
     <name>OpenRGBDMXSettingsEntry</name>
     <message>
         <source>Brightness Channel:</source>
-        <translation>밝기 채널:</translation>
+        <translation type="vanished">밝기 채널:</translation>
     </message>
     <message>
         <source>Blue Channel:</source>
-        <translation>청색 채널:</translation>
+        <translation type="vanished">청색 채널:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>이름:</translation>
+        <translation type="vanished">이름:</translation>
     </message>
     <message>
         <source>Green Channel:</source>
-        <translation>녹색 채널:</translation>
+        <translation type="vanished">녹색 채널:</translation>
     </message>
     <message>
         <source>Red Channel:</source>
-        <translation>적색 채널:</translation>
+        <translation type="vanished">적색 채널:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>지속 시간:</translation>
+        <translation type="vanished">지속 시간:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>포트:</translation>
+        <translation type="vanished">포트:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBDMXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>삭제</translation>
+        <translation type="vanished">삭제</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
@@ -430,27 +836,27 @@
     </message>
     <message>
         <source>E1.31 Devices</source>
-        <translation>E1.31 장치</translation>
+        <translation type="vanished">E1.31 장치</translation>
     </message>
     <message>
         <source>Philips Hue Devices</source>
-        <translation>필립스 Hue 장치</translation>
+        <translation type="vanished">필립스 Hue 장치</translation>
     </message>
     <message>
         <source>Philips Wiz Devices</source>
-        <translation>필립스 Wiz 장치</translation>
+        <translation type="vanished">필립스 Wiz 장치</translation>
     </message>
     <message>
         <source>OpenRGB QMK Protocol</source>
-        <translation>OpenRGB QMK 프로토콜</translation>
+        <translation type="vanished">OpenRGB QMK 프로토콜</translation>
     </message>
     <message>
         <source>Serial Devices</source>
-        <translation>시리얼 장치</translation>
+        <translation type="vanished">시리얼 장치</translation>
     </message>
     <message>
         <source>Yeelight Devices</source>
-        <translation>Yeelight 장치</translation>
+        <translation type="vanished">Yeelight 장치</translation>
     </message>
     <message>
         <source>SMBus Tools</source>
@@ -474,19 +880,19 @@
     </message>
     <message>
         <source>LIFX Devices</source>
-        <translation>LIFX 장치</translation>
+        <translation type="vanished">LIFX 장치</translation>
     </message>
     <message>
         <source>Nanoleaf Devices</source>
-        <translation>Nanoleaf 장치</translation>
+        <translation type="vanished">Nanoleaf 장치</translation>
     </message>
     <message>
         <source>Elgato KeyLight Devices</source>
-        <translation>Elgato KeyLight 장치</translation>
+        <translation type="vanished">Elgato KeyLight 장치</translation>
     </message>
     <message>
         <source>Elgato LightStrip Devices</source>
-        <translation>Elgato LightStrip 장치</translation>
+        <translation type="vanished">Elgato LightStrip 장치</translation>
     </message>
     <message>
         <source>Supported Devices</source>
@@ -498,18 +904,22 @@
     </message>
     <message>
         <source>DMX Devices</source>
-        <translation>DMX 장치</translation>
+        <translation type="vanished">DMX 장치</translation>
     </message>
     <message>
         <source>Kasa Smart Devices</source>
-        <translation>Kasa Smart 장치</translation>
+        <translation type="vanished">Kasa Smart 장치</translation>
     </message>
     <message>
         <source>About OpenRGB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Govee Devices</source>
+        <source>Manually Added Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WebSocket Server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -517,176 +927,161 @@
     <name>OpenRGBE131SettingsEntry</name>
     <message>
         <source>Start Channel:</source>
-        <translation>시작 채널:</translation>
+        <translation type="vanished">시작 채널:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>LED 개수:</translation>
+        <translation type="vanished">LED 개수:</translation>
     </message>
     <message>
         <source>Start Universe:</source>
-        <translation>시작 Universe:</translation>
+        <translation type="vanished">시작 Universe:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>이름:</translation>
+        <translation type="vanished">이름:</translation>
     </message>
     <message>
         <source>Matrix Order:</source>
-        <translation>매트릭스 순서:</translation>
+        <translation type="vanished">매트릭스 순서:</translation>
     </message>
     <message>
         <source>Matrix Height:</source>
-        <translation>매트릭스 높이:</translation>
+        <translation type="vanished">매트릭스 높이:</translation>
     </message>
     <message>
         <source>Matrix Width:</source>
-        <translation>매트릭스 너비:</translation>
+        <translation type="vanished">매트릭스 너비:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>유형:</translation>
+        <translation type="vanished">유형:</translation>
     </message>
     <message>
         <source>IP (Unicast):</source>
-        <translation>IP (Unicast):</translation>
+        <translation type="vanished">IP (Unicast):</translation>
     </message>
     <message>
         <source>Universe Size:</source>
-        <translation>Universe 크기:</translation>
+        <translation type="vanished">Universe 크기:</translation>
     </message>
     <message>
         <source>Keepalive Time:</source>
-        <translation>지속 시간:</translation>
+        <translation type="vanished">지속 시간:</translation>
     </message>
     <message>
         <source>RGB Order:</source>
-        <translation>RGB 순서:</translation>
+        <translation type="vanished">RGB 순서:</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>단일</translation>
+        <translation type="vanished">단일</translation>
     </message>
     <message>
         <source>Linear</source>
-        <translation>선형</translation>
+        <translation type="vanished">선형</translation>
     </message>
     <message>
         <source>Matrix</source>
-        <translation>매트릭스</translation>
+        <translation type="vanished">매트릭스</translation>
     </message>
     <message>
         <source>Horizontal Top Left</source>
-        <translation>가로 왼쪽 상단</translation>
+        <translation type="vanished">가로 왼쪽 상단</translation>
     </message>
     <message>
         <source>Horizontal Top Right</source>
-        <translation>가로 오른쪽 상단</translation>
+        <translation type="vanished">가로 오른쪽 상단</translation>
     </message>
     <message>
         <source>Horizontal Bottom Left</source>
-        <translation>가로 왼쪽 하단</translation>
+        <translation type="vanished">가로 왼쪽 하단</translation>
     </message>
     <message>
         <source>Horizontal Bottom Right</source>
-        <translation>가로 오른쪽 하단</translation>
+        <translation type="vanished">가로 오른쪽 하단</translation>
     </message>
     <message>
         <source>Vertical Top Left</source>
-        <translation>세로 왼쪽 상단</translation>
+        <translation type="vanished">세로 왼쪽 상단</translation>
     </message>
     <message>
         <source>Vertical Top Right</source>
-        <translation>세로 오른쪽 상단</translation>
+        <translation type="vanished">세로 오른쪽 상단</translation>
     </message>
     <message>
         <source>Vertical Bottom Left</source>
-        <translation>세로 왼쪽 하단</translation>
+        <translation type="vanished">세로 왼쪽 하단</translation>
     </message>
     <message>
         <source>Vertical Bottom Right</source>
-        <translation>세로 오른쪽 하단</translation>
+        <translation type="vanished">세로 오른쪽 하단</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBE131SettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoKeyLightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>삭제</translation>
+        <translation type="vanished">삭제</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBElgatoLightStripSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>삭제</translation>
+        <translation type="vanished">삭제</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
-    </message>
-</context>
-<context>
-    <name>OpenRGBGoveeSettingsEntry</name>
-    <message>
-        <source>IP:</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBGoveeSettingsPage</name>
     <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Save</source>
-        <translation type="unfinished">저장</translation>
+        <translation type="obsolete">저장</translation>
     </message>
 </context>
 <context>
@@ -716,201 +1111,189 @@
     <name>OpenRGBKasaSmartSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>이름</translation>
+        <translation type="vanished">이름</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBKasaSmartSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>이름</translation>
+        <translation type="vanished">이름</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBLIFXSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafNewDeviceDialog</name>
     <message>
         <source>New Nanoleaf device</source>
-        <translation>새로운 Nanoleaf 장치</translation>
+        <translation type="vanished">새로운 Nanoleaf 장치</translation>
     </message>
     <message>
         <source>IP address:</source>
-        <translation>IP 주소:</translation>
+        <translation type="vanished">IP 주소:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>포트:</translation>
+        <translation type="vanished">포트:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>포트:</translation>
+        <translation type="vanished">포트:</translation>
     </message>
     <message>
         <source>Auth Key:</source>
-        <translation>인증 키:</translation>
+        <translation type="vanished">인증 키:</translation>
     </message>
     <message>
         <source>Unpair</source>
-        <translation>페어링 해제</translation>
+        <translation type="vanished">페어링 해제</translation>
     </message>
     <message>
         <source>Pair</source>
-        <translation>페어링</translation>
+        <translation type="vanished">페어링</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBNanoleafSettingsPage</name>
     <message>
         <source>Scan</source>
-        <translation>스캔</translation>
+        <translation type="vanished">스캔</translation>
     </message>
     <message>
         <source>To pair, hold the on-off button down for 5-7 seconds until the LED starts flashing in a pattern, then click the &quot;Pair&quot; button within 30 seconds.</source>
-        <translation>페어링을 하려면 온오프 버튼을 5-7초 LED가 규칙적으로 깜빡이기 시작할 때 까지 누르세요, 그리고 30초 내로 &quot;페어링&quot; 버튼을 누르세요.</translation>
+        <translation type="vanished">페어링을 하려면 온오프 버튼을 5-7초 LED가 규칙적으로 깜빡이기 시작할 때 까지 누르세요, 그리고 30초 내로 &quot;페어링&quot; 버튼을 누르세요.</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>추가추가</translation>
+        <translation type="vanished">추가추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Entertainment Mode:</source>
-        <translation>엔터테이먼트 모드:</translation>
+        <translation type="vanished">엔터테이먼트 모드:</translation>
     </message>
     <message>
         <source>Username:</source>
-        <translation>Username:</translation>
+        <translation type="vanished">Username:</translation>
     </message>
     <message>
         <source>Client Key:</source>
-        <translation>클라이언트 키:</translation>
+        <translation type="vanished">클라이언트 키:</translation>
     </message>
     <message>
         <source>Unpair Bridge</source>
-        <translation>브릿지 페어링 해제</translation>
+        <translation type="vanished">브릿지 페어링 해제</translation>
     </message>
     <message>
         <source>MAC:</source>
-        <translation>MAC 주소:</translation>
+        <translation type="vanished">MAC 주소:</translation>
     </message>
     <message>
         <source>Auto Connect Group:</source>
-        <translation>자동 연결 그룹:</translation>
+        <translation type="vanished">자동 연결 그룹:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsHueSettingsPage</name>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
     <message>
         <source>After adding a Hue entry and saving, restart OpenRGB and press the Sync button on your Hue bridge to pair it.</source>
-        <translation>Hue 항목을 추가하고 저장한 후에 OpenRGB를 재시작하고 Hue Bridge의 Sync 버튼을 눌러 페어링하세요.</translation>
+        <translation type="vanished">Hue 항목을 추가하고 저장한 후에 OpenRGB를 재시작하고 Hue Bridge의 Sync 버튼을 눌러 페어링하세요.</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP:</translation>
+        <translation type="vanished">IP:</translation>
     </message>
     <message>
         <source>Use Cool White</source>
-        <translation>Cool White 사용</translation>
+        <translation type="vanished">Cool White 사용</translation>
     </message>
     <message>
         <source>Use Warm White</source>
-        <translation>Warm White 사용</translation>
-    </message>
-    <message>
-        <source>White Strategy:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Average</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Warm White 사용</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBPhilipsWizSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
@@ -1014,68 +1397,68 @@
     <name>OpenRGBQMKORGBSettingsEntry</name>
     <message>
         <source>Name:</source>
-        <translation>이름:</translation>
+        <translation type="vanished">이름:</translation>
     </message>
     <message>
         <source>USB PID:</source>
-        <translation>USB PID:</translation>
+        <translation type="vanished">USB PID:</translation>
     </message>
     <message>
         <source>USB VID:</source>
-        <translation>USB VID:</translation>
+        <translation type="vanished">USB VID:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBQMKORGBSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsEntry</name>
     <message>
         <source>Baud:</source>
-        <translation>Baud:</translation>
+        <translation type="vanished">Baud:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation>이름:</translation>
+        <translation type="vanished">이름:</translation>
     </message>
     <message>
         <source>Number of LEDs:</source>
-        <translation>LED 개수:</translation>
+        <translation type="vanished">LED 개수:</translation>
     </message>
     <message>
         <source>Port:</source>
-        <translation>포트:</translation>
+        <translation type="vanished">포트:</translation>
     </message>
     <message>
         <source>Protocol:</source>
-        <translation>프로토콜:</translation>
+        <translation type="vanished">프로토콜:</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBSerialSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
@@ -1137,7 +1520,7 @@
     </message>
     <message>
         <source>90000</source>
-        <translation>90000</translation>
+        <translation type="vanished">90000</translation>
     </message>
     <message>
         <source>Run Zone Checks on Rescan</source>
@@ -1209,7 +1592,7 @@
     </message>
     <message>
         <source>Drivers Settings</source>
-        <translation>드라이버 설정</translation>
+        <translation type="vanished">드라이버 설정</translation>
     </message>
     <message>
         <source>Greyscale Tray Icon</source>
@@ -1270,6 +1653,34 @@
     <message>
         <source>System Default</source>
         <translation>시스템 기본값</translation>
+    </message>
+    <message>
+        <source>Legacy Workaround</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detection Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serve All Devices (Including those from client connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>HID Safe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drivers Settings:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Initial Detection Delay (milliseconds, 0 to disable)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1430,49 +1841,124 @@
     </message>
 </context>
 <context>
+    <name>OpenRGBWebSocketInfoPage</name>
+    <message>
+        <source>Server Status:</source>
+        <translation type="unfinished">서버 상태:</translation>
+    </message>
+    <message>
+        <source>Offline</source>
+        <translation type="unfinished">오프라인</translation>
+    </message>
+    <message>
+        <source>Start Server</source>
+        <translation type="unfinished">서버 시작</translation>
+    </message>
+    <message>
+        <source>Server Host:</source>
+        <translation type="unfinished">서버 호스트:</translation>
+    </message>
+    <message>
+        <source>Server Port:</source>
+        <translation type="unfinished">서버 포트:</translation>
+    </message>
+    <message>
+        <source>Stop Server</source>
+        <translation type="unfinished">서버 종료</translation>
+    </message>
+    <message>
+        <source>Authentication (Optional)</source>
+        <translation>인증 (선택 사항)</translation>
+    </message>
+    <message>
+        <source>Require Authentication</source>
+        <translation>인증 필요</translation>
+    </message>
+    <message>
+        <source>Auth Token:</source>
+        <translation>인증 토큰:</translation>
+    </message>
+    <message>
+        <source>Connect with: ws://host:port?token=YOUR_TOKEN</source>
+        <translation>연결 방법: ws://host:port?token=YOUR_TOKEN</translation>
+    </message>
+    <message>
+        <source>Connected Clients:</source>
+        <translation type="unfinished">연결된 클라이언트:</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation type="unfinished">클라이언트 IP</translation>
+    </message>
+    <message>
+        <source>Connected Time</source>
+        <translation>연결 시간</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>상태</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation type="unfinished">종료 중...</translation>
+    </message>
+    <message>
+        <source>Online</source>
+        <translation type="unfinished">온라인</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>연결됨</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>활성</translation>
+    </message>
+</context>
+<context>
     <name>OpenRGBYeelightSettingsEntry</name>
     <message>
         <source>IP:</source>
-        <translation>IP 주소:</translation>
+        <translation type="vanished">IP 주소:</translation>
     </message>
     <message>
         <source>?</source>
-        <translation>?</translation>
+        <translation type="vanished">?</translation>
     </message>
     <message>
         <source>Music Mode:</source>
-        <translation>음악 모드:</translation>
+        <translation type="vanished">음악 모드:</translation>
     </message>
     <message>
         <source>Override host IP:</source>
-        <translation>호스트 IP 덮어쓰기:</translation>
+        <translation type="vanished">호스트 IP 덮어쓰기:</translation>
     </message>
     <message>
         <source>Left blank for auto discovering host ip</source>
-        <translation>비워두면 자동으로 호스트 IP 감지</translation>
+        <translation type="vanished">비워두면 자동으로 호스트 IP 감지</translation>
     </message>
     <message>
         <source>Choose an IP...</source>
-        <translation>IP 선택...</translation>
+        <translation type="vanished">IP 선택...</translation>
     </message>
     <message>
         <source>Choose the correct IP for the host</source>
-        <translation>호스트에 알맞는 IP 선택</translation>
+        <translation type="vanished">호스트에 알맞는 IP 선택</translation>
     </message>
 </context>
 <context>
     <name>OpenRGBYeelightSettingsPage</name>
     <message>
         <source>Add</source>
-        <translation>추가</translation>
+        <translation type="vanished">추가</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation>제거</translation>
+        <translation type="vanished">제거</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>저장</translation>
+        <translation type="vanished">저장</translation>
     </message>
 </context>
 <context>
@@ -1492,6 +1978,10 @@
     <message>
         <source>Length</source>
         <translation>길이</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1534,11 +2024,111 @@
     </message>
 </context>
 <context>
-    <name>ResourceManager</name>
+    <name>PhilipsHueSettingsEntry</name>
     <message>
-        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the WinRing0 driver.&lt;/p&gt;&lt;p&gt;You must run OpenRGB as administrator at least once to allow WinRing0 to set up.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <source>Philips Hue Bridge</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Entertainment Mode:</source>
+        <translation type="unfinished">엔터테이먼트 모드:</translation>
+    </message>
+    <message>
+        <source>Auto Connect Group:</source>
+        <translation type="unfinished">자동 연결 그룹:</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Client Key:</source>
+        <translation type="unfinished">클라이언트 키:</translation>
+    </message>
+    <message>
+        <source>Username:</source>
+        <translation type="unfinished">Username:</translation>
+    </message>
+    <message>
+        <source>MAC:</source>
+        <translation type="unfinished">MAC 주소:</translation>
+    </message>
+    <message>
+        <source>Unpair Bridge</source>
+        <translation type="unfinished">브릿지 페어링 해제</translation>
+    </message>
+</context>
+<context>
+    <name>PhilipsWizSettingsEntry</name>
+    <message>
+        <source>Philips Wiz Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Cool White</source>
+        <translation type="unfinished">Cool White 사용</translation>
+    </message>
+    <message>
+        <source>Use Warm White</source>
+        <translation type="unfinished">Warm White 사용</translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>White Strategy:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QMKORGBSettingsEntry</name>
+    <message>
+        <source>QMK OpenRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>QMKVialRGBSettingsEntry</name>
+    <message>
+        <source>QMK VialRGB Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>USB PID:</source>
+        <translation type="unfinished">USB PID:</translation>
+    </message>
+    <message>
+        <source>USB VID:</source>
+        <translation type="unfinished">USB VID:</translation>
+    </message>
+</context>
+<context>
+    <name>ResourceManager</name>
     <message>
         <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Linux, this is usually because the i2c-dev module is not loaded.&lt;/p&gt;&lt;p&gt;You must load the i2c-dev module along with the correct i2c driver for your motherboard. This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
         <translation type="unfinished"></translation>
@@ -1551,12 +2141,82 @@
         <source>&lt;h2&gt;WARNING:&lt;/h2&gt;&lt;p&gt;Multiple OpenRGB udev rules are installed.&lt;/p&gt;&lt;p&gt;The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.&lt;/p&gt;&lt;p&gt;Multiple udev rules files can conflict, it is recommended to remove one of them.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&lt;h2&gt;Some internal devices may not be detected:&lt;/h2&gt;&lt;p&gt;One or more I2C or SMBus interfaces failed to initialize.&lt;/p&gt;&lt;p&gt;&lt;b&gt;RGB DRAM modules, some motherboards&apos; onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB&lt;/b&gt; without I2C or SMBus.&lt;/p&gt;&lt;h4&gt;How to fix this:&lt;/h4&gt;&lt;p&gt;On Windows, this is usually caused by a failure to load the PawnIO driver.&lt;/p&gt;&lt;p&gt;You must first install &lt;a href=&apos;https://pawnio.eu/&apos;&gt;PawnIO&lt;/a&gt;, then you must OpenRGB as administrator in order to access these devices.&lt;/p&gt;&lt;p&gt;See &lt;a href=&apos;https://help.openrgb.org/&apos;&gt;help.openrgb.org&lt;/a&gt; for additional troubleshooting steps if you keep seeing this message.&lt;br&gt;&lt;/p&gt;&lt;h3&gt;If you are not using internal RGB on a desktop this message is not important to you.&lt;/h3&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SerialSettingsEntry</name>
+    <message>
+        <source>Serial Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of LEDs:</source>
+        <translation type="unfinished">LED 개수:</translation>
+    </message>
+    <message>
+        <source>Baud:</source>
+        <translation type="unfinished">Baud:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">이름:</translation>
+    </message>
+    <message>
+        <source>Protocol:</source>
+        <translation type="unfinished">프로토콜:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">포트:</translation>
+    </message>
+    <message>
+        <source>No serial ports found</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabLabel</name>
     <message>
         <source>device name</source>
         <translation>장치 이름</translation>
+    </message>
+</context>
+<context>
+    <name>YeelightSettingsEntry</name>
+    <message>
+        <source>Yeelight Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation type="unfinished">?</translation>
+    </message>
+    <message>
+        <source>Music Mode:</source>
+        <translation type="unfinished">음악 모드:</translation>
+    </message>
+    <message>
+        <source>Override host IP:</source>
+        <translation type="unfinished">호스트 IP 덮어쓰기:</translation>
+    </message>
+    <message>
+        <source>Left blank for auto discovering host ip</source>
+        <translation type="unfinished">비워두면 자동으로 호스트 IP 감지</translation>
+    </message>
+    <message>
+        <source>Choose an IP...</source>
+        <translation type="unfinished">IP 선택...</translation>
+    </message>
+    <message>
+        <source>Choose the correct IP for the host</source>
+        <translation type="unfinished">호스트에 알맞는 IP 선택</translation>
     </message>
 </context>
 </TS>

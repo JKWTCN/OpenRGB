@@ -27,6 +27,8 @@
 #include "SettingsManager.h"
 #include "NetworkClient.h"
 #include "NetworkServer.h"
+#include "WebSocketServer.h"
+#include "SPDAccessor/SPDWrapper.h"
 #include "filesystem.h"
 #include "StringUtils.h"
 
@@ -185,10 +187,27 @@ ResourceManager::ResourceManager()
     }
 
     /*-----------------------------------------------------*\
+    | Initialize WebSocket Server                           |
+    \*-----------------------------------------------------*/
+    if(all_controllers)
+    {
+        websocket_server     = new WebSocketServer(rgb_controllers, this);
+    }
+    else
+    {
+        websocket_server     = new WebSocketServer(rgb_controllers_hw, this);
+    }
+
+    /*-----------------------------------------------------*\
     | Load sizes list from file                             |
     \*-----------------------------------------------------*/
     profile_manager         = new ProfileManager(GetConfigurationDirectory());
     server->SetProfileManager(profile_manager);
+
+    if(websocket_server)
+    {
+        websocket_server->SetProfileManager(profile_manager);
+    }
     rgb_controllers_sizes   = profile_manager->LoadProfileToList("sizes", true);
 }
 
@@ -697,6 +716,11 @@ void ResourceManager::SetConfigurationDirectory(const filesystem::path &director
 NetworkServer* ResourceManager::GetServer()
 {
     return(server);
+}
+
+WebSocketServer* ResourceManager::GetWebSocketServer()
+{
+    return(websocket_server);
 }
 
 static void NetworkClientInfoChangeCallback(void* this_ptr)
@@ -1248,7 +1272,7 @@ void ResourceManager::DetectDevicesCoroutine()
     {
         IF_DRAM_SMBUS(busses[bus]->pci_vendor, busses[bus]->pci_device)
         {
-            std::vector<SPDWrapper> slots;
+            std::vector<SPDWrapper> dimm_slots;
             SPDMemoryType dimm_type = SPD_RESERVED;
 
             for(uint8_t spd_addr = 0x50; spd_addr < 0x58; spd_addr++)
@@ -1260,13 +1284,13 @@ void ResourceManager::DetectDevicesCoroutine()
                     dimm_type = spd.memory_type();
                     LOG_INFO("[ResourceManager] Detected occupied slot %d, bus %d, type %s", spd_addr - 0x50 + 1, bus, spd_memory_type_name[dimm_type]);
                     LOG_DEBUG("[ResourceManager] Jedec ID: 0x%04x", accessor.jedec_id());
-                    slots.push_back(accessor);
+                    dimm_slots.push_back(accessor);
                 }
             }
 
             for(unsigned int i2c_detector_idx = 0; i2c_detector_idx < i2c_dimm_device_detectors.size() && detection_is_required.load(); i2c_detector_idx++)
             {
-                if((i2c_dimm_device_detectors[i2c_detector_idx].dimm_type == dimm_type) && is_jedec_in_slots(slots, i2c_dimm_device_detectors[i2c_detector_idx].jedec_id))
+                if((i2c_dimm_device_detectors[i2c_detector_idx].dimm_type == dimm_type) && is_jedec_in_slots(dimm_slots, i2c_dimm_device_detectors[i2c_detector_idx].jedec_id))
                 {
                     detection_string = i2c_dimm_device_detectors[i2c_detector_idx].name.c_str();
 
@@ -1284,7 +1308,7 @@ void ResourceManager::DetectDevicesCoroutine()
                     {
                         DetectionProgressChanged();
 
-                        std::vector<SPDWrapper*> matching_slots = slots_with_jedec(slots, i2c_dimm_device_detectors[i2c_detector_idx].jedec_id);
+                        std::vector<SPDWrapper*> matching_slots = slots_with_jedec(dimm_slots, i2c_dimm_device_detectors[i2c_detector_idx].jedec_id);
                         i2c_dimm_device_detectors[i2c_detector_idx].function(busses[bus], matching_slots, i2c_dimm_device_detectors[i2c_detector_idx].name);
                     }
 
@@ -1818,6 +1842,22 @@ void ResourceManager::InitCoroutine()
         if(!GetServer()->GetOnline())
         {
             LOG_DEBUG("[ResourceManager] Server failed to start");
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Start WebSocket server if enabled                      |
+    \*-----------------------------------------------------*/
+    if(websocket_server && websocket_server->GetEnabled())
+    {
+        detection_percent = 0;
+        detection_string = "Starting WebSocket server";
+        DetectionProgressChanged();
+
+        GetWebSocketServer()->StartServer();
+        if(!GetWebSocketServer()->GetOnline())
+        {
+            LOG_DEBUG("[ResourceManager] WebSocket server failed to start");
         }
     }
 
