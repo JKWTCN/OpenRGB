@@ -291,13 +291,50 @@ nlohmann::json JSONRPCHandler::GetControllerInfo(const nlohmann::json& params)
 
 nlohmann::json JSONRPCHandler::RescanDevices(const nlohmann::json& params)
 {
+    std::lock_guard<std::mutex> lock(rescan_mutex);
+
+    // Check if a rescan is already in progress
+    if(rescan_in_progress)
+    {
+        // Check if the previous rescan has completed
+        if(rescan_future.valid() &&
+           rescan_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+        {
+            // Rescan is still in progress
+            nlohmann::json result;
+            result["success"] = false;
+            result["message"] = "Rescan already in progress";
+            return result;
+        }
+        else
+        {
+            // Previous rescan completed, reset flag
+            rescan_in_progress = false;
+        }
+    }
+
     if(resource_manager)
     {
-        resource_manager->RescanDevices();
+        // Mark rescan as in progress
+        rescan_in_progress = true;
+
+        // Launch async rescan in background thread
+        rescan_future = std::async(std::launch::async, [this]()
+        {
+            resource_manager->RescanDevices();
+
+            // Reset flag when done
+            std::lock_guard<std::mutex> lock(rescan_mutex);
+            rescan_in_progress = false;
+        });
+
+        // Detach the future to allow it to run in background
+        // The result will be communicated via scanComplete event
     }
 
     nlohmann::json result;
     result["success"] = true;
+    result["message"] = "Rescan started";
     return result;
 }
 

@@ -289,7 +289,15 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
     data["controllerCount"] = device_count;
     data["message"] = "Device scan completed";
 
-    qDebug() << "[WebSocketServer] ScanComplete: emitting signal for" << device_count << "devices";
+    // Add full controller data
+    nlohmann::json controllers_array = nlohmann::json::array();
+    for(unsigned int i = 0; i < controllers.size(); i++)
+    {
+        controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+    }
+    data["controllers"] = controllers_array;
+
+    qDebug() << "[WebSocketServer] ScanComplete: emitting signal for" << device_count << "devices with" << controllers_array.size() << "controller details";
 
     // Emit signal instead of calling BroadcastNotification directly
     emit SignalBroadcastNotification(

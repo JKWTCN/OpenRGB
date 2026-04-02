@@ -12,6 +12,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
+#include <mutex>
+#include <future>
 #include <nlohmann/json.hpp>
 #include "RGBController.h"
 #include "ResourceManager.h"
@@ -35,6 +38,9 @@ public:
 
     // Set profile manager
     void            SetProfileManager(ProfileManagerInterface* profile_manager);
+
+    // Helper functions for external use
+    nlohmann::json  ControllerToJSON(RGBController* controller);
 
 private:
     // Method dispatchers
@@ -88,7 +94,6 @@ private:
     bool            ValidateZoneIndex(unsigned int device_idx,
                                      unsigned int zone_idx);
     RGBColor        ParseColor(const nlohmann::json& color_obj);
-    nlohmann::json  ControllerToJSON(RGBController* controller);
     nlohmann::json  ZoneToJSON(RGBController* controller, int zone_idx);
     nlohmann::json  ModeToJSON(RGBController* controller, int mode_idx);
     nlohmann::json  LEDToJSON(RGBController* controller, int led_idx);
@@ -96,4 +101,9 @@ private:
     std::vector<RGBController*>&    controllers;
     ResourceManager*                resource_manager;
     ProfileManagerInterface*        profile_manager;
+
+    // Async rescan management
+    std::shared_future<void>        rescan_future;
+    std::mutex                      rescan_mutex;
+    bool                            rescan_in_progress = false;
 };
