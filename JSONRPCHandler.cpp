@@ -7,6 +7,15 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-02                                          |
+| Changes:                                                  |
+|   - Added async device rescan support                    |
+|   - Enhanced scan completion event handling              |
+|   - Added rescan state management with mutex             |
+\*---------------------------------------------------------*/
+
 #include "JSONRPCHandler.h"
 #include "WebSocketServer.h"
 #include <algorithm>

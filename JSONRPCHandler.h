@@ -7,6 +7,14 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-02                                          |
+| Changes:                                                  |
+|   - Added async rescan management members                |
+|   - Added RescanDevices() method declaration             |
+\*---------------------------------------------------------*/
+
 #pragma once
 
 #include <string>

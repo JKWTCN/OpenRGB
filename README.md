@@ -1,8 +1,42 @@
-## ![OpenRGB](Documentation/Images/OpenRGB.png "OpenRGB Logo")
-
 ![Pipeline Status](https://gitlab.com/CalcProgrammer1/OpenRGB/badges/master/pipeline.svg)
 
 One of the biggest complaints about RGB is the software ecosystem surrounding it.  Every manufacturer has their own app, their own brand, their own style.  If you want to mix and match devices, you end up with a ton of conflicting, functionally identical apps competing for your background resources.  On top of that, these apps are proprietary and Windows-only.  Some even require online accounts.  What if there was a way to control all of your RGB devices from a single app, on Windows, Linux, and MacOS, without any nonsense?  That is what OpenRGB sets out to achieve.  One app to rule them all.
+
+---
+
+## ⚠️ Custom Build Notice
+
+**This is a custom build of OpenRGB with additional features and bug fixes.**
+
+For the official OpenRGB release, please visit: https://gitlab.com/CalcProgrammer1/OpenRGB
+
+The Project Code Url: [JKWTCN/OpenRGB at dev](https://github.com/JKWTCN/OpenRGB/tree/dev)
+
+### Custom Features
+
+This build includes the following enhancements:
+
+1. **Device Settings Preservation During Hot-Plug**
+
+   - Device settings (modes, colors, zones) are now preserved when devices are disconnected and reconnected
+   - No need to reconfigure your RGB devices after USB reconnect or driver reload
+2. **Thread Safety Improvements**
+
+   - Fixed race conditions in device update callbacks
+   - Improved stability during concurrent operations
+   - Fixed dangling pointer issues in device page management
+3. **Async Device Rescan**
+
+   - Non-blocking device rescan for better UI responsiveness
+   - Enhanced scan completion events for SDK clients
+
+**Full details**: See [MODIFICATIONS.md](MODIFICATIONS.md) for complete technical documentation.
+
+**Repository**: https://github.com/JKWTCN/OpenRGB
+
+**License**: This custom build maintains the original GPL v2 license.
+
+---
 
 ## Features
 
@@ -32,25 +66,25 @@ This project interacts directly with hardware using reverse engineered protocols
 
 ## Download OpenRGB
 
-  * Pre-built binaries are available for the following platforms:
-    * Windows
-    * Linux (AppImage, .deb, and .rpm)
-    * MacOS
-  * Released versions are available to download on [OpenRGB.org](https://openrgb.org/releases.html) or under [Releases](https://gitlab.com/CalcProgrammer1/OpenRGB/-/releases/permalink/latest).
-  * Experimental (aka Pipeline) versions are available to download on [OpenRGB.org](https://openrgb.org/index.html#pl).
-  * On Windows, you will need the **Microsoft Visual 2019 C++ runtime** installed.  You can get it [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
-  * An unofficial Flatpak release is [available on Flathub](https://flathub.org/apps/details/org.openrgb.OpenRGB)
-    * Note: If using the AppImage or Flatpak versions, ensure you [install the latest udev rules](Documentation/UdevRules.md).
-  * Released versions are officially packaged for various distributions including Alpine, Fedora, and Arch.
-  * Arch users can also install from the [Extra repository](https://archlinux.org/packages/extra/x86_64/openrgb/) or from the AUR for the [pipeline](https://aur.archlinux.org/packages/openrgb-git/) version.
+* Pre-built binaries are available for the following platforms:
+  * Windows
+  * Linux (AppImage, .deb, and .rpm)
+  * MacOS
+* Released versions are available to download on [OpenRGB.org](https://openrgb.org/releases.html) or under [Releases](https://gitlab.com/CalcProgrammer1/OpenRGB/-/releases/permalink/latest).
+* Experimental (aka Pipeline) versions are available to download on [OpenRGB.org](https://openrgb.org/index.html#pl).
+* On Windows, you will need the **Microsoft Visual 2019 C++ runtime** installed.  You can get it [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
+* An unofficial Flatpak release is [available on Flathub](https://flathub.org/apps/details/org.openrgb.OpenRGB)
+  * Note: If using the AppImage or Flatpak versions, ensure you [install the latest udev rules](Documentation/UdevRules.md).
+* Released versions are officially packaged for various distributions including Alpine, Fedora, and Arch.
+* Arch users can also install from the [Extra repository](https://archlinux.org/packages/extra/x86_64/openrgb/) or from the AUR for the [pipeline](https://aur.archlinux.org/packages/openrgb-git/) version.
 
 ## Compile OpenRGB
 
-  * Instructions for compiling from source are [available here](Documentation/Compiling.md).
+* Instructions for compiling from source are [available here](Documentation/Compiling.md).
 
 ## Setup Device Access
 
-  * After installing OpenRGB, please see the [SMBus Access](Documentation/SMBusAccess.md) and [USB Access](Documentation/USBAccess.md) pages for instructions on setting up access to your RGB devices.
+* After installing OpenRGB, please see the [SMBus Access](Documentation/SMBusAccess.md) and [USB Access](Documentation/USBAccess.md) pages for instructions on setting up access to your RGB devices.
 
 ## Join Our Discord
 
@@ -91,7 +125,7 @@ This project interacts directly with hardware using reverse engineered protocols
 * OpenRGB provides a network interface for controlling supported RGB devices from other software.  These projects implement the OpenRGB SDK and provide additional ways for you to control your lighting setup.
 
   * [OpenRGB Python Client](https://github.com/jath03/openrgb-python) (by jath03)
-  * [OpenRGB Python Client (deprecated)](https://github.com/bahorn/OpenRGB-PyClient) (by bahorn)  
+  * [OpenRGB Python Client (deprecated)](https://github.com/bahorn/OpenRGB-PyClient) (by bahorn)
   * [OpenRGB Node.js Client](https://github.com/vlakreeh/openrgb) (by vlakreeh)
   * [D-Bus Connector for OpenRGB](https://github.com/Vinno97/OpenRGB-DBus-Connector) (by Vinno97)
   * [OpenRGB.NET - C# OpenRGB Client](https://github.com/diogotr7/OpenRGB.NET) (by diogotr7)
@@ -172,4 +206,3 @@ This project interacts directly with hardware using reverse engineered protocols
   * luxafor-python: https://github.com/vmitchell85/luxafor-python
   * dreamcheekyusb: https://github.com/gbrayut/dreamcheekyusb
   * omen-light: https://github.com/chiahsing/omen-light
-  

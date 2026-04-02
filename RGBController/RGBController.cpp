@@ -10,6 +10,14 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-01                                          |
+| Changes:                                                  |
+|   - Fixed SignalUpdate() race condition by copying       |
+|     callbacks under lock before executing                |
+\*---------------------------------------------------------*/
+
 #include <cstring>
 #include "RGBController.h"
 

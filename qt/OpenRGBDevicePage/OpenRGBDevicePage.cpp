@@ -7,6 +7,15 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-01                                          |
+| Changes:                                                  |
+|   - Fixed dangling pointer issue in UpdateCallback()     |
+|   - Added global page tracking for safe callback         |
+|     execution during object destruction                  |
+\*---------------------------------------------------------*/
+
 #include "OpenRGBDevicePage.h"
 #include "OpenRGBZoneResizeDialog.h"
 #include "ResourceManager.h"

@@ -11,6 +11,14 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-01                                          |
+| Changes:                                                  |
+|   - Added MatchExistingController() declaration          |
+|   - Added RGBController reuse logic for hot-plug         |
+\*---------------------------------------------------------*/
+
 #pragma once
 
 #include <memory>

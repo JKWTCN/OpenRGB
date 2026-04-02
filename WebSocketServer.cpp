@@ -7,6 +7,14 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+/*---------------------------------------------------------*\
+| Modified by JKWTCN <jkwtcn@icloud.com>                   |
+| Date: 2026-04-02                                          |
+| Changes:                                                  |
+|   - Enhanced scan completion event broadcasting          |
+|   - Added async scan event support                       |
+\*---------------------------------------------------------*/
+
 #include "WebSocketServer.h"
 #include <QHostAddress>
 #include <QUrlQuery>
