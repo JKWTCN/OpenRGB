@@ -438,6 +438,8 @@
 #define COLORFUL_IGAME_RTX_4080_ULTRAW_OCV2             0x1501
 #define COLORFUL_IGAME_RTX_4090_ADVANCED_OCV            0x1400
 #define COLORFUL_IGAME_RTX_4090_ADVANCED_OCV2           0x1401
+#define COLORFUL_IGAME_RTX_5060TI_ULTRAW_DUO_OC         0x1531
+#define COLORFUL_IGAME_RTX_5070_ULTRAW_OCV              0x1500
 
 /*-----------------------------------------------------*\
 | EVGA Sub-Device IDs                                   |
@@ -800,6 +802,7 @@
 #define MSI_RTX4070_GAMING_X_TRIO_SUB_DEV               0x5136
 #define MSI_RTX4070S_GAMING_X_SLIM_SUB_DEV              0x513F
 #define MSI_RTX4070S_GAMING_X_SLIM_WHITE_SUB_DEV        0xE131
+#define MSI_RTX4070S_GAMING_X_SLIM_MLG_SUB_DEV          0xE134
 #define MSI_RTX4070TI_GAMING_X_TRIO_SUB_DEV             0x5132
 #define MSI_RTX4070TI_GAMING_X_SLIM_WHITE_SUB_DEV       0xE132
 #define MSI_RTX4070TI_GAMING_X_TRIO_WHITE_SUB_DEV       0x5139
