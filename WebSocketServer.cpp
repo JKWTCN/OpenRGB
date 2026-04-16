@@ -22,9 +22,9 @@
 #include <QJsonDocument>
 #include <QThread>
 
-WebSocketServer::WebSocketServer(std::vector<RGBController*>& controllers,
-                                 ResourceManager* resource_manager,
-                                 QObject* parent)
+WebSocketServer::WebSocketServer(std::vector<RGBController *> &controllers,
+                                 ResourceManager *resource_manager,
+                                 QObject *parent)
     : QObject(parent),
       host("0.0.0.0"),
       port(6743),
@@ -45,7 +45,7 @@ WebSocketServer::~WebSocketServer()
 {
     StopServer();
 
-    if(rpc_handler)
+    if (rpc_handler)
     {
         delete rpc_handler;
     }
@@ -57,26 +57,26 @@ WebSocketServer::~WebSocketServer()
 void WebSocketServer::StartServer()
 {
     // If called from a different thread, invoke in the correct thread
-    if(QThread::currentThread() != this->thread())
+    if (QThread::currentThread() != this->thread())
     {
         QMetaObject::invokeMethod(this, "StartServer", Qt::QueuedConnection);
         return;
     }
 
-    if(server_online)
+    if (server_online)
     {
         return;
     }
 
-    if(!enabled)
+    if (!enabled)
     {
         return;
     }
 
     // Create WebSocket server (no parent to avoid threading issues)
     ws_server = new QWebSocketServer(QStringLiteral("OpenRGB WebSocket Server"),
-                                    QWebSocketServer::NonSecureMode,
-                                    nullptr);
+                                     QWebSocketServer::NonSecureMode,
+                                     nullptr);
 
     // Connect signals
     connect(ws_server, &QWebSocketServer::newConnection,
@@ -93,7 +93,7 @@ void WebSocketServer::StartServer()
 
     // Start listening
     QString host_str = QString::fromStdString(host);
-    if(ws_server->listen(QHostAddress(host_str), port))
+    if (ws_server->listen(QHostAddress(host_str), port))
     {
         server_online = true;
         server_listening = true;
@@ -115,13 +115,13 @@ void WebSocketServer::StartServer()
 void WebSocketServer::StopServer()
 {
     // If called from a different thread, invoke in the correct thread
-    if(QThread::currentThread() != this->thread())
+    if (QThread::currentThread() != this->thread())
     {
         QMetaObject::invokeMethod(this, "StopServer", Qt::QueuedConnection);
         return;
     }
 
-    if(!server_online)
+    if (!server_online)
     {
         return;
     }
@@ -132,9 +132,9 @@ void WebSocketServer::StopServer()
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
 
-        for(auto client_info : clients)
+        for (auto client_info : clients)
         {
-            if(client_info && client_info->GetSocket())
+            if (client_info && client_info->GetSocket())
             {
                 client_info->GetSocket()->close();
             }
@@ -144,7 +144,7 @@ void WebSocketServer::StopServer()
     }
 
     // Stop server
-    if(ws_server)
+    if (ws_server)
     {
         ws_server->close();
         delete ws_server;
@@ -161,7 +161,7 @@ void WebSocketServer::StopServer()
 /*---------------------------------------------------------*\
 | Configuration                                             |
 \*---------------------------------------------------------*/
-void WebSocketServer::SetHost(const std::string& host)
+void WebSocketServer::SetHost(const std::string &host)
 {
     this->host = host;
 }
@@ -176,16 +176,16 @@ void WebSocketServer::SetEnabled(bool enabled)
     this->enabled = enabled;
 }
 
-void WebSocketServer::SetAuthToken(const std::string& token)
+void WebSocketServer::SetAuthToken(const std::string &token)
 {
     auth_tokens.clear();
-    if(!token.empty())
+    if (!token.empty())
     {
         auth_tokens.push_back(token);
     }
 }
 
-void WebSocketServer::SetAuthTokens(const std::vector<std::string>& tokens)
+void WebSocketServer::SetAuthTokens(const std::vector<std::string> &tokens)
 {
     auth_tokens = tokens;
 }
@@ -225,15 +225,15 @@ unsigned short WebSocketServer::GetPort() const
 
 unsigned int WebSocketServer::GetNumClients() const
 {
-    std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(clients_mutex));
+    std::lock_guard<std::mutex> lock(const_cast<std::mutex &>(clients_mutex));
     return clients.size();
 }
 
-const char* WebSocketServer::GetClientIP(unsigned int client_idx)
+const char *WebSocketServer::GetClientIP(unsigned int client_idx)
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
 
-    if(client_idx < clients.size())
+    if (client_idx < clients.size())
     {
         static std::string ip_str;
         ip_str = clients[client_idx]->GetClientIP().toStdString();
@@ -243,11 +243,11 @@ const char* WebSocketServer::GetClientIP(unsigned int client_idx)
     return "";
 }
 
-const char* WebSocketServer::GetClientString(unsigned int client_idx)
+const char *WebSocketServer::GetClientString(unsigned int client_idx)
 {
     std::lock_guard<std::mutex> lock(clients_mutex);
 
-    if(client_idx < clients.size())
+    if (client_idx < clients.size())
     {
         static std::string client_str;
         client_str = clients[client_idx]->GetClientString().toStdString();
@@ -260,7 +260,7 @@ const char* WebSocketServer::GetClientString(unsigned int client_idx)
 /*---------------------------------------------------------*\
 | Callbacks                                                 |
 \*---------------------------------------------------------*/
-void WebSocketServer::RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void* arg)
+void WebSocketServer::RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void *arg)
 {
     client_info_callbacks.push_back(callback);
     client_info_callback_args.push_back(arg);
@@ -275,8 +275,7 @@ void WebSocketServer::DeviceListChanged()
     // This ensures the broadcast happens in the main thread
     emit SignalBroadcastNotification(
         QString::fromStdString(JSONRPCProtocol::Events::DEVICE_LIST_CHANGED),
-        QString::fromStdString(data.dump())
-    );
+        QString::fromStdString(data.dump()));
 }
 
 void WebSocketServer::ProfileListChanged()
@@ -287,8 +286,7 @@ void WebSocketServer::ProfileListChanged()
     // Emit signal instead of calling BroadcastNotification directly
     emit SignalBroadcastNotification(
         QString::fromStdString(JSONRPCProtocol::Events::PROFILE_SAVED),
-        QString::fromStdString(data.dump())
-    );
+        QString::fromStdString(data.dump()));
 }
 
 void WebSocketServer::ScanComplete(unsigned int device_count)
@@ -299,7 +297,7 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
 
     // Add full controller data
     nlohmann::json controllers_array = nlohmann::json::array();
-    for(unsigned int i = 0; i < controllers.size(); i++)
+    for (unsigned int i = 0; i < controllers.size(); i++)
     {
         controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
     }
@@ -310,14 +308,13 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
     // Emit signal instead of calling BroadcastNotification directly
     emit SignalBroadcastNotification(
         QString::fromStdString(JSONRPCProtocol::Events::SCAN_COMPLETE),
-        QString::fromStdString(data.dump())
-    );
+        QString::fromStdString(data.dump()));
 }
 
-void WebSocketServer::SetProfileManager(ProfileManagerInterface* profile_manager)
+void WebSocketServer::SetProfileManager(ProfileManagerInterface *profile_manager)
 {
     this->profile_manager = profile_manager;
-    if(rpc_handler)
+    if (rpc_handler)
     {
         rpc_handler->SetProfileManager(profile_manager);
     }
@@ -328,9 +325,9 @@ void WebSocketServer::SetProfileManager(ProfileManagerInterface* profile_manager
 \*---------------------------------------------------------*/
 void WebSocketServer::OnNewConnection()
 {
-    QWebSocket* socket = ws_server->nextPendingConnection();
+    QWebSocket *socket = ws_server->nextPendingConnection();
 
-    if(!socket)
+    if (!socket)
     {
         return;
     }
@@ -342,7 +339,7 @@ void WebSocketServer::OnNewConnection()
     QString token = ExtractTokenFromRequest(socket);
 
     // Authenticate if required
-    if(require_auth && !AuthenticateClient(socket, token))
+    if (require_auth && !AuthenticateClient(socket, token))
     {
         printf("[WebSocketServer] Authentication failed for %s\n",
                socket->peerAddress().toString().toStdString().c_str());
@@ -360,14 +357,14 @@ void WebSocketServer::OnNewConnection()
     }
 
     // Create client info
-    WebSocketClientInfo* client_info = new WebSocketClientInfo(socket);
+    WebSocketClientInfo *client_info = new WebSocketClientInfo(socket);
 
-    if(!token.isEmpty())
+    if (!token.isEmpty())
     {
         client_info->SetAuthToken(token.toStdString());
     }
 
-    if(require_auth)
+    if (require_auth)
     {
         client_info->SetAuthenticated(true);
     }
@@ -389,9 +386,9 @@ void WebSocketServer::OnNewConnection()
     printf("[WebSocketServer] Client authenticated and connected\n");
 
     // Notify callbacks
-    for(unsigned int i = 0; i < client_info_callbacks.size(); i++)
+    for (unsigned int i = 0; i < client_info_callbacks.size(); i++)
     {
-        if(client_info_callbacks[i])
+        if (client_info_callbacks[i])
         {
             client_info_callbacks[i](client_info_callback_args[i]);
         }
@@ -404,15 +401,14 @@ void WebSocketServer::OnNewConnection()
     data["clientIP"] = client_info->GetClientIP().toStdString();
     emit SignalBroadcastNotification(
         QString::fromStdString(JSONRPCProtocol::Events::CLIENT_CONNECTED),
-        QString::fromStdString(data.dump())
-    );
+        QString::fromStdString(data.dump()));
 }
 
 void WebSocketServer::OnClientDisconnected()
 {
-    QWebSocket* socket = qobject_cast<QWebSocket*>(sender());
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
 
-    if(!socket)
+    if (!socket)
     {
         return;
     }
@@ -427,9 +423,9 @@ void WebSocketServer::OnClientDisconnected()
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
 
-        for(auto it = clients.begin(); it != clients.end(); ++it)
+        for (auto it = clients.begin(); it != clients.end(); ++it)
         {
-            if((*it)->GetSocket() == socket)
+            if ((*it)->GetSocket() == socket)
             {
                 // Collect data before removing client
                 disconnect_data["clientIP"] = (*it)->GetClientIP().toStdString();
@@ -443,20 +439,19 @@ void WebSocketServer::OnClientDisconnected()
     }
 
     // Broadcast notification AFTER releasing the lock
-    if(client_found)
+    if (client_found)
     {
         emit SignalBroadcastNotification(
             QString::fromStdString(JSONRPCProtocol::Events::CLIENT_DISCONNECTED),
-            QString::fromStdString(disconnect_data.dump())
-        );
+            QString::fromStdString(disconnect_data.dump()));
     }
 
     socket->deleteLater();
 
     // Notify callbacks
-    for(unsigned int i = 0; i < client_info_callbacks.size(); i++)
+    for (unsigned int i = 0; i < client_info_callbacks.size(); i++)
     {
-        if(client_info_callbacks[i])
+        if (client_info_callbacks[i])
         {
             client_info_callbacks[i](client_info_callback_args[i]);
         }
@@ -465,11 +460,11 @@ void WebSocketServer::OnClientDisconnected()
     emit ClientDisconnected();
 }
 
-void WebSocketServer::OnTextMessageReceived(const QString& message)
+void WebSocketServer::OnTextMessageReceived(const QString &message)
 {
-    QWebSocket* socket = qobject_cast<QWebSocket*>(sender());
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
 
-    if(!socket)
+    if (!socket)
     {
         return;
     }
@@ -477,9 +472,9 @@ void WebSocketServer::OnTextMessageReceived(const QString& message)
     // Update client activity
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
-        for(auto client_info : clients)
+        for (auto client_info : clients)
         {
-            if(client_info->GetSocket() == socket)
+            if (client_info->GetSocket() == socket)
             {
                 client_info->UpdateActivityTime();
                 break;
@@ -493,7 +488,7 @@ void WebSocketServer::OnTextMessageReceived(const QString& message)
     {
         request = nlohmann::json::parse(message.toStdString());
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         nlohmann::json error_response;
         error_response["jsonrpc"] = "2.0";
@@ -504,19 +499,23 @@ void WebSocketServer::OnTextMessageReceived(const QString& message)
         SendToClient(socket, error_response);
         return;
     }
-
-    // Handle request
-    nlohmann::json response = rpc_handler->HandleRequest(request);
-
-    // Send response
-    SendToClient(socket, response);
+    if (request.is_array())
+    {
+        nlohmann::json responses = rpc_handler->HandleBatchRequest(request);
+        SendToClient(socket, responses);
+    }
+    else
+    {
+        nlohmann::json response = rpc_handler->HandleRequest(request);
+        SendToClient(socket, response);
+    }
 }
 
-void WebSocketServer::OnBinaryMessageReceived(const QByteArray& message)
+void WebSocketServer::OnBinaryMessageReceived(const QByteArray &message)
 {
-    QWebSocket* socket = qobject_cast<QWebSocket*>(sender());
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
 
-    if(!socket)
+    if (!socket)
     {
         return;
     }
@@ -532,7 +531,7 @@ void WebSocketServer::OnSocketError()
            ws_server->errorString().toStdString().c_str());
 }
 
-void WebSocketServer::OnBroadcastNotification(const QString& event, const QString& data)
+void WebSocketServer::OnBroadcastNotification(const QString &event, const QString &data)
 {
     nlohmann::json notification;
     notification["jsonrpc"] = "2.0";
@@ -544,9 +543,9 @@ void WebSocketServer::OnBroadcastNotification(const QString& event, const QStrin
 
     std::lock_guard<std::mutex> lock(clients_mutex);
 
-    for(auto client_info : clients)
+    for (auto client_info : clients)
     {
-        if(client_info && client_info->GetSocket())
+        if (client_info && client_info->GetSocket())
         {
             client_info->GetSocket()->sendTextMessage(message);
         }
@@ -556,8 +555,8 @@ void WebSocketServer::OnBroadcastNotification(const QString& event, const QStrin
 /*---------------------------------------------------------*\
 | Helper Functions                                          |
 \*---------------------------------------------------------*/
-void WebSocketServer::BroadcastNotification(const std::string& event,
-                                           const nlohmann::json& data)
+void WebSocketServer::BroadcastNotification(const std::string &event,
+                                            const nlohmann::json &data)
 {
     nlohmann::json notification;
     notification["jsonrpc"] = "2.0";
@@ -569,19 +568,19 @@ void WebSocketServer::BroadcastNotification(const std::string& event,
 
     std::lock_guard<std::mutex> lock(clients_mutex);
 
-    for(auto client_info : clients)
+    for (auto client_info : clients)
     {
-        if(client_info && client_info->GetSocket())
+        if (client_info && client_info->GetSocket())
         {
             client_info->GetSocket()->sendTextMessage(message);
         }
     }
 }
 
-void WebSocketServer::SendToClient(QWebSocket* client,
-                                   const nlohmann::json& response)
+void WebSocketServer::SendToClient(QWebSocket *client,
+                                   const nlohmann::json &response)
 {
-    if(!client)
+    if (!client)
     {
         return;
     }
@@ -590,35 +589,35 @@ void WebSocketServer::SendToClient(QWebSocket* client,
     client->sendTextMessage(message);
 }
 
-bool WebSocketServer::AuthenticateClient(QWebSocket* socket, const QString& token)
+bool WebSocketServer::AuthenticateClient(QWebSocket *socket, const QString &token)
 {
-    if(!require_auth)
+    if (!require_auth)
     {
-        return true;  // Authentication not required
+        return true; // Authentication not required
     }
 
-    if(token.isEmpty())
+    if (token.isEmpty())
     {
-        return false;  // No token provided
+        return false; // No token provided
     }
 
     // Check if token is in the allowed tokens list
     std::string token_str = token.toStdString();
 
-    for(const auto& allowed_token : auth_tokens)
+    for (const auto &allowed_token : auth_tokens)
     {
-        if(allowed_token == token_str)
+        if (allowed_token == token_str)
         {
             return true;
         }
     }
 
-    return false;  // Invalid token
+    return false; // Invalid token
 }
 
-QString WebSocketServer::ExtractTokenFromRequest(const QWebSocket* socket)
+QString WebSocketServer::ExtractTokenFromRequest(const QWebSocket *socket)
 {
-    if(!socket)
+    if (!socket)
     {
         return QString();
     }
