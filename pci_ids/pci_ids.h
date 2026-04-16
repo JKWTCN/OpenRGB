@@ -440,6 +440,7 @@
 #define COLORFUL_IGAME_RTX_4090_ADVANCED_OCV2           0x1401
 #define COLORFUL_IGAME_RTX_5060TI_ULTRAW_DUO_OC         0x1531
 #define COLORFUL_IGAME_RTX_5070_ULTRAW_OCV              0x1500
+#define COLORFUL_IGAME_RTX_5070_ULTRAW_OCV2             0x1501
 
 /*-----------------------------------------------------*\
 | EVGA Sub-Device IDs                                   |
@@ -983,6 +984,7 @@
 #define ZOTAC_RTX4080_AMP_ALT_SUB_DEV                   0x2688
 #define ZOTAC_RTX4090_TRINITY_SUB_DEV                   0x3675
 #define ZOTAC_RTX4090_AMP_SUB_DEV                       0x4675
+#define ZOTAC_RTX5080_AMP_EXTREME_SUB_DEV               0x1762
 
 /*-----------------------------------------------------*\
 | Manli Sub-Device IDs                                  |
