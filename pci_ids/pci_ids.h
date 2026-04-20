@@ -574,6 +574,7 @@
 | _D, _H and _P suffixes belong to many-HDMI Aorus GPUs |
 | switching their ID depending on boot-plugged display  |
 \*-----------------------------------------------------*/
+#define GIGABYTE_GTX1050_G1_GAMING_SUB_DEV              0x372B
 #define GIGABYTE_GTX1050TI_G1_GAMING_SUB_DEV            0x372A
 #define GIGABYTE_GTX1060_G1_GAMING_SUB_DEV              0x3716
 #define GIGABYTE_GTX1060_G1_GAMING_OC_SUB_DEV           0x3739
@@ -826,6 +827,7 @@
 #define MSI_RTX5080_GAMING_TRIO_OC_SUB_DEV              0x5315
 #define MSI_RTX5080_VANGUARD_SOC_SUB_DEV                0x5314
 #define MSI_RTX5080_SUPRIM_SOC_SUB_DEV                  0x5313
+#define MSI_RTX5080_SUPRIM_LIQUID_SOC_SUB_DEV           0x5312
 #define MSI_RTX5090_GAMING_TRIO_SUB_DEV                 0x5303
 #define MSI_RTX5090_VANGUARD_SOC_SUB_DEV                0x5302
 #define MSI_RTX5090_SUPRIM_SOC_SUB_DEV                  0x5301
@@ -871,6 +873,7 @@
 #define PNY_RTX_4090_VERTO_EPIC_X_OC_SUB_DEV            0x13D9
 #define PNY_RTX_5070_ARGB_EPIC_X_OC_SUB_DEV             0x1439
 #define PNY_RTX_5070TI_ARGB_EPIC_X_OC_SUB_DEV           0x143A
+#define PNY_RTX_5060TI_ARGB_EPIC_X_OC_SUB_DEV           0x143E
 #define PNY_RTX_5080_ARGB_EPIC_X_OC_SUB_DEV             0x1435
 #define PNY_RTX_5090_ARGB_EPIC_X_OC_SUB_DEV             0x1446
 

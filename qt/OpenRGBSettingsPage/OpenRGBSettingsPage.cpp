@@ -94,6 +94,7 @@ OpenRGBSettingsPage::OpenRGBSettingsPage(QWidget *parent) :
     \*---------------------------------------------------------*/
     json ui_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("UserInterface");
 
+    ui->ComboBoxLanguage->blockSignals(true);
     if(ui_settings.contains("language"))
     {
         /*-----------------------------------------------------*\
@@ -115,6 +116,12 @@ OpenRGBSettingsPage::OpenRGBSettingsPage(QWidget *parent) :
         SaveSettings();
         ui->ComboBoxLanguage->setCurrentIndex(0);
     }
+
+    /*---------------------------------------------------------*\
+    | Explicitly load the current selected language             |
+    \*---------------------------------------------------------*/
+    on_ComboBoxLanguage_currentTextChanged(ui->ComboBoxLanguage->currentText());
+    ui->ComboBoxLanguage->blockSignals(false);
 
     if(ui_settings.contains("greyscale_tray_icon"))
     {
@@ -336,6 +343,14 @@ OpenRGBSettingsPage::OpenRGBSettingsPage(QWidget *parent) :
 
     ui->AutoStartStatusLabel->hide();
     autostart_initialized = true;
+
+    /*---------------------------------------------------------*\
+    | Sync the autostart system configuration with settings on  |
+    | startup. This ensures the file is recreated if it was     |
+    | deleted (e.g. by a reinstall) without requiring the user  |
+    | to manually toggle the checkbox.                          |
+    \*---------------------------------------------------------*/
+    ConfigureAutoStart();
 }
 
 OpenRGBSettingsPage::~OpenRGBSettingsPage()
