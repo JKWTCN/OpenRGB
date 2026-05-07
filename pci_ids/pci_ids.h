@@ -121,6 +121,7 @@
 #define NVIDIA_RTX4080_DEV                              0x2704
 #define NVIDIA_RTX4080S_DEV                             0x2702
 #define NVIDIA_RTX4090_DEV                              0x2684
+#define NVIDIA_RTX5060_DEV                              0x2D05
 #define NVIDIA_RTX5060TI_DEV                            0x2D04
 #define NVIDIA_RTX5070_DEV                              0x2F04
 #define NVIDIA_RTX5070TI_DEV                            0x2C05
@@ -245,6 +246,7 @@
 #define ASUS_TUF_RTX_3060TI_O8G_OC                      0x87C6
 #define ASUS_ROG_STRIX_RTX_3060TI_O8G_OC                0x87BA
 #define ASUS_ROG_STRIX_RTX_3060TI_O8G_V2_GAMING         0x8834
+#define ASUS_ROG_STRIX_RTX_3060TI_O8G_V2_2_GAMING       0x8835
 #define ASUS_TUF_RTX_3060TI_O8G_OC_V2                   0x8827
 #define ASUS_ROG_STRIX_RTX_3070_OC                      0x87B8
 #define ASUS_ROG_STRIX_RTX_3070_O8G_GAMING              0x87B9
@@ -353,6 +355,7 @@
 #define ASUS_ROG_STRIX_RTX_4090_O24G_GAMING_WHITE       0x88C3
 #define ASUS_ROG_STRIX_RTX_4090_O24G_GAMING_WHITE_2     0x88F1
 #define ASUS_ROG_MATRIX_PLATINUM_RTX_4090_24G           0x8934
+#define ASUS_TUF_RTX_5060_O8G_GAMING                    0x8A1A
 #define ASUS_TUF_RTX_5070_O12G_GAMING                   0x89F2
 #define ASUS_TUF_RTX_5070TI_O16G_GAMING                 0x89F4
 #define ASUS_ROG_STRIX_RTX_5070TI_O16G_GAMING_OC        0x8A0D
@@ -405,6 +408,7 @@
 #define ASUS_TUF_RX_7800XT_O16G_GAMING                  0x05FD
 #define ASUS_TUF_RX_7800XT_O16G_GAMING_0606             0x0606
 #define ASUS_TUF_RX_7800XT_O16G_WHITE_GAMING            0x0601
+#define ASUS_TUF_RX_7900GRE_O16G_GAMING                 0x050C
 #define ASUS_TUF_RX_7900XT_020G_GAMING                  0x05ED
 #define ASUS_TUF_RX_7900XTX_O24G_GAMING                 0x0506
 #define ASUS_TUF_RX_9070_016G_GAMING                    0x0614
@@ -822,6 +826,7 @@
 #define MSI_RTX4090_GAMING_X_TRIO_SUB_DEV               0x5103
 #define MSI_RTX4090_SUPRIM_LIQUID_X_SUB_DEV             0x5104
 #define MSI_RTX4090_SUPRIM_X_SUB_DEV                    0x5102
+#define MSI_RTX5070_GAMING_TRIO_SUB_DEV                 0x5322
 #define MSI_RTX5070TI_GAMING_TRIO_SUB_DEV               0x5315
 #define MSI_RTX5070TI_VANGUARD_SOC_SUB_DEV              0X5314
 #define MSI_RTX5080_GAMING_TRIO_OC_SUB_DEV              0x5315
