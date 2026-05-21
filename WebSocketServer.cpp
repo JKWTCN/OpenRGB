@@ -16,6 +16,7 @@
 \*---------------------------------------------------------*/
 
 #include "WebSocketServer.h"
+#include "LogManager.h"
 #include <QHostAddress>
 #include <QUrlQuery>
 #include <QCoreApplication>
@@ -65,13 +66,17 @@ void WebSocketServer::StartServer()
 
     if (server_online)
     {
+        LOG_VERBOSE("[WebSocketServer] StartServer called but server is already online");
         return;
     }
 
     if (!enabled)
     {
+        LOG_WARNING("[WebSocketServer] StartServer called but server is not enabled");
         return;
     }
+
+    LOG_INFO("[WebSocketServer] Starting server on %s:%d", host.c_str(), port);
 
     // Create WebSocket server (no parent to avoid threading issues)
     ws_server = new QWebSocketServer(QStringLiteral("OpenRGB WebSocket Server"),
@@ -97,13 +102,14 @@ void WebSocketServer::StartServer()
     {
         server_online = true;
         server_listening = true;
-        printf("[WebSocketServer] Server started on %s:%d\n", host.c_str(), port);
+        LOG_INFO("[WebSocketServer] Server started successfully on %s:%d", host.c_str(), port);
         emit ServerStateChanged();
     }
     else
     {
-        printf("[WebSocketServer] Failed to start server: %s\n",
-               ws_server->errorString().toStdString().c_str());
+        LOG_ERROR("[WebSocketServer] Failed to start server on %s:%d - %s",
+                  host.c_str(), port,
+                  ws_server->errorString().toStdString().c_str());
         delete ws_server;
         ws_server = nullptr;
         server_online = false;
@@ -126,7 +132,13 @@ void WebSocketServer::StopServer()
         return;
     }
 
-    printf("[WebSocketServer] Stopping server...\n");
+    unsigned int num_clients = 0;
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        num_clients = clients.size();
+    }
+
+    LOG_INFO("[WebSocketServer] Stopping server (%u client(s) connected)", num_clients);
 
     // Close all client connections
     {
@@ -155,7 +167,7 @@ void WebSocketServer::StopServer()
     server_listening = false;
     emit ServerStateChanged();
 
-    printf("[WebSocketServer] Server stopped\n");
+    LOG_INFO("[WebSocketServer] Server stopped");
 }
 
 /*---------------------------------------------------------*\
@@ -305,6 +317,8 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
 
     qDebug() << "[WebSocketServer] ScanComplete: emitting signal for" << device_count << "devices with" << controllers_array.size() << "controller details";
 
+    LOG_VERBOSE("[WebSocketServer] Scan complete: %u devices, broadcasting notification", device_count);
+
     // Emit signal instead of calling BroadcastNotification directly
     emit SignalBroadcastNotification(
         QString::fromStdString(JSONRPCProtocol::Events::SCAN_COMPLETE),
@@ -332,8 +346,8 @@ void WebSocketServer::OnNewConnection()
         return;
     }
 
-    printf("[WebSocketServer] New connection from %s\n",
-           socket->peerAddress().toString().toStdString().c_str());
+    LOG_VERBOSE("[WebSocketServer] New connection from %s",
+                socket->peerAddress().toString().toStdString().c_str());
 
     // Extract token from URL query
     QString token = ExtractTokenFromRequest(socket);
@@ -341,8 +355,8 @@ void WebSocketServer::OnNewConnection()
     // Authenticate if required
     if (require_auth && !AuthenticateClient(socket, token))
     {
-        printf("[WebSocketServer] Authentication failed for %s\n",
-               socket->peerAddress().toString().toStdString().c_str());
+        LOG_WARNING("[WebSocketServer] Authentication failed for %s",
+                    socket->peerAddress().toString().toStdString().c_str());
 
         nlohmann::json error_response;
         error_response["jsonrpc"] = "2.0";
@@ -370,9 +384,11 @@ void WebSocketServer::OnNewConnection()
     }
 
     // Add to clients list
+    unsigned int client_count;
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
         clients.push_back(client_info);
+        client_count = clients.size();
     }
 
     // Connect signals
@@ -383,7 +399,8 @@ void WebSocketServer::OnNewConnection()
     connect(socket, &QWebSocket::disconnected,
             this, &WebSocketServer::OnClientDisconnected);
 
-    printf("[WebSocketServer] Client authenticated and connected\n");
+    LOG_INFO("[WebSocketServer] Client connected: %s (total: %u)",
+             socket->peerAddress().toString().toStdString().c_str(), client_count);
 
     // Notify callbacks
     for (unsigned int i = 0; i < client_info_callbacks.size(); i++)
@@ -413,12 +430,12 @@ void WebSocketServer::OnClientDisconnected()
         return;
     }
 
-    printf("[WebSocketServer] Client disconnected: %s\n",
-           socket->peerAddress().toString().toStdString().c_str());
+    std::string client_ip = socket->peerAddress().toString().toStdString();
 
     // Find and remove client
     nlohmann::json disconnect_data;
     bool client_found = false;
+    unsigned int remaining = 0;
 
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
@@ -436,7 +453,10 @@ void WebSocketServer::OnClientDisconnected()
                 break;
             }
         }
+        remaining = clients.size();
     }
+
+    LOG_INFO("[WebSocketServer] Client disconnected: %s (remaining: %u)", client_ip.c_str(), remaining);
 
     // Broadcast notification AFTER releasing the lock
     if (client_found)
@@ -490,6 +510,9 @@ void WebSocketServer::OnTextMessageReceived(const QString &message)
     }
     catch (const std::exception &e)
     {
+        LOG_WARNING("[WebSocketServer] Failed to parse message from %s: %s",
+                    socket->peerAddress().toString().toStdString().c_str(), e.what());
+
         nlohmann::json error_response;
         error_response["jsonrpc"] = "2.0";
         error_response["error"]["code"] = JSONRPCProtocol::PARSE_ERROR;
@@ -520,15 +543,17 @@ void WebSocketServer::OnBinaryMessageReceived(const QByteArray &message)
         return;
     }
 
-    // Binary messages not supported yet
+    LOG_WARNING("[WebSocketServer] Binary message rejected from %s (not supported)",
+                socket->peerAddress().toString().toStdString().c_str());
+
     socket->close(QWebSocketProtocol::CloseCodeBadOperation,
                   "Binary messages not supported");
 }
 
 void WebSocketServer::OnSocketError()
 {
-    printf("[WebSocketServer] Socket error: %s\n",
-           ws_server->errorString().toStdString().c_str());
+    LOG_ERROR("[WebSocketServer] Socket error: %s",
+              ws_server->errorString().toStdString().c_str());
 }
 
 void WebSocketServer::OnBroadcastNotification(const QString &event, const QString &data)
