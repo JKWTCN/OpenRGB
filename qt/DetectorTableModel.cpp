@@ -130,6 +130,31 @@ Qt::ItemFlags DetectorTableModel::flags(const QModelIndex& index) const
     return(fl);
 }
 
+bool DetectorTableModel::detectorEnabled(const std::string& key) const
+{
+    for(const DetectorTableValue& detector: detectors)
+    {
+        if(detector.key == key)
+        {
+            return(detector.value);
+        }
+    }
+
+    return(true);
+}
+
+std::vector<std::string> DetectorTableModel::detectorNames() const
+{
+    std::vector<std::string> names;
+
+    for(const DetectorTableValue& detector: detectors)
+    {
+        names.push_back(detector.key);
+    }
+
+    return(names);
+}
+
 void DetectorTableModel::applySettings()
 {
     /*-----------------------------------------------------*\

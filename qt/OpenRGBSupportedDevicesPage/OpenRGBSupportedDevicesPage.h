@@ -32,6 +32,7 @@ private slots:
     void changeEvent(QEvent *event);
     void on_SaveButton_clicked();
     void on_GetHardwareIDsButton_clicked();
+    void on_ExportCSVButton_clicked();
 
     void on_Filter_textChanged(const QString &arg1);
 

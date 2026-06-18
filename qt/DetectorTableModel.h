@@ -34,6 +34,8 @@ public:
     bool setData(const QModelIndex& index, const QVariant&, int role) override;
     QVariant headerData(int index, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+    bool detectorEnabled(const std::string& key) const;
+    std::vector<std::string> detectorNames() const;
 
 public slots:
     void applySettings();

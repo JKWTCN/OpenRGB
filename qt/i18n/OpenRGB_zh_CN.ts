@@ -1811,6 +1811,110 @@
         <source>Get Hardware IDs</source>
         <translation>获取硬件 ID</translation>
     </message>
+    <message>
+        <source>Export CSV</source>
+        <translation>导出 CSV</translation>
+    </message>
+    <message>
+        <source>Export Supported Devices</source>
+        <translation>导出兼容设备</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV 文件 (*.csv)</translation>
+    </message>
+    <message>
+        <source>Export Failed</source>
+        <translation>导出失败</translation>
+    </message>
+    <message>
+        <source>Unable to write the selected CSV file.</source>
+        <translation>无法写入所选 CSV 文件。</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>已启用</translation>
+    </message>
+    <message>
+        <source>Detector Type</source>
+        <translation>检测器类型</translation>
+    </message>
+    <message>
+        <source>Subcategory</source>
+        <translation>子类别</translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation>传输方式</translation>
+    </message>
+    <message>
+        <source>Vendor ID</source>
+        <translation>厂商 ID</translation>
+    </message>
+    <message>
+        <source>Product ID</source>
+        <translation>产品 ID</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <translation>接口</translation>
+    </message>
+    <message>
+        <source>Usage Page</source>
+        <translation>Usage Page</translation>
+    </message>
+    <message>
+        <source>Usage</source>
+        <translation>Usage</translation>
+    </message>
+    <message>
+        <source>PCI Vendor ID</source>
+        <translation>PCI 厂商 ID</translation>
+    </message>
+    <message>
+        <source>PCI Device ID</source>
+        <translation>PCI 设备 ID</translation>
+    </message>
+    <message>
+        <source>PCI Subsystem Vendor ID</source>
+        <translation>PCI 子系统厂商 ID</translation>
+    </message>
+    <message>
+        <source>PCI Subsystem Device ID</source>
+        <translation>PCI 子系统设备 ID</translation>
+    </message>
+    <message>
+        <source>I2C Address</source>
+        <translation>I2C 地址</translation>
+    </message>
+    <message>
+        <source>JEDEC ID</source>
+        <translation>JEDEC ID</translation>
+    </message>
+    <message>
+        <source>DIMM Type</source>
+        <translation>DIMM 类型</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>是</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>否</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <source>Stored detector setting</source>
+        <translation>已保存的检测器设置</translation>
+    </message>
 </context>
 <context>
     <name>OpenRGBSystemInfoPage</name>

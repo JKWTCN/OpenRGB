@@ -58,6 +58,26 @@ typedef std::function<void(hidapi_wrapper wrapper, hid_device_info*, const std::
 typedef std::function<void()>                                                                       DynamicDetectorFunction;
 typedef std::function<void()>                                                                       PreDetectionHookFunction;
 
+typedef struct
+{
+    std::string name;
+    std::string detector_type;
+    std::string subcategory;
+    std::string transport;
+    std::string vendor_id;
+    std::string product_id;
+    std::string interface;
+    std::string usage_page;
+    std::string usage;
+    std::string pci_vendor_id;
+    std::string pci_device_id;
+    std::string pci_subsystem_vendor_id;
+    std::string pci_subsystem_device_id;
+    std::string i2c_address;
+    std::string jedec_id;
+    std::string dimm_type;
+} SupportedDeviceInfo;
+
 class BasicHIDBlock
 {
 public:
@@ -149,6 +169,8 @@ public:
                                             int usage      = HID_USAGE_ANY);
     void RegisterDynamicDetector        (std::string name, DynamicDetectorFunction detector);
     void RegisterPreDetectionHook       (PreDetectionHookFunction hook);
+
+    std::vector<SupportedDeviceInfo> GetSupportedDeviceInfo();
 
     void RegisterClientInfoChangeCallback(ClientInfoChangeCallback new_callback, void * new_callback_arg);
     void RegisterDeviceListChangeCallback(DeviceListChangeCallback new_callback, void * new_callback_arg);
