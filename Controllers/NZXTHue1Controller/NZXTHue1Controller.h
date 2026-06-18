@@ -74,6 +74,7 @@ public:
                         );
 
     unsigned int    num_leds;
+    void            Initialize();
 
 private:
     hid_device*     dev;
@@ -82,8 +83,6 @@ private:
     std::string     location;
     std::string     name;
     unsigned int    accessory_type;
-
-    void            Initialize();
 
     void            SendPacket
                         (

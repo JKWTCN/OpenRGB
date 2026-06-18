@@ -150,3 +150,8 @@ std::string SteelSeriesApexBaseController::GetVersion()
 
     return(return_string);
 }
+
+void SteelSeriesApexBaseController::SendInitialization()
+{
+
+}

@@ -17,8 +17,6 @@ ThermaltakeRiingController::ThermaltakeRiingController(hid_device* dev_handle, c
 {
     dev         = dev_handle;
     location    = path;
-
-    SendInit();
 }
 
 ThermaltakeRiingController::~ThermaltakeRiingController()

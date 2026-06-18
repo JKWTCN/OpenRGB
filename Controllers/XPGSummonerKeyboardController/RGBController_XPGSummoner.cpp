@@ -188,6 +188,12 @@ static const char *led_names[] =
 RGBController_XPGSummoner::RGBController_XPGSummoner(XPGSummonerController *controller_ptr)
 {
     controller          = controller_ptr;
+
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     name                = controller->GetNameString();
     vendor              = "XPG";
     description         = "XPG Summoner Keyboard Device";

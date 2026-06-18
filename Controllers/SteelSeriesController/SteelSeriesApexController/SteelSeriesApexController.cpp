@@ -39,8 +39,6 @@ SteelSeriesApexController::SteelSeriesApexController(hid_device* dev_handle, ste
 {
     proto_type = type;
     kbd_quirk = APEX_GEN1;
-
-    SendInitialization();
 }
 
 SteelSeriesApexController::~SteelSeriesApexController()

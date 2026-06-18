@@ -68,6 +68,7 @@ RGBController::RGBController()
 {
     flags       = 0;
     DeviceThreadRunning = true;
+    DeviceInitialized = false;
     DeviceCallThread = new std::thread(&RGBController::DeviceCallThreadFunction, this);
 }
 
@@ -2079,7 +2080,45 @@ void RGBController::UpdateMode()
 
 void RGBController::SaveMode()
 {
+    EnsureInitializedForControl();
     DeviceSaveMode();
+}
+
+void RGBController::EnsureInitializedForControl()
+{
+    if(DeviceInitialized.load() == false)
+    {
+        std::lock_guard<std::mutex> lock(DeviceInitializeMutex);
+
+        if(DeviceInitialized.load() == false)
+        {
+            DeviceInitialize();
+            DeviceInitialized = true;
+        }
+    }
+}
+
+void RGBController::ResetDeviceInitialization()
+{
+    std::lock_guard<std::mutex> lock(DeviceInitializeMutex);
+
+    DeviceInitialized = false;
+}
+
+void RGBController::SetDeviceInitializer(std::function<void()> initializer)
+{
+    std::lock_guard<std::mutex> lock(DeviceInitializeMutex);
+
+    DeviceInitializer = initializer;
+    DeviceInitialized = false;
+}
+
+void RGBController::DeviceInitialize()
+{
+    if(DeviceInitializer)
+    {
+        DeviceInitializer();
+    }
 }
 
 void RGBController::DeviceUpdateLEDs()
@@ -2137,10 +2176,12 @@ void RGBController::DeviceCallThreadFunction()
             if(flags & CONTROLLER_FLAG_RESET_BEFORE_UPDATE)
             {
                 CallFlag_UpdateMode = false;
+                EnsureInitializedForControl();
                 DeviceUpdateMode();
             }
             else
             {
+                EnsureInitializedForControl();
                 DeviceUpdateMode();
                 CallFlag_UpdateMode = false;
             }
@@ -2150,10 +2191,12 @@ void RGBController::DeviceCallThreadFunction()
             if(flags & CONTROLLER_FLAG_RESET_BEFORE_UPDATE)
             {
                 CallFlag_UpdateLEDs = false;
+                EnsureInitializedForControl();
                 DeviceUpdateLEDs();
             }
             else
             {
+                EnsureInitializedForControl();
                 DeviceUpdateLEDs();
                 CallFlag_UpdateLEDs = false;
             }

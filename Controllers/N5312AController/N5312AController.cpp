@@ -19,8 +19,6 @@ N5312AController::N5312AController(hid_device* dev_handle, const hid_device_info
     dev         = dev_handle;
     location    = info.path;
     name        = dev_name;
-
-    SendInit();
 }
 
 N5312AController::~N5312AController()

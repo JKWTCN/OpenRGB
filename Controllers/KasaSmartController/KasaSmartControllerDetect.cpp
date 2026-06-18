@@ -44,11 +44,6 @@ void DetectKasaSmartControllers()
                 std::string name          = kasa_smart_settings["devices"][device_idx]["name"];
 
                 KasaSmartController* controller = new KasaSmartController(kasa_smart_ip, name);
-                if(!controller->Initialize())
-                {
-                    continue;
-                }
-
                 RGBController_KasaSmart* rgb_controller = new RGBController_KasaSmart(controller);
                 ResourceManager::get()->RegisterRGBController(rgb_controller);
             }

@@ -19,8 +19,6 @@ XPGSummonerController::XPGSummonerController(hid_device *dev_handle, const char 
     location = path;
     name     = dev_name;
     usb_pid  = pid;
-
-    SendInitialize();
 }
 
 XPGSummonerController::~XPGSummonerController()

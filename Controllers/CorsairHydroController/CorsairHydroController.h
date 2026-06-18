@@ -68,6 +68,7 @@ public:
                             std::vector<RGBColor> & colors,
                             unsigned char           speed
                         );
+    void            SendInit();
 
 private:
     libusb_device_handle*   dev;
@@ -85,8 +86,6 @@ private:
                         );
 
     void            SendFirmwareRequest();
-
-    void            SendInit();
 
     void            SendSpeed
                         (

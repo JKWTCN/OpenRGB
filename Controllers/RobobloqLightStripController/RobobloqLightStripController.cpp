@@ -29,10 +29,8 @@ RobobloqLightStripController::RobobloqLightStripController(hid_device* dev_handl
     location    = path;
     name        = dev_name;
     packet_index = 0x02;
-    led_count    = 0;
-
-    RequestDeviceInfo();
-    Initialize();
+    led_count    = 71;
+    physical_size = 34;
 }
 
 RobobloqLightStripController::~RobobloqLightStripController()

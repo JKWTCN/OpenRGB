@@ -36,6 +36,7 @@ public:
     CreativeSoundBlasterAE5Controller_Windows();
     ~CreativeSoundBlasterAE5Controller_Windows();
 
+    bool                    Detect();
     bool                    Initialize();
     std::string             GetDeviceLocation();
     std::string             GetDeviceName();

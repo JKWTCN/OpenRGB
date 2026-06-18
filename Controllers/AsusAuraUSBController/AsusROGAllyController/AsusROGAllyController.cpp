@@ -18,8 +18,6 @@ ROGAllyController::ROGAllyController(hid_device* dev_handle, const char* path, s
     dev         = dev_handle;
     location    = path;
     name        = dev_name;
-
-    SendInitialization();
 }
 
 ROGAllyController::~ROGAllyController()

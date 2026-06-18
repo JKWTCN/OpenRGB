@@ -29,6 +29,7 @@ public:
     std::string     GetNameString();
     std::string     GetSerialString();
 
+    void            SendInit();
     void            SendDirect(RGBColor color);
 
 private:
@@ -36,5 +37,4 @@ private:
     std::string     location;
     std::string     name;
 
-    void            SendInit();
 };

@@ -59,6 +59,7 @@ public:
 
     void                    SetChannelLEDs(unsigned char channel, RGBColor * colors, unsigned int num_colors);
     void                    SetMode(unsigned char mode, unsigned char speed);
+    void                    SendInit();
 
 private:
     hid_device*             dev;
@@ -69,8 +70,6 @@ private:
     std::string             location;
 
     uint8_t                 tt_trio_buffer[THERMALTAKE_TRIO_NUM_CHANNELS][THERMALTAKE_TRIO_PACKET_SIZE];
-
-    void                    SendInit();
 
     void                    SendFan();
     void                    SendSave();

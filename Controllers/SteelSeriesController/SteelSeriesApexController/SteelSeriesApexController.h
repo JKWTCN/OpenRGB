@@ -46,6 +46,7 @@ public:
     void SetLEDsDirect(std::vector<RGBColor> colors);
 
     std::string GetSerial() override;
+    void    SendInitialization() override;
 
 private:
 
@@ -53,7 +54,5 @@ private:
                 (
                 unsigned char   profile
                 );
-
-    void    SendInitialization();
 
 };

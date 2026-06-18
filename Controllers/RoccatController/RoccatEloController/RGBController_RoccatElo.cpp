@@ -28,6 +28,11 @@ RGBController_RoccatElo::RGBController_RoccatElo(RoccatEloController* controller
 {
     controller                          = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name                                = controller->GetNameString();
     vendor                              = "Roccat";
     type                                = DEVICE_TYPE_HEADSET;

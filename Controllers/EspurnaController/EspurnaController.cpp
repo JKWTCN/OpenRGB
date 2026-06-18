@@ -17,11 +17,13 @@
 
 EspurnaController::EspurnaController()
 {
-
+    tcpport = NULL;
+    memset(espurna_apikey, 0, sizeof(espurna_apikey));
 }
 
 EspurnaController::~EspurnaController()
 {
+    delete tcpport;
 }
 
 void EspurnaController::Initialize(char* ledstring)
@@ -54,8 +56,6 @@ void EspurnaController::InitializeEspurna(char * clientname, char * port, char *
     port_name   = port;
 
     strcpy(espurna_apikey, apikey);
-    tcpport = new net_port;
-    tcpport->tcp_client(client_name.c_str(), port_name.c_str());
 }
 
 std::string EspurnaController::GetLocation()
@@ -65,6 +65,12 @@ std::string EspurnaController::GetLocation()
 
 void EspurnaController::SetLEDs(std::vector<RGBColor> colors)
 {
+    if(tcpport == NULL)
+    {
+        tcpport = new net_port;
+        tcpport->tcp_client(client_name.c_str(), port_name.c_str());
+    }
+
     if (tcpport != NULL)
     {
         RGBColor color = colors[0];

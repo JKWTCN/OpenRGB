@@ -40,6 +40,19 @@ CreativeSoundBlasterAE5Controller_Windows::~CreativeSoundBlasterAE5Controller_Wi
 
 bool CreativeSoundBlasterAE5Controller_Windows::Initialize()
 {
+    if(!device_found || hdaudio_device_path.empty())
+    {
+        if(!Detect())
+        {
+            return false;
+        }
+    }
+
+    return OpenDevice();
+}
+
+bool CreativeSoundBlasterAE5Controller_Windows::Detect()
+{
     if(!FindDevice())
     {
         return false;
@@ -52,7 +65,7 @@ bool CreativeSoundBlasterAE5Controller_Windows::Initialize()
         return false;
     }
 
-    return OpenDevice();
+    return true;
 }
 
 /*---------------------------------------------------------*\

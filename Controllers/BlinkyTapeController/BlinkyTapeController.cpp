@@ -36,19 +36,11 @@ BlinkyTapeController::~BlinkyTapeController()
 void BlinkyTapeController::Initialize(const std::string &portname)
 {
     port_name   = portname;
-
-    serialport  = new serial_port();
-
-    if(!serialport->serial_open(port_name.c_str(), 115200))
-    {
-        delete serialport;
-        serialport = nullptr;
-    }
 }
 
 std::string BlinkyTapeController::GetLocation()
 {
-    if(serialport == nullptr)
+    if(port_name.empty())
     {
         return("");
     }
@@ -63,6 +55,8 @@ char* BlinkyTapeController::GetLEDString()
 
 void BlinkyTapeController::SetLEDs(std::vector<RGBColor> colors)
 {
+    OpenPort();
+
     if(serialport == nullptr)
     {
         return;
@@ -102,4 +96,20 @@ void BlinkyTapeController::SetLEDs(std::vector<RGBColor> colors)
     | Send the packet                                               |
     \*-------------------------------------------------------------*/
     serialport->serial_write((char *)serial_buf.data(), packet_size);
+}
+
+void BlinkyTapeController::OpenPort()
+{
+    if(serialport != nullptr || port_name.empty())
+    {
+        return;
+    }
+
+    serialport  = new serial_port();
+
+    if(!serialport->serial_open(port_name.c_str(), 115200))
+    {
+        delete serialport;
+        serialport = nullptr;
+    }
 }

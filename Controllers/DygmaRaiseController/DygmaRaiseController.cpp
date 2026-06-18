@@ -37,15 +37,16 @@ DygmaRaiseController::DygmaRaiseController()
 
 DygmaRaiseController::~DygmaRaiseController()
 {
-    serialport->serial_close();
-    delete serialport;
+    if(serialport != nullptr)
+    {
+        serialport->serial_close();
+        delete serialport;
+    }
 }
 
 void DygmaRaiseController::Initialize(char* port)
 {
     port_name = port;
-
-    serialport = new serial_port(port_name.c_str(), DYGMA_RAISE_BAUD);
 }
 
 std::string DygmaRaiseController::GetDeviceLocation()
@@ -55,6 +56,13 @@ std::string DygmaRaiseController::GetDeviceLocation()
 
 void DygmaRaiseController::SendDirect(std::vector<RGBColor>colors, size_t led_num)
 {
+    OpenPort();
+
+    if(serialport == nullptr)
+    {
+        return;
+    }
+
     char serial_buf[MAX_LEN];
 
     /*-----------------------------------------------------*\
@@ -97,4 +105,14 @@ void DygmaRaiseController::SendDirect(std::vector<RGBColor>colors, size_t led_nu
     | Send packet                                           |
     \*-----------------------------------------------------*/
     serialport->serial_write(serial_buf, actual_length);
+}
+
+void DygmaRaiseController::OpenPort()
+{
+    if(serialport != nullptr || port_name.empty())
+    {
+        return;
+    }
+
+    serialport = new serial_port(port_name.c_str(), DYGMA_RAISE_BAUD);
 }

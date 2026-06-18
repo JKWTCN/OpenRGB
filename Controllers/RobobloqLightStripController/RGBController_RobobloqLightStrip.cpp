@@ -26,6 +26,28 @@ RGBController_RobobloqLightStrip::RGBController_RobobloqLightStrip(RobobloqLight
 {
     controller                      = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        unsigned int previous_led_count = (unsigned int)colors.size();
+
+        controller->Initialize();
+
+        if((unsigned int)controller->GetLEDCount() != previous_led_count)
+        {
+            std::vector<RGBColor> previous_colors = colors;
+            SetupZones();
+
+            for(unsigned int color_idx = 0; color_idx < colors.size() && color_idx < previous_colors.size(); color_idx++)
+            {
+                colors[color_idx] = previous_colors[color_idx];
+            }
+        }
+
+        description             = "Robobloq Monitor Light Strip (" + std::to_string(controller->GetPhysicalSizeInInches()) + "\")";
+        serial                  = controller->GetSerialString();
+        version                 = controller->GetFirmwareVersion();
+    });
+
     name                            = controller->GetDeviceName();
     vendor                          = "Robobloq";
     description                     = "Robobloq Monitor Light Strip (" + std::to_string(controller->GetPhysicalSizeInInches()) + "\")";

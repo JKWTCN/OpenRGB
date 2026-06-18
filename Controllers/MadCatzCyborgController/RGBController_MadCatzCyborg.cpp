@@ -24,6 +24,12 @@ RGBController_MadCatzCyborg::RGBController_MadCatzCyborg(MadCatzCyborgController
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->Initialize();
+        controller->SetIntensity(modes[active_mode].brightness);
+    });
+
     name        = "MadCatz Cyborg Gaming Light";
     vendor      = "MadCatz";
     type        = DEVICE_TYPE_ACCESSORY;
@@ -42,8 +48,6 @@ RGBController_MadCatzCyborg::RGBController_MadCatzCyborg(MadCatzCyborgController
     modes.push_back(Direct);
 
     SetupZones();
-
-    controller->SetIntensity(modes[active_mode].brightness);
 }
 
 RGBController_MadCatzCyborg::~RGBController_MadCatzCyborg()

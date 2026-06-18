@@ -26,6 +26,11 @@ RGBController_KasaSmart::RGBController_KasaSmart(KasaSmartController* controller
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->Initialize();
+    });
+
     name        = controller->GetManufacturer() + " " + controller->GetName();
     vendor      = controller->GetManufacturer();
     version     = controller->GetVersion();

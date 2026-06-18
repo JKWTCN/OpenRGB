@@ -34,6 +34,11 @@ RGBController_AsusROGAlly::RGBController_AsusROGAlly(ROGAllyController* controll
     location                    = controller->GetDeviceLocation();
     serial                      = controller->GetSerialString();
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialization();
+    });
+
     mode Direct;
     Direct.name                 = "Direct";
     Direct.value                = ROG_ALLY_MODE_DIRECT;

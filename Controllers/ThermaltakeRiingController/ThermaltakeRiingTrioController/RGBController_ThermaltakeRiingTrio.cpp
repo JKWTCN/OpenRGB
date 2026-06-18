@@ -26,6 +26,11 @@ RGBController_ThermaltakeRiingTrio::RGBController_ThermaltakeRiingTrio(Thermalta
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name        = "Thermaltake Trio";
     vendor      = "Thermaltake";
     type        = DEVICE_TYPE_COOLER;

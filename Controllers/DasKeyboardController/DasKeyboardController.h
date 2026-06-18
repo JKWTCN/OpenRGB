@@ -31,6 +31,7 @@ public:
     void SendColors(unsigned char key_id, unsigned char mode, unsigned char red, unsigned char green, unsigned char blue);
 
     void SendApply();
+    void SendInitialize();
 
 private:
     hid_device  *dev;
@@ -38,8 +39,6 @@ private:
     std::string name;
     std::string version;
     bool        useTraditionalSendData;
-
-    void SendInitialize();
 
     void SendData(const unsigned char *data, unsigned int length);
 

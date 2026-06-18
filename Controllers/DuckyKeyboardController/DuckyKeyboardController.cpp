@@ -19,8 +19,6 @@ DuckyKeyboardController::DuckyKeyboardController(hid_device* dev_handle, const c
     location    = path;
     name        = dev_name;
     usb_pid     = pid;
-
-    SendInitialize();
 }
 
 DuckyKeyboardController::~DuckyKeyboardController()

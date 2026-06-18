@@ -880,6 +880,7 @@ bool OptionProfile(std::string argument, std::vector<RGBController *>& rgb_contr
         {
             RGBController* device = rgb_controllers[controller_idx];
 
+            device->EnsureInitializedForControl();
             device->DeviceUpdateMode();
             LOG_DEBUG("[CLI] Updating mode for %s to %i", device->GetName().c_str(), device->active_mode);
 
@@ -1263,6 +1264,7 @@ void ApplyOptions(DeviceOptions& options, std::vector<RGBController *>& rgb_cont
     | Set device mode                                           |
     \*---------------------------------------------------------*/
     device->active_mode = mode;
+    device->EnsureInitializedForControl();
     device->DeviceUpdateMode();
 
     /*---------------------------------------------------------*\

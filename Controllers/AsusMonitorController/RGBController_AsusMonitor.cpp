@@ -33,7 +33,10 @@ RGBController_AsusMonitor::RGBController_AsusMonitor(AsusMonitorController* cont
     serial                              = controller->GetSerialString();
     number_of_leds                      = controller->GetNumberOfLEDs();
 
-    controller->SendInit();
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
 
     mode Direct;
     Direct.name                         = "Direct";

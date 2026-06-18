@@ -26,6 +26,11 @@ RGBController_NZXTHue1::RGBController_NZXTHue1(NZXTHue1Controller* controller_pt
 {
     controller                  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->Initialize();
+    });
+
     name                        = controller->GetName();
     vendor                      = "NZXT";
     type                        = DEVICE_TYPE_LEDSTRIP;

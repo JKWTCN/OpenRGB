@@ -26,6 +26,11 @@ RGBController_ThermaltakeRiingQuad::RGBController_ThermaltakeRiingQuad(Thermalta
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name        = controller->GetDeviceName();
     vendor      = "Thermaltake";
     type        = DEVICE_TYPE_COOLER;

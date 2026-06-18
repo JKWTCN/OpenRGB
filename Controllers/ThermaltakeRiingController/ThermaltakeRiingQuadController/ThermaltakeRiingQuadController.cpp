@@ -29,8 +29,6 @@ ThermaltakeRiingQuadController::ThermaltakeRiingQuadController(hid_device* dev_h
     hid_get_product_string(dev, name_string, HID_MAX_STR);
     device_name.append(" ").append(StringUtils::wstring_to_string(name_string));
 
-    SendInit();
-
     /*-----------------------------------------------------*\
     | The Riing Quad only seems to run in direct mode and   |
     | requires a packet within seconds to remain in the     |

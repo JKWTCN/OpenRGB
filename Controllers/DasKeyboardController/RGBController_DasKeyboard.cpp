@@ -207,6 +207,11 @@ RGBController_DasKeyboard::RGBController_DasKeyboard(DasKeyboardController* cont
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     for(unsigned int ii = 0; ii < zone_sizes[0]; ii++)
     {
         double_buffer.push_back(-1);

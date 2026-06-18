@@ -50,6 +50,7 @@ public:
 
     void        SetColor(RGBColor color);
     void        SetMode(RGBColor color, unsigned char mode_value, unsigned char brightness, unsigned char speed);
+    void        SendInit();
 
 private:
     hid_device* dev;
@@ -58,5 +59,4 @@ private:
     std::string name;
     std::string version;
 
-    void        SendInit();
 };

@@ -30,6 +30,11 @@ RGBController_N5312A::RGBController_N5312A(N5312AController* controller_ptr)
 {
     controller                          = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name                                = controller->GetNameString();
     vendor                              = "Unknown";
     type                                = DEVICE_TYPE_MOUSE;

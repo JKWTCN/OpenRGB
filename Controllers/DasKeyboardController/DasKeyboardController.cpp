@@ -22,8 +22,6 @@ DasKeyboardController::DasKeyboardController(hid_device *dev_handle, const char 
     name                   = dev_name;
     version                = "";
     useTraditionalSendData = false;
-
-    SendInitialize();
 }
 
 DasKeyboardController::~DasKeyboardController()

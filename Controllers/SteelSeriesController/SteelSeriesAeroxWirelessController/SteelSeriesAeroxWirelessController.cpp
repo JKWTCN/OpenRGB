@@ -51,7 +51,6 @@ SteelSeriesAeroxWirelessController::SteelSeriesAeroxWirelessController(hid_devic
             name = STEELSERIES_AEROX3_WIRELESS_NAME;
             break;
     }
-    SendInit();
 }
 
 SteelSeriesAeroxWirelessController::~SteelSeriesAeroxWirelessController()

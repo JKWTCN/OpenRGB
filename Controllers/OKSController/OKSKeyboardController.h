@@ -77,6 +77,7 @@ public:
 
     void            SendColors(unsigned char* color_data, unsigned int color_data_size);
     void            SendKeyboardModeEx(const mode &m, unsigned char red, unsigned char green, unsigned char blue);
+    void            SendInitialize();
 
 private:
     hid_device*     dev;
@@ -85,7 +86,6 @@ private:
     unsigned short  usb_pid;
 
     void            Send(const uint8_t bin[64], const uint16_t len);
-    void            SendInitialize();
     uint8_t         kb2_ComputeChecksum(const union kb2_port_t* const Pack);
     int             kb2_add_32b(union kb2_port_t* const Pack, const uint32_t value);
     void            kb2M_init(union kb2_port_t* const Pack, const enum kb2_cmd cmd);

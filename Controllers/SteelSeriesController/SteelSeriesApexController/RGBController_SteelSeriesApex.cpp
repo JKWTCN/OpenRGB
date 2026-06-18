@@ -43,6 +43,11 @@ RGBController_SteelSeriesApex::RGBController_SteelSeriesApex(SteelSeriesApexBase
 {
     controller          = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialization();
+    });
+
     name                = controller->GetName();
     vendor              = "SteelSeries";
     type                = DEVICE_TYPE_KEYBOARD;

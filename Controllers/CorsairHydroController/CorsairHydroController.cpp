@@ -29,8 +29,6 @@ CorsairHydroController::CorsairHydroController(libusb_device_handle* dev_handle,
     location_stream << std::hex << std::setfill('0') << std::setw(4) << descriptor.idVendor << ":" << std::hex << std::setfill('0') << std::setw(4) << descriptor.idProduct;
     location = location_stream.str();
 
-    SendInit();
-
     SendFirmwareRequest();
 }
 

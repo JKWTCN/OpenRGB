@@ -58,6 +58,7 @@ public:
 
     void            SetChannelLEDs(unsigned char channel, RGBColor * colors, unsigned int num_colors);
     void            SetMode(unsigned char mode, unsigned char speed);
+    void            SendInit();
 
 private:
     hid_device*     dev;
@@ -65,8 +66,6 @@ private:
     unsigned char   current_mode;
     unsigned char   current_speed;
     std::string     location;
-
-    void    SendInit();
 
     void SendRGB
         (

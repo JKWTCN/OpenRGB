@@ -24,11 +24,11 @@ public:
     std::string GetLocation();
 
     void SetLED(std::vector<RGBColor>& colors);
+    void SendInit();
 
 private:
     libusb_device_handle* dev;
     std::string firmware_version;
     std::string location;
 
-    void SendInit();
 };

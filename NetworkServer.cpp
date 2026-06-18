@@ -767,6 +767,7 @@ void NetworkServer::ListenThreadFunction(NetworkClientInfo * client_info)
                         memcpy(&zone, &data[sizeof(unsigned int)], sizeof(int));
 
                         controllers[header.pkt_dev_idx]->SetZoneColorDescription((unsigned char *)data);
+                        controllers[header.pkt_dev_idx]->EnsureInitializedForControl();
                         controllers[header.pkt_dev_idx]->UpdateZoneLEDs(zone);
                     }
                 }
@@ -796,6 +797,7 @@ void NetworkServer::ListenThreadFunction(NetworkClientInfo * client_info)
                         memcpy(&led, data, sizeof(int));
 
                         controllers[header.pkt_dev_idx]->SetSingleLEDColorDescription((unsigned char *)data);
+                        controllers[header.pkt_dev_idx]->EnsureInitializedForControl();
                         controllers[header.pkt_dev_idx]->UpdateSingleLED(led);
                     }
                 }

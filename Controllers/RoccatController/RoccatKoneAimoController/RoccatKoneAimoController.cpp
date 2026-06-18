@@ -25,8 +25,6 @@ RoccatKoneAimoController::RoccatKoneAimoController(hid_device* dev_handle, char 
     memset(usb_colors_buf, 0x00, USB_COLOR_BUFF_LEN);
     usb_colors_buf[0x00]   = 0x0D;
     usb_colors_buf[0x01]   = 0x2E;
-
-    SendInit();
 }
 
 RoccatKoneAimoController::~RoccatKoneAimoController()

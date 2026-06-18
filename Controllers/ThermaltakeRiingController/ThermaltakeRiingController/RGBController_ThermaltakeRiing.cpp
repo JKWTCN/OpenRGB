@@ -26,6 +26,11 @@ RGBController_ThermaltakeRiing::RGBController_ThermaltakeRiing(ThermaltakeRiingC
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name        = "Thermaltake Riing";
     vendor      = "Thermaltake";
     type        = DEVICE_TYPE_COOLER;

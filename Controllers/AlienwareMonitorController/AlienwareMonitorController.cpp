@@ -20,8 +20,6 @@ AlienwareMonitorController::AlienwareMonitorController(hid_device *dev_handle, c
     dev         = dev_handle;
     location    = path;
     name        = dev_name;
-
-    Initialize();
 }
 
 AlienwareMonitorController::~AlienwareMonitorController()

@@ -18,15 +18,15 @@ void DetectCreativeAE5Device()
 
     CreativeSoundBlasterAE5Controller_Windows* controller = new CreativeSoundBlasterAE5Controller_Windows();
 
-    if(controller->Initialize())
+    if(controller->Detect())
     {
-        LOG_INFO("[Creative SoundBlaster AE-5] Device initialized successfully, registering controller");
+        LOG_INFO("[Creative SoundBlaster AE-5] Device detected successfully, registering controller");
         RGBController_CreativeSoundBlasterAE5* rgb_controller = new RGBController_CreativeSoundBlasterAE5(controller);
         ResourceManager::get()->RegisterRGBController(rgb_controller);
     }
     else
     {
-        LOG_WARNING("[Creative SoundBlaster AE-5] Device initialization failed");
+        LOG_WARNING("[Creative SoundBlaster AE-5] Device detection failed");
         delete controller;
     }
 }

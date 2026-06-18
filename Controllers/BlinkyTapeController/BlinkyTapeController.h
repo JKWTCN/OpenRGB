@@ -34,6 +34,8 @@ public:
     void        SetLEDs(std::vector<RGBColor> colors);
 
 private:
+    void OpenPort();
+
     char led_string[1024];
     std::string port_name;
     serial_port *serialport = nullptr;

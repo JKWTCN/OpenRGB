@@ -33,6 +33,11 @@ RGBController_AlienwareMonitor::RGBController_AlienwareMonitor(AlienwareMonitorC
     location                = controller->GetLocation();
     serial                  = controller->GetSerialString();
 
+    SetDeviceInitializer([this]()
+    {
+        controller->Initialize();
+    });
+
     mode Direct;
     Direct.name             = "Direct";
     Direct.flags            = MODE_FLAG_HAS_PER_LED_COLOR;

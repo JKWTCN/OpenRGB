@@ -32,6 +32,8 @@ public:
     std::string GetDeviceLocation();
     void SendDirect(std::vector<RGBColor>colors, size_t led_num);
 private:
+    void OpenPort();
+
     std::string                 location;
     std::string                 port_name;
     serial_port *               serialport = nullptr;

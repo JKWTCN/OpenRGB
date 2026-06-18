@@ -72,9 +72,12 @@ public:
     int num_leds;
 
 private:
+    void EnsureConnection();
+
     int baud_rate;
 
     char led_string[1024];
+    std::string i2c_name;
     std::string port_name;
     std::string client_name;
     std::string name;

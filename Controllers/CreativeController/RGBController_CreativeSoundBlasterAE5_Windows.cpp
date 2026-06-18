@@ -24,6 +24,11 @@ RGBController_CreativeSoundBlasterAE5::RGBController_CreativeSoundBlasterAE5(Cre
 {
     controller                  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->Initialize();
+    });
+
     name                        = controller->GetDeviceName();
     vendor                      = "Creative Labs";
     type                        = DEVICE_TYPE_SPEAKER;

@@ -45,8 +45,6 @@ WootingV2KeyboardController::WootingV2KeyboardController(hid_device* dev_handle,
 
     hid_get_product_string(dev, tmpName, szTemp);
     description = std::string(StringUtils::wstring_to_string(tmpName));
-
-    SendInitialize();
 }
 
 WootingV2KeyboardController::~WootingV2KeyboardController()

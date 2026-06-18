@@ -19,6 +19,9 @@ using json = nlohmann::json;
 KasaSmartController::KasaSmartController(std::string ipAddress, std::string name)
 {
     this->name = name;
+    is_initialized = false;
+    retry_count = 0;
+    kasa_type = KASA_SMART_TYPE_LIGHT;
 
     /*------------------------------------------------*\
     | Fill in location string with device's IP address |

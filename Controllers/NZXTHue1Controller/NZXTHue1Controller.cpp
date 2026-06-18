@@ -18,8 +18,6 @@ NZXTHue1Controller::NZXTHue1Controller(hid_device* dev_handle, unsigned int /*fa
     dev         = dev_handle;
     location    = path;
     name        = dev_name;
-
-    Initialize();
 }
 
 NZXTHue1Controller::~NZXTHue1Controller()

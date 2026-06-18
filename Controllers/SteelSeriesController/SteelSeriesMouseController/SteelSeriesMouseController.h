@@ -60,6 +60,7 @@ public:
     | Save has a common function but can be overridden                  |
     \*-----------------------------------------------------------------*/
     virtual void                Save();
+    virtual void                SendInit();
 
     virtual steelseries_mouse   GetMouse()                                                          = 0;
     virtual std::string         GetFirmwareVersion()                                                = 0;

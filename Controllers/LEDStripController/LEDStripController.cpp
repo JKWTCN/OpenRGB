@@ -17,7 +17,13 @@
 
 LEDStripController::LEDStripController(std::string dev_name)
 {
-    name = dev_name;
+    name       = dev_name;
+    serialport = NULL;
+    udpport    = NULL;
+    i2cport    = NULL;
+    i2c_addr   = 255;
+    num_leds   = 0;
+    baud_rate  = 115200;
 }
 
 
@@ -102,6 +108,8 @@ void LEDStripController::Initialize(char* ledstring, led_protocol proto)
 
 void LEDStripController::InitializeI2C(char* i2cname)
 {
+    i2c_name = i2cname;
+
     for(unsigned int i2c_idx = 0; i2c_idx < ResourceManager::get()->GetI2CBusses().size(); i2c_idx++)
     {
         if(ResourceManager::get()->GetI2CBusses()[i2c_idx]->device_name == std::string(i2cname))
@@ -123,7 +131,7 @@ void LEDStripController::InitializeSerial(char* portname, int baud)
     portname = strtok(portname, "\r");
     port_name = portname;
     baud_rate = baud;
-    serialport = new serial_port(port_name.c_str(), baud_rate);
+    serialport = NULL;
     udpport = NULL;
     i2cport = NULL;
 }
@@ -133,7 +141,7 @@ void LEDStripController::InitializeUDP(char * clientname, char * port)
     client_name = clientname;
     port_name   = port;
 
-    udpport = new net_port(client_name.c_str(), port_name.c_str());
+    udpport = NULL;
     serialport = NULL;
     i2cport = NULL;
 }
@@ -145,17 +153,17 @@ char* LEDStripController::GetLEDString()
 
 std::string LEDStripController::GetLocation()
 {
-    if(serialport != NULL)
+    if(protocol != LED_PROTOCOL_BASIC_I2C && client_name.empty() && !port_name.empty())
     {
         return("COM: " + port_name);
     }
-    else if(udpport != NULL)
+    else if(!client_name.empty())
     {
         return("UDP: " + client_name + ":" + port_name);
     }
-    else if(i2cport != NULL)
+    else if(protocol == LED_PROTOCOL_BASIC_I2C && !i2c_name.empty())
     {
-        return("I2C: " + std::string(i2cport->device_name) + ", Address " + std::to_string(i2c_addr));
+        return("I2C: " + i2c_name + ", Address " + std::to_string(i2c_addr));
     }
     else
     {
@@ -170,6 +178,18 @@ std::string LEDStripController::GetName()
 
 void LEDStripController::SetLEDs(std::vector<RGBColor> colors)
 {
+    EnsureConnection();
+
+    if(protocol != LED_PROTOCOL_BASIC_I2C && serialport == NULL && udpport == NULL)
+    {
+        return;
+    }
+
+    if(protocol == LED_PROTOCOL_BASIC_I2C && i2cport == NULL)
+    {
+        return;
+    }
+
     switch(protocol)
     {
         case LED_PROTOCOL_KEYBOARD_VISUALIZER:
@@ -187,6 +207,29 @@ void LEDStripController::SetLEDs(std::vector<RGBColor> colors)
         case LED_PROTOCOL_BASIC_I2C:
             SetLEDsBasicI2C(colors);
             break;
+    }
+}
+
+void LEDStripController::EnsureConnection()
+{
+    if(protocol == LED_PROTOCOL_BASIC_I2C)
+    {
+        return;
+    }
+
+    if(client_name.empty())
+    {
+        if(serialport == NULL && !port_name.empty())
+        {
+            serialport = new serial_port(port_name.c_str(), baud_rate);
+        }
+    }
+    else
+    {
+        if(udpport == NULL)
+        {
+            udpport = new net_port(client_name.c_str(), port_name.c_str());
+        }
     }
 }
 

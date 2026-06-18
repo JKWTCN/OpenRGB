@@ -111,6 +111,11 @@ RGBController_OKSKeyboard::RGBController_OKSKeyboard(OKSKeyboardController* cont
 {
     controller              = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     name                    = controller->GetNameString();
     vendor                  = "OKS";
     type                    = DEVICE_TYPE_KEYBOARD;

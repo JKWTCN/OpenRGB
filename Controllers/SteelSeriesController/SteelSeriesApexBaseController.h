@@ -43,6 +43,7 @@ public:
     std::string         GetName();
     virtual std::string GetSerial();
     virtual std::string GetVersion();
+    virtual void        SendInitialization();
 
     virtual void        SetMode(unsigned char mode, std::vector<RGBColor> colors)  = 0;
 

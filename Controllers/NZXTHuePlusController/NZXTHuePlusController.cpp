@@ -19,22 +19,21 @@ using namespace std::chrono_literals;
 
 HuePlusController::HuePlusController()
 {
-
+    channel_leds[HUE_PLUS_CHANNEL_1_IDX] = 0;
+    channel_leds[HUE_PLUS_CHANNEL_2_IDX] = 0;
 }
 
 HuePlusController::~HuePlusController()
 {
-    delete serialport;
+    if(serialport != nullptr)
+    {
+        delete serialport;
+    }
 }
 
 void HuePlusController::Initialize(char* port)
 {
     port_name = port;
-
-    serialport = new serial_port(port_name.c_str(), HUE_PLUS_BAUD);
-
-    channel_leds[HUE_PLUS_CHANNEL_1_IDX] = GetLEDsOnChannel(HUE_PLUS_CHANNEL_1);
-    channel_leds[HUE_PLUS_CHANNEL_2_IDX] = GetLEDsOnChannel(HUE_PLUS_CHANNEL_2);
 }
 
 std::string HuePlusController::GetLocation()
@@ -44,6 +43,13 @@ std::string HuePlusController::GetLocation()
 
 unsigned int HuePlusController::GetLEDsOnChannel(unsigned int channel)
 {
+    EnsureConnection();
+
+    if(serialport == nullptr)
+    {
+        return(0);
+    }
+
     unsigned char serial_buf[] =
     {
         0x8D, 0x00, 0x00, 0x00, 0x00
@@ -88,6 +94,13 @@ void HuePlusController::SetChannelEffect
     unsigned int    num_colors
     )
 {
+    EnsureConnection();
+
+    if(serialport == nullptr)
+    {
+        return;
+    }
+
     unsigned char color_data[120];
 
     /*-----------------------------------------------------*\
@@ -157,6 +170,13 @@ void HuePlusController::SetChannelLEDs
     unsigned int    num_colors
     )
 {
+    EnsureConnection();
+
+    if(serialport == nullptr)
+    {
+        return;
+    }
+
     unsigned char color_data[120];
 
     /*-----------------------------------------------------*\
@@ -180,6 +200,16 @@ void HuePlusController::SetChannelLEDs
 /*-------------------------------------------------------------------------------------------------*\
 | Private packet sending functions.                                                                 |
 \*-------------------------------------------------------------------------------------------------*/
+
+void HuePlusController::EnsureConnection()
+{
+    if(serialport != nullptr || port_name.empty())
+    {
+        return;
+    }
+
+    serialport = new serial_port(port_name.c_str(), HUE_PLUS_BAUD);
+}
 
 void HuePlusController::SendPacket
     (

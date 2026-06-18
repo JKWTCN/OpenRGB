@@ -42,6 +42,7 @@ public:
             unsigned char*  color_data,
             unsigned int    color_data_size
             );
+    void SendInitialize();
 
 private:
     hid_device*             dev;
@@ -49,7 +50,6 @@ private:
     std::string             name;
     unsigned short          usb_pid;
 
-    void SendInitialize();
     void SendInitializeColorPacket();
     unsigned int SendColorDataPacket
         (

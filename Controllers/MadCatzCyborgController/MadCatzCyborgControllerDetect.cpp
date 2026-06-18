@@ -33,7 +33,6 @@ void DetectMadCatzCyborgControllers(hid_device_info* info, const std::string&  /
     if(dev)
     {
         MadCatzCyborgController* controller = new MadCatzCyborgController(dev, info->path);
-        controller->Initialize();
         
         RGBController_MadCatzCyborg* rgb_controller = new RGBController_MadCatzCyborg(controller);
         

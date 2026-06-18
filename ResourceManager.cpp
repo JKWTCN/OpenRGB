@@ -347,6 +347,9 @@ void ResourceManager::RegisterRGBController(RGBController *rgb_controller)
 
             /* Reuse the existing controller */
             rgb_controller = reused_controller;
+
+            /* Force lazy device initialization to run again after rediscovery */
+            rgb_controller->ResetDeviceInitialization();
         }
     }
 

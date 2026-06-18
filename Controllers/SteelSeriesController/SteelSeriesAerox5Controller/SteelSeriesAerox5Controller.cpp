@@ -14,7 +14,6 @@
 
 SteelSeriesAerox5Controller::SteelSeriesAerox5Controller(hid_device* dev_handle, steelseries_type proto_type, const char* path, std::string dev_name) : SteelSeriesMouseController(dev_handle, proto_type, path, dev_name)
 {
-    SendInit();
 }
 
 SteelSeriesAerox5Controller::~SteelSeriesAerox5Controller()

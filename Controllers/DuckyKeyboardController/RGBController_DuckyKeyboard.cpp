@@ -203,6 +203,11 @@ RGBController_DuckyKeyboard::RGBController_DuckyKeyboard(DuckyKeyboardController
 {
     controller  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     name        = controller->GetNameString();
     vendor      = "Ducky";
     type        = DEVICE_TYPE_KEYBOARD;

@@ -29,8 +29,6 @@ ThermaltakeRiingTrioController::ThermaltakeRiingTrioController(hid_device* dev_h
     hid_get_product_string(dev, name_string, HID_MAX_STR);
     device_name.append(" ").append(StringUtils::wstring_to_string(name_string));
 
-    SendInit();
-
     memset(tt_trio_buffer, 0x00, sizeof(tt_trio_buffer));
     unsigned char temp_buffer[3]    = { 0x00, 0x32, 0x52 };
 

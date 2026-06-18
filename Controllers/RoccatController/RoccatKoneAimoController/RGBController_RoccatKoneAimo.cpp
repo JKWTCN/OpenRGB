@@ -26,6 +26,11 @@ RGBController_RoccatKoneAimo::RGBController_RoccatKoneAimo(RoccatKoneAimoControl
 {
     controller          = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     name                = controller->GetName();
     vendor              = "Roccat";
     type                = DEVICE_TYPE_MOUSE;

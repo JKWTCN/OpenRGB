@@ -614,6 +614,11 @@ RGBController_WootingKeyboard::RGBController_WootingKeyboard(WootingKeyboardCont
 {
     controller          = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     LOG_DEBUG("%sAdding meta data", WOOTING_CONTROLLER_NAME);
     name                = controller->GetName();
     vendor              = controller->GetVendor();

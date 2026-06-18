@@ -44,6 +44,7 @@ public:
     steelseries_mouse   GetMouse() override;
 
     void                Save() override;
+    void                SendInit() override;
     void                SetLightEffectAll(uint8_t effect) override;
     void                SetColor
                             (
@@ -55,7 +56,6 @@ public:
                             ) override;
 
 private:
-    void                SendInit();
     void                SetBrightness(uint8_t brightness);
     uint8_t             current_brightness;
 };

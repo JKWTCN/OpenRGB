@@ -98,6 +98,8 @@ public:
     unsigned int    channel_leds[HUE_PLUS_NUM_CHANNELS];
 
 private:
+    void            EnsureConnection();
+
     std::string     port_name;
     serial_port     *serialport = nullptr;
 

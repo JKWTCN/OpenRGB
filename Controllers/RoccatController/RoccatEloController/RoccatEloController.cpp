@@ -19,8 +19,6 @@ RoccatEloController::RoccatEloController(hid_device* dev_handle, const hid_devic
     dev                 = dev_handle;
     location            = info.path;
     name                = dev_name;
-
-    SendInit();
 }
 
 RoccatEloController::~RoccatEloController()

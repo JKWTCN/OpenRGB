@@ -61,3 +61,8 @@ void SteelSeriesMouseController::Save()
 
     hid_write(dev, usb_buf, SAVE_BUFFER_SIZE);
 }
+
+void SteelSeriesMouseController::SendInit()
+{
+
+}

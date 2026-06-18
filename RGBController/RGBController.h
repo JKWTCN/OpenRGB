@@ -18,6 +18,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <functional>
 
 /*------------------------------------------------------------------*\
 | RGB Color Type and Conversion Macros                               |
@@ -392,6 +393,9 @@ public:
 
     void                    UpdateMode();
     void                    SaveMode();
+    void                    EnsureInitializedForControl();
+    void                    ResetDeviceInitialization();
+    void                    SetDeviceInitializer(std::function<void()> initializer);
 
     void                    DeviceCallThreadFunction();
 
@@ -405,6 +409,7 @@ public:
 
     virtual void            ResizeZone(int zone, int new_size)          = 0;
 
+    virtual void            DeviceInitialize();
     virtual void            DeviceUpdateLEDs()                          = 0;
     virtual void            UpdateZoneLEDs(int zone)                    = 0;
     virtual void            UpdateSingleLED(int led)                    = 0;
@@ -419,11 +424,14 @@ private:
     std::atomic<bool>       CallFlag_UpdateLEDs;
     std::atomic<bool>       CallFlag_UpdateMode;
     std::atomic<bool>       DeviceThreadRunning;
+    std::atomic<bool>       DeviceInitialized;
     //bool                    CallFlag_UpdateZoneLEDs                     = false;
     //bool                    CallFlag_UpdateSingleLED                    = false;
     //bool                    CallFlag_UpdateMode                         = false;
 
     std::mutex                          UpdateMutex;
+    std::mutex                          DeviceInitializeMutex;
+    std::function<void()>               DeviceInitializer;
     std::vector<RGBControllerCallback>  UpdateCallbacks;
     std::vector<void *>                 UpdateCallbackArgs;
 };

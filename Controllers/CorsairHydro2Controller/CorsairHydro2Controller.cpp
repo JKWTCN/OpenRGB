@@ -25,7 +25,6 @@ CorsairHydro2Controller::CorsairHydro2Controller(libusb_device_handle* dev_handl
     location_stream << std::hex << std::setfill('0') << std::setw(4) << descriptor.idVendor << ":" << std::hex << std::setfill('0') << std::setw(4) << descriptor.idProduct;
     location = location_stream.str();
 
-    SendInit();
 }
 
 CorsairHydro2Controller::~CorsairHydro2Controller()

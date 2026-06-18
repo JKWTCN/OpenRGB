@@ -32,6 +32,11 @@ RGBController_CorsairHydro2::RGBController_CorsairHydro2(CorsairHydro2Controller
     type        = DEVICE_TYPE_COOLER;
     location    = controller->GetLocation();
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInit();
+    });
+
     mode Direct;
     Direct.name       = "Direct";
     Direct.value      = 0;
