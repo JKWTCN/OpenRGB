@@ -16,6 +16,7 @@
 #include <chrono>
 
 #include "filesystem.h"
+#include "AppInfo.h"
 
 const char* LogManager::log_codes[] = {"FATAL:", "ERROR:", "Warning:", "Info:", "Verbose:", "Debug:", "Trace:", "Dialog:"};
 
@@ -95,7 +96,7 @@ void LogManager::configure(json config, const filesystem::path& defaultDir)
         | Default template for the logfile name             |
         | The # symbol is replaced with a timestamp         |
         \*-------------------------------------------------*/
-        std::string logtempl = "OpenRGB_#.log";
+        std::string logtempl = "RGBServer_#.log";
 
         if(log_file_enabled)
         {
@@ -155,7 +156,7 @@ void LogManager::configure(json config, const filesystem::path& defaultDir)
             /*---------------------------------------------*\
             | Print Git Commit info, version, etc.          |
             \*---------------------------------------------*/
-            log_stream << "    OpenRGB v" << VERSION_STRING << std::endl;
+            log_stream << "    " << APP_NAME << " v" << VERSION_STRING << std::endl;
             log_stream << "    Commit: " << GIT_COMMIT_ID << " from " << GIT_COMMIT_DATE << std::endl;
             log_stream << "    Launched: " << time_string << std::endl;
             log_stream << "====================================================================================================" << std::endl;

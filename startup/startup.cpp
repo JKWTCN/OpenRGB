@@ -12,15 +12,18 @@
 #include "NetworkServer.h"
 #include "WebSocketServer.h"
 #include "startup.h"
+#include "LogManager.h"
 
-#include <QApplication>
 #include <QCoreApplication>
 #include <QTimer>
 
+#ifndef RGBSERVER_HEADLESS
+#include <QApplication>
 #include "OpenRGBDialog.h"
 
 #ifdef __APPLE__
 #include "macutils.h"
+#endif
 #endif
 
 #ifdef __linux__
@@ -62,6 +65,10 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
     \*-----------------------------------------------------*/
     if(ret_flags & RET_FLAG_START_GUI)
     {
+#ifdef RGBSERVER_HEADLESS
+        LOG_ERROR("[startup] GUI mode is not available in this headless build");
+        return EXIT_FAILURE;
+#else
         LOG_TRACE("[main] initializing GUI");
 
         /*-------------------------------------------------*\
@@ -84,7 +91,7 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
         | Create Qt application                             |
         \*-------------------------------------------------*/
         QApplication a(argc, argv);
-        QGuiApplication::setDesktopFileName("org.openrgb.OpenRGB");
+        QGuiApplication::setDesktopFileName(APP_DESKTOP_ID);
         LOG_TRACE("[startup] QApplication created");
 
         /*-------------------------------------------------*\
@@ -134,6 +141,7 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
 #endif
 
         exitval = a.exec();
+#endif
     }
     else
     {

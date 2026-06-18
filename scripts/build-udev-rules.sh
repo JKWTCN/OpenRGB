@@ -4,7 +4,7 @@
 #    all "RGBController_" .cpp files and the detectors that call them         #
 #    so that all #define macros have been replaced and can be text processed  #
 #                                                                             #
-#  This script produces the outfile of the 60-openrgb.rules target defined    #
+#  This script produces the outfile of the 60-rgb-server.rules target defined #
 #    in the Linux specific section of OpenRGB.pro                             #
 #-----------------------------------------------------------------------------#
 
@@ -12,7 +12,7 @@
 OPENRGB_PATH=$1
 CONTROLLER_PATH=${OPENRGB_PATH}'/Controllers'
 GIT_SHORT_HASH=$2
-UDEV_FILE='60-openrgb.rules'
+UDEV_FILE='60-rgb-server.rules'
 UDEV_LINE='#---------------------------------------------------------------#\n'
 
 #Check the output of the makefile
@@ -22,7 +22,7 @@ UDEV_LINE='#---------------------------------------------------------------#\n'
 #  Add the static header of the udev rules                                    #
 #-----------------------------------------------------------------------------#
 echo -e "Adding Static Headers"
-UDEV_HEADER=${UDEV_LINE}'#  OpenRGB udev rules - Git Commit: '${GIT_SHORT_HASH:0:8}'                    #\n'${UDEV_LINE}'\n'
+UDEV_HEADER=${UDEV_LINE}'#  RGB Server udev rules - Git Commit: '${GIT_SHORT_HASH:0:8}'                 #\n'${UDEV_LINE}'\n'
 UDEV_HEADER+=${UDEV_LINE}'#  User I2C/SMBus Access                                        #\n'${UDEV_LINE}'KERNEL=="i2c-[0-99]*", TAG+="uaccess"\n\n'
 UDEV_HEADER+=${UDEV_LINE}'#  Super I/O Access                                             #\n'${UDEV_LINE}'KERNEL=="port", TAG+="uaccess"\n\n'
 

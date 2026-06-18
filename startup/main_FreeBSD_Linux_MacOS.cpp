@@ -12,13 +12,14 @@
 #include "NetworkServer.h"
 #include "LogManager.h"
 #include "startup.h"
+#include "AppInfo.h"
 
 #ifdef _MACOSX_X86_X64
 #include "macUSPCIOAccess.h"
 io_connect_t macUSPCIO_driver_connection;
 #endif
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(RGBSERVER_HEADLESS)
 #include "macutils.h"
 #endif
 
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
     \*-----------------------------------------------------*/
     ResourceManager::get()->Cleanup();
 
-    LOG_TRACE("OpenRGB finishing with exit code %d", exitval);
+    LOG_TRACE("%s finishing with exit code %d", APP_NAME, exitval);
 
     /*-----------------------------------------------------*\
     | Mac x86/x64 only - Uninstall SMBus Driver macUSPCIO   |

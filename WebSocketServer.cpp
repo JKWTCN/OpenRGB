@@ -16,6 +16,7 @@
 \*---------------------------------------------------------*/
 
 #include "WebSocketServer.h"
+#include "AppInfo.h"
 #include "LogManager.h"
 #include <QHostAddress>
 #include <QUrlQuery>
@@ -79,7 +80,7 @@ void WebSocketServer::StartServer()
     LOG_INFO("[WebSocketServer] Starting server on %s:%d", host.c_str(), port);
 
     // Create WebSocket server (no parent to avoid threading issues)
-    ws_server = new QWebSocketServer(QStringLiteral("OpenRGB WebSocket Server"),
+    ws_server = new QWebSocketServer(QStringLiteral(APP_NAME " WebSocket Server"),
                                      QWebSocketServer::NonSecureMode,
                                      nullptr);
 

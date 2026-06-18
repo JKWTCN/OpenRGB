@@ -18,7 +18,7 @@
 #include "filesystem.h"
 #include "StringUtils.h"
 
-#define OPENRGB_PROFILE_HEADER  "OPENRGB_PROFILE"
+#define OPENRGB_PROFILE_HEADER  "RGBSRV_PROFILE1"
 #define OPENRGB_PROFILE_VERSION OPENRGB_SDK_PROTOCOL_VERSION
 
 ProfileManager::ProfileManager(const filesystem::path& config_dir)

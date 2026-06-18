@@ -9,18 +9,25 @@
 #-----------------------------------------------------------------------------------------------#
 QT +=                                                                                           \
     core                                                                                        \
-    gui                                                                                         \
     websockets                                                                                  \
 
 #-----------------------------------------------------------------------------------------------#
 # Set compiler to use C++17 to make std::filesystem available                                   #
 #-----------------------------------------------------------------------------------------------#
 CONFIG +=   c++17                                                                               \
-            lrelease                                                                            \
-            embed_translations                                                                  \
             silent                                                                              \
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+!CONFIG(headless) {
+    QT += gui
+    CONFIG += lrelease embed_translations
+    greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+}
+
+CONFIG(headless) {
+    CONFIG += console
+    QT -= gui widgets
+    DEFINES += RGBSERVER_HEADLESS
+}
 
 #-----------------------------------------------------------------------------------------------#
 # Application Configuration                                                                     #
@@ -56,7 +63,7 @@ VERSION_RPM = $$VERSION_RPM"^"$$SUFFIX
     }
 }
 
-TARGET      = OpenRGB
+TARGET      = RGBServer
 TEMPLATE    = app
 
 message("VERSION_NUM: "$$VERSION_NUM)
@@ -93,17 +100,19 @@ DEFINES +=                                                                      
     GIT_BRANCH=\\"\"\"$$GIT_BRANCH\\"\"\"
 
 #-----------------------------------------------------------------------------------------------#
-# OpenRGB dynamically added sources                                                             #
+# GUI dynamically added sources                                                                 #
 #-----------------------------------------------------------------------------------------------#
-FORMS += $$files("qt/*.ui", true)
+!CONFIG(headless) {
+    FORMS += $$files("qt/*.ui", true)
 
-for(iter, FORMS) {
-    GUI_INCLUDES += $$dirname(iter)
+    for(iter, FORMS) {
+        GUI_INCLUDES += $$dirname(iter)
+    }
+    GUI_INCLUDES        = $$unique(GUI_INCLUDES)
+
+    GUI_H               = $$files("qt/*.h", true)
+    GUI_CPP             = $$files("qt/*.cpp", true)
 }
-GUI_INCLUDES        = $$unique(GUI_INCLUDES)
-
-GUI_H               = $$files("qt/*.h", true)
-GUI_CPP             = $$files("qt/*.cpp", true)
 
 CONTROLLER_H        = $$files("Controllers/*.h", true)
 CONTROLLER_CPP      = $$files("Controllers/*.cpp", true)
@@ -142,8 +151,6 @@ CONTROLLER_CPP         -= $$CONTROLLER_CPP_MACOS
 #-----------------------------------------------------------------------------------------------#
 INCLUDEPATH +=                                                                                  \
     $$CONTROLLER_INCLUDES                                                                       \
-    $$GUI_INCLUDES                                                                              \
-    dependencies/ColorWheel                                                                     \
     dependencies/CRCpp/                                                                         \
     dependencies/hueplusplus-1.2.0/include                                                      \
     dependencies/hueplusplus-1.2.0/include/hueplusplus                                          \
@@ -163,27 +170,31 @@ INCLUDEPATH +=                                                                  
     AutoStart/                                                                                  \
     KeyboardLayoutManager/                                                                      \
     RGBController/                                                                              \
-    qt/                                                                                         \
     SPDAccessor/                                                                                \
     SuspendResume/                                                                              \
     dependencies/stb/
 
+INCLUDEPATH +=                                                                                 \
+    qt/
+
+!CONFIG(headless):INCLUDEPATH +=                                                                \
+    $$GUI_INCLUDES                                                                              \
+    dependencies/ColorWheel
+
 HEADERS +=                                                                                      \
-    $$GUI_H                                                                                     \
     $$CONTROLLER_H                                                                              \
+    AppInfo.h                                                                                   \
     Colors.h                                                                                    \
-    dependencies/ColorWheel/ColorWheel.h                                                        \
+    qt/hsv.h                                                                                    \
     dependencies/json/nlohmann/json.hpp                                                         \
     LogManager.h                                                                                \
     NetworkClient.h                                                                             \
     NetworkProtocol.h                                                                           \
     NetworkServer.h                                                                             \
-    OpenRGBPluginInterface.h                                                                    \
     WebSocketClientInfo.h                                                                       \
     WebSocketServer.h                                                                           \
     JSONRPCHandler.h                                                                            \
     JSONRPCProtocol.h                                                                           \
-    PluginManager.h                                                                             \
     ProfileManager.h                                                                            \
     ResourceManager.h                                                                           \
     ResourceManagerInterface.h                                                                  \
@@ -214,10 +225,14 @@ HEADERS +=                                                                      
     RGBController/RGBController_Network.h                                                       \
     startup/startup.h                                                                           \
 
+!CONFIG(headless):HEADERS +=                                                                    \
+    $$GUI_H                                                                                     \
+    dependencies/ColorWheel/ColorWheel.h                                                        \
+    OpenRGBPluginInterface.h                                                                    \
+    PluginManager.h                                                                             \
+
 SOURCES +=                                                                                      \
-    $$GUI_CPP                                                                                   \
     $$CONTROLLER_CPP                                                                            \
-    dependencies/ColorWheel/ColorWheel.cpp                                                      \
     dependencies/hueplusplus-1.2.0/src/Action.cpp                                               \
     dependencies/hueplusplus-1.2.0/src/APICache.cpp                                             \
     dependencies/hueplusplus-1.2.0/src/BaseDevice.cpp                                           \
@@ -254,7 +269,6 @@ SOURCES +=                                                                      
     NetworkClient.cpp                                                                           \
     NetworkProtocol.cpp                                                                         \
     NetworkServer.cpp                                                                           \
-    PluginManager.cpp                                                                           \
     WebSocketClientInfo.cpp                                                                     \
     WebSocketServer.cpp                                                                         \
     JSONRPCHandler.cpp                                                                          \
@@ -281,8 +295,14 @@ SOURCES +=                                                                      
     RGBController/RGBController_Dummy.cpp                                                       \
     RGBController/RGBControllerKeyNames.cpp                                                     \
     RGBController/RGBController_Network.cpp                                                     \
+    qt/hsv.cpp                                                                                  \
 
-RESOURCES +=                                                                                    \
+!CONFIG(headless):SOURCES +=                                                                    \
+    $$GUI_CPP                                                                                   \
+    dependencies/ColorWheel/ColorWheel.cpp                                                      \
+    PluginManager.cpp                                                                           \
+
+!CONFIG(headless):RESOURCES +=                                                                  \
     qt/resources.qrc                                                                            \
 
 #-----------------------------------------------------------------------------------------------#
@@ -309,7 +329,7 @@ unix {
 #   NB: Translation files should not be added dynamically due to the process                    #
 #       to add new translations relies on entries here in OpenRGB.pro                           #
 #-----------------------------------------------------------------------------------------------#
-TRANSLATIONS +=                                                                                 \
+!CONFIG(headless):TRANSLATIONS +=                                                               \
     qt/i18n/OpenRGB_be_BY.ts                                                                    \
     qt/i18n/OpenRGB_de_DE.ts                                                                    \
     qt/i18n/OpenRGB_el_GR.ts                                                                    \
@@ -382,6 +402,7 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
     LIBS +=                                                                                     \
         -lws2_32                                                                                \
         -liphlpapi                                                                              \
+        -lshell32                                                                               \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS64/dll" -llibusb-1.0                       \
         -L"$$PWD/dependencies/hidapi-win/x64/" -lhidapi                                         \
         -L"$$PWD/dependencies/mbedtls-3.2.1/lib/x64/" -lmbedcrypto -lmbedtls -lmbedx509         \
@@ -395,6 +416,7 @@ win32:contains(QMAKE_TARGET.arch, x86) {
     LIBS +=                                                                                     \
         -lws2_32                                                                                \
         -liphlpapi                                                                              \
+        -lshell32                                                                               \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS32/dll" -llibusb-1.0                       \
         -L"$$PWD/dependencies/hidapi-win/x86/" -lhidapi                                         \
         -L"$$PWD/dependencies/mbedtls-3.2.1/lib/x86/" -lmbedcrypto -lmbedtls -lmbedx509         \
@@ -411,8 +433,11 @@ win32:DEFINES +=                                                                
     _WINSOCK_DEPRECATED_NO_WARNINGS                                                             \
     WIN32_LEAN_AND_MEAN                                                                         \
 
-win32:RC_ICONS +=                                                                               \
+win32:!CONFIG(headless):RC_ICONS +=                                                             \
     qt/OpenRGB.ico
+
+win32:CONFIG(headless):RC_ICONS +=                                                              \
+    qt/RGBServer.ico
 
 win32:DISTFILES += \
     dependencies/PawnIO/modules/SmbusPIIX4.bin                                                  \
@@ -552,11 +577,13 @@ contains(QMAKE_PLATFORM, linux) {
         PREFIX = /usr
     }
 
-    !defined(OPENRGB_SYSTEM_PLUGIN_DIRECTORY, var):OPENRGB_SYSTEM_PLUGIN_DIRECTORY =            \
-        "$$PREFIX/lib/openrgb/plugins"                                                          \
+    !CONFIG(headless) {
+        !defined(OPENRGB_SYSTEM_PLUGIN_DIRECTORY, var):OPENRGB_SYSTEM_PLUGIN_DIRECTORY =        \
+            "$$PREFIX/lib/rgbserver/plugins"                                                    \
 
-    DEFINES +=                                                                                  \
-        OPENRGB_SYSTEM_PLUGIN_DIRECTORY=\\"\"\"$$OPENRGB_SYSTEM_PLUGIN_DIRECTORY\\"\"\"         \
+        DEFINES +=                                                                              \
+            OPENRGB_SYSTEM_PLUGIN_DIRECTORY=\\"\"\"$$OPENRGB_SYSTEM_PLUGIN_DIRECTORY\\"\"\"     \
+    }
 
     #-------------------------------------------------------------------------------------------#
     # Custom target for dynamically created udev_rules                                          #
@@ -568,7 +595,7 @@ contains(QMAKE_PLATFORM, linux) {
     #-------------------------------------------------------------------------------------------#
     CONFIG(release, debug|release) {
         udev_rules.CONFIG       = no_check_exist
-        udev_rules.target       = 60-openrgb.rules
+        udev_rules.target       = 60-rgb-server.rules
         udev_rules.path         = $$PREFIX/lib/udev/rules.d/
 
         exists($$udev_rules.target) {
@@ -583,7 +610,7 @@ contains(QMAKE_PLATFORM, linux) {
             QMAKE_CXXFLAGS+=-save-temps
             QMAKE_CXXFLAGS-=-pipe
             udev_rules.extra    = $$PWD/scripts/build-udev-rules.sh $$PWD $$GIT_COMMIT_ID
-            udev_rules.files    = $$OUT_PWD/60-openrgb.rules
+            udev_rules.files    = $$OUT_PWD/60-rgb-server.rules
         }
     }
 
@@ -591,17 +618,21 @@ contains(QMAKE_PLATFORM, linux) {
     # Add static files to installation                                                          #
     #-------------------------------------------------------------------------------------------#
     target.path=$$PREFIX/bin/
-    desktop.path=$$PREFIX/share/applications/
-    desktop.files+=qt/org.openrgb.OpenRGB.desktop
-    icon.path=$$PREFIX/share/icons/hicolor/128x128/apps/
-    icon.files+=qt/org.openrgb.OpenRGB.png
-    metainfo.path=$$PREFIX/share/metainfo/
-    metainfo.files+=qt/org.openrgb.OpenRGB.metainfo.xml
-    systemd_service.path=$$PREFIX/lib/systemd/system/
-    systemd_service.files+=qt/openrgb.service
-    tmpfiles.path=$$PREFIX/lib/tmpfiles.d/
-    tmpfiles.files+=qt/openrgb.conf
-    INSTALLS += target desktop icon metainfo udev_rules systemd_service tmpfiles
+    INSTALLS += target udev_rules
+
+    !CONFIG(headless) {
+        desktop.path=$$PREFIX/share/applications/
+        desktop.files+=qt/org.openrgb.OpenRGB.desktop
+        icon.path=$$PREFIX/share/icons/hicolor/128x128/apps/
+        icon.files+=qt/org.openrgb.OpenRGB.png
+        metainfo.path=$$PREFIX/share/metainfo/
+        metainfo.files+=qt/org.openrgb.OpenRGB.metainfo.xml
+        systemd_service.path=$$PREFIX/lib/systemd/system/
+        systemd_service.files+=qt/openrgb.service
+        tmpfiles.path=$$PREFIX/lib/tmpfiles.d/
+        tmpfiles.files+=qt/openrgb.conf
+        INSTALLS += desktop icon metainfo systemd_service tmpfiles
+    }
 }
 
 #-----------------------------------------------------------------------------------------------#
@@ -688,15 +719,19 @@ contains(QMAKE_PLATFORM, freebsd) {
     }
 
     target.path=$$PREFIX/bin/
-    desktop.path=$$PREFIX/share/applications/
-    desktop.files+=qt/org.openrgb.OpenRGB.desktop
-    icon.path=$$PREFIX/share/icons/hicolor/128x128/apps/
-    icon.files+=qt/org.openrgb.OpenRGB.png
-    metainfo.path=$$PREFIX/share/metainfo/
-    metainfo.files+=qt/org.openrgb.OpenRGB.metainfo.xml
     rules.path=$$PREFIX/lib/udev/rules.d/
-    rules.files+=60-openrgb.rules
-    INSTALLS += target desktop icon metainfo rules
+    rules.files+=60-rgb-server.rules
+    INSTALLS += target rules
+
+    !CONFIG(headless) {
+        desktop.path=$$PREFIX/share/applications/
+        desktop.files+=qt/org.openrgb.OpenRGB.desktop
+        icon.path=$$PREFIX/share/icons/hicolor/128x128/apps/
+        icon.files+=qt/org.openrgb.OpenRGB.png
+        metainfo.path=$$PREFIX/share/metainfo/
+        metainfo.files+=qt/org.openrgb.OpenRGB.metainfo.xml
+        INSTALLS += desktop icon metainfo
+    }
 }
 
 unix:!macx:CONFIG(asan) {
@@ -730,8 +765,10 @@ macx {
 
     HEADERS +=                                                                                  \
     AutoStart/AutoStart-MacOS.h                                                                 \
-    qt/macutils.h                                                                               \
     SuspendResume/SuspendResume_MacOS.h                                                         \
+
+    !CONFIG(headless):HEADERS +=                                                                \
+    qt/macutils.h                                                                               \
 
     HEADERS += $$CONTROLLER_H_MACOS
 
@@ -739,9 +776,11 @@ macx {
     dependencies/hueplusplus-1.2.0/src/LinHttpHandler.cpp                                       \
     serial_port/find_usb_serial_port_macos.cpp                                                  \
     AutoStart/AutoStart-MacOS.cpp                                                               \
-    qt/macutils.mm                                                                              \
     SuspendResume/SuspendResume_MacOS.cpp                                                       \
     startup/main_FreeBSD_Linux_MacOS.cpp                                                        \
+
+    !CONFIG(headless):SOURCES +=                                                                \
+    qt/macutils.mm                                                                              \
 
     SOURCES += $$CONTROLLER_CPP_MACOS
 
@@ -757,12 +796,14 @@ macx {
     -lmbedtls                                                                                   \
     -L$$MBEDTLS_PREFIX/lib
 
-    ICON = qt/OpenRGB.icns
+    !CONFIG(headless) {
+        ICON = qt/OpenRGB.icns
 
-    info_plist.input = mac/Info.plist.in
-    info_plist.output = $$OUT_PWD/Info.plist
-    QMAKE_SUBSTITUTES += info_plist
-    QMAKE_INFO_PLIST = $$OUT_PWD/Info.plist
+        info_plist.input = mac/Info.plist.in
+        info_plist.output = $$OUT_PWD/Info.plist
+        QMAKE_SUBSTITUTES += info_plist
+        QMAKE_INFO_PLIST = $$OUT_PWD/Info.plist
+    }
 }
 
 #-----------------------------------------------------------------------------------------------#

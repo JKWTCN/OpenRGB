@@ -22,6 +22,7 @@
 #include "RGBController_QMKOpenRGBRevE.h"
 #include "LogManager.h"
 #include "SettingsManager.h"
+#include "AppInfo.h"
 
 /*-----------------------------------------------------*\
 | Protocol version                                      |
@@ -116,18 +117,16 @@ void DetectQMKOpenRGBControllers(hid_device_info *info, const std::string&)
             default:
                 if (version == 0)
                 {
-                    LOG_WARNING("[QMK OpenRGB] Detection failed - the detected keyboard does not have the OpenRGB protocol feature enabled! \n"
-                    "Please make sure your keyboard supports RGB Matrix, add OPENRGB_ENABLE = yes to the rules.mk inside your keymap folder, compile and flash again!");
+                    LOG_WARNING("[QMK RGB Server] Detection failed - the detected keyboard does not have the RGB control protocol feature enabled! \n"
+                    "Please make sure your keyboard supports RGB Matrix, enable the RGB control protocol in your keymap rules, compile and flash again!");
                 }
                 else if (version < QMK_OPENRGB_PROTOCOL_VERSION_9)
                 {
-                    LOG_WARNING("[QMK OpenRGB] Detection failed - the detected keyboard is using an outdated protocol version %i. Please update to to the update to the latest version of QMK-OpenRGB! \n"
-                    "For officaly supported QMK boards grab <a href=\"https://github.com/Kasper24/QMK-OpenRGB\">url</a> \n"
-                    "For Sonix boards grab <a href=\"https://github.com/SonixQMK/qmk_firmware/tree/sn32_openrgb\">url</a>", version);
+                    LOG_WARNING("[QMK RGB Server] Detection failed - the detected keyboard is using an outdated protocol version %i. Please update the keyboard firmware.", version);
                 }
                 else if (version > QMK_OPENRGB_PROTOCOL_VERSION_E)
                 {
-                    LOG_WARNING("[QMK OpenRGB] Detection failed - the detected keyboard is using version protocol %i which is not supported by this OpenRGB build. Please update OpenRGB!", version);
+                    LOG_WARNING("[QMK RGB Server] Detection failed - the detected keyboard is using protocol version %i which is not supported by this build. Please update " APP_NAME ".", version);
                 }
         }
     }
@@ -138,7 +137,7 @@ void RegisterQMKDetectors()
     /*-------------------------------------------------*\
     | Get QMKOpenRGB settings                           |
     \*-------------------------------------------------*/
-    json qmk_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("QMKOpenRGBDevices");
+    json qmk_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("QMKRGBServerDevices");
 
     if(qmk_settings.contains("devices"))
     {
@@ -164,4 +163,4 @@ void RegisterQMKDetectors()
     }
 }
 
-REGISTER_DYNAMIC_DETECTOR("QMK OpenRGB Devices", RegisterQMKDetectors);
+REGISTER_DYNAMIC_DETECTOR("QMK RGB Server Devices", RegisterQMKDetectors);

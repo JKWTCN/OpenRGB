@@ -25,7 +25,7 @@ CreativeSoundBlasterAE5Controller_Windows::CreativeSoundBlasterAE5Controller_Win
     device_handle       = INVALID_HANDLE_VALUE;
     device_opened       = false;
     external_led_count  = 0;
-    led_mutex           = CreateMutexA(NULL, FALSE, "OpenRGB_AE5_LED_Mutex");
+    led_mutex           = CreateMutexA(NULL, FALSE, "RGBServer_AE5_LED_Mutex");
 }
 
 CreativeSoundBlasterAE5Controller_Windows::~CreativeSoundBlasterAE5Controller_Windows()
@@ -124,7 +124,7 @@ bool CreativeSoundBlasterAE5Controller_Windows::FindDevice()
             {
                 name = "Creative SoundBlaster AE-5";
                 LOG_WARNING("[%s] Unknown subsystem variant found in hardware ID: %s", name.c_str(), hardware_id);
-                LOG_WARNING("[%s] Please report this to @eclipse_sol84 in the OpenRGB Discord!", name.c_str());
+                LOG_WARNING("[%s] Unknown subsystem variant may need additional device data.", name.c_str());
             }
 
             LOG_INFO("[%s] Found matching device: %s", name.c_str(), hardware_id);

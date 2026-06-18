@@ -15,10 +15,9 @@
 #include <windows.h>
 #include <thread>
 
-#include <QApplication>
-
 #include "cli.h"
 #include "startup.h"
+#include "AppInfo.h"
 #include "LogManager.h"
 #include "NetworkServer.h"
 #include "ResourceManager.h"
@@ -32,7 +31,7 @@ static int common_main(int argc, char* argv[]);
 static void WINAPI ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv);
 static void ReportServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwWaitHint);
 
-static char                  service_name[]             = "OpenRGB";
+static char                  service_name[]             = APP_NAME;
 static SERVICE_TABLE_ENTRY   service_dispatch_table[]   = { { service_name, ServiceMain }, { NULL, NULL } };
 static DWORD                 service_checkpoint         = 1;
 static SERVICE_STATUS_HANDLE service_status_handle;
@@ -355,7 +354,7 @@ static void WINAPI ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     \*-----------------------------------------------------*/
     if(exitval != EXIT_SUCCESS)
     {
-        LogEvent("OpenRGB finishing with exit code %d", exitval);
+        LogEvent("%s finishing with exit code %d", APP_NAME, exitval);
     }
 
     /*-----------------------------------------------------*\
@@ -538,7 +537,11 @@ static int common_main(int argc, char* argv[])
         | difficult, can cause all kinds of trouble and     |
         | doesn't have a way to warn about them             |
         \*-------------------------------------------------*/
-        ret_flags = RET_FLAG_START_SERVER | RET_FLAG_NO_AUTO_CONNECT;
+        ret_flags = RET_FLAG_START_WEBSOCKET_SERVER | RET_FLAG_NO_AUTO_CONNECT;
+        WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
+        ws_server->SetHost("0.0.0.0");
+        ws_server->SetPort(6743);
+        ws_server->SetEnabled(true);
 
         /*-------------------------------------------------*\
         | Get the path to the executable and create a       |
@@ -614,7 +617,7 @@ static int common_main(int argc, char* argv[])
     \*-----------------------------------------------------*/
     ResourceManager::get()->Cleanup();
 
-    LOG_TRACE("OpenRGB finishing with exit code %d", exitval);
+    LOG_TRACE("%s finishing with exit code %d", APP_NAME, exitval);
 
     return exitval;
 }

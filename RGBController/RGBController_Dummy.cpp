@@ -24,11 +24,11 @@
 
         | Symbol | Meaning |
         | :---: | :--- |
-        | :white_check_mark: | Fully supported by OpenRGB |
+        | :white_check_mark: | Fully supported |
         | :rotating_light: | Support is problematic |
         | :robot: | Feature is automatic and can not be turned off |
-        | :tools: | Partially supported by OpenRGB |
-        | :o: | Not currently supported by OpenRGB |
+        | :tools: | Partially supported |
+        | :o: | Not currently supported |
         | :x: | Not applicable for this device |
 */
 

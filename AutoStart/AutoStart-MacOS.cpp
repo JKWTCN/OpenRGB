@@ -15,6 +15,7 @@
 #include "AutoStart-MacOS.h"
 #include "LogManager.h"
 #include "filesystem.h"
+#include "AppInfo.h"
 
 AutoStart::AutoStart(std::string name)
 {
@@ -150,7 +151,7 @@ std::string AutoStart::GenerateLaunchAgentFile(AutoStartInfo autostart_info)
     fileContents << "<plist version=\"1.0\">"                                                                                       << std::endl;
     fileContents << "<dict>"                                                                                                        << std::endl;
     fileContents << "    <key>Label</key>"                                                                                          << std::endl;
-    fileContents << "    <string>org.openrgb</string>"                                                                              << std::endl;
+    fileContents << "    <string>" APP_DESKTOP_ID "</string>"                                                                       << std::endl;
     fileContents << "    <key>ProgramArguments</key>"                                                                               << std::endl;
     fileContents << "    <array>"                                                                                                   << std::endl;
     fileContents << "        <string>" << autostart_info.path << "</string>"                                                        << std::endl;

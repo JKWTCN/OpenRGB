@@ -21,7 +21,7 @@ RGBController_QMKOpenRGBRevE::RGBController_QMKOpenRGBRevE(QMKOpenRGBRevDControl
 
     name        = controller->GetDeviceName();
     vendor      = controller->GetDeviceVendor();
-    description = "QMK OpenRGB Device (Protocol Version " + std::to_string(controller->GetProtocolVersion()) + ")";
+    description = "QMK RGB Server Device (Protocol Version " + std::to_string(controller->GetProtocolVersion()) + ")";
     type        = DEVICE_TYPE_KEYBOARD;
     location    = controller->GetLocation();
     version     = controller->GetQMKVersion();

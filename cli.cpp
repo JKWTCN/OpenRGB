@@ -24,6 +24,7 @@
 #include "WebSocketServer.h"
 #include "LogManager.h"
 #include "Colors.h"
+#include "AppInfo.h"
 
 /*-------------------------------------------------------------*\
 | Quirk for MSVC; which doesn't support this case-insensitive   |
@@ -378,18 +379,29 @@ std::string QuoteIfNecessary(std::string str)
 void OptionHelp()
 {
     std::string help_text;
-    help_text += "OpenRGB ";
+    help_text += APP_NAME;
+    help_text += " ";
     help_text += VERSION_STRING;
     help_text += ", for controlling RGB lighting.\n";
-    help_text += "Usage: OpenRGB (--device [--mode] [--color])...\n";
+    help_text += "Usage: ";
+    help_text += APP_EXECUTABLE_NAME;
+    help_text += " (--device [--mode] [--color])...\n";
     help_text += "\n";
     help_text += "Options:\n";
+#ifndef RGBSERVER_HEADLESS
     help_text += "--gui                                    Shows the GUI. GUI also appears when not passing any parameters\n";
     help_text += "--startminimized                         Starts the GUI minimized to tray. Implies --gui, even if not specified\n";
+#endif
     help_text += "--client [IP]:[Port]                     Starts an SDK client on the given IP:Port (assumes port 6742 if not specified)\n";
+#ifndef RGBSERVER_HEADLESS
     help_text += "--server                                 Starts the SDK's server\n";
     help_text += "--server-host                            Sets the SDK's server host. Default: 0.0.0.0 (all network interfaces)\n";
     help_text += "--server-port                            Sets the SDK's server port. Default: 6742 (1024-65535)\n";
+#else
+    help_text += "--server                                 Starts the WebSocket server\n";
+    help_text += "--server-host                            Sets the WebSocket server host. Default: 0.0.0.0 (all network interfaces)\n";
+    help_text += "--server-port                            Sets the WebSocket server port. Default: 6743 (1024-65535)\n";
+#endif
     help_text += "--websocket                              Starts the WebSocket server (JSON-RPC 2.0 API)\n";
     help_text += "--websocket-host                         Sets the WebSocket server host. Default: 0.0.0.0 (all network interfaces)\n";
     help_text += "--websocket-port                         Sets the WebSocket server port. Default: 6743 (1024-65535)\n";
@@ -410,9 +422,11 @@ void OptionHelp()
     help_text += "-V,  --version                           Display version and software build information\n";
     help_text += "-p,  --profile filename[.orp]            Load the profile from filename/filename.orp\n";
     help_text += "-sp, --save-profile filename.orp         Save the given settings to profile filename.orp\n";
+#ifndef RGBSERVER_HEADLESS
     help_text += "--i2c-tools                              Shows the I2C/SMBus Tools page in the GUI. Implies --gui, even if not specified.\n";
     help_text += "                                           USE I2C TOOLS AT YOUR OWN RISK! Don't use this option if you don't know what you're doing!\n";
     help_text += "                                           There is a risk of bricking your motherboard, RGB controller, and RAM if you send invalid SMBus/I2C transactions.\n";
+#endif
     help_text += "--localconfig                            Use the current working directory instead of the global configuration directory.\n";
     help_text += "--config path                            Use a custom path instead of the global configuration directory.\n";
     help_text += "--nodetect                               Do not try to detect hardware at startup.\n";
@@ -421,9 +435,17 @@ void OptionHelp()
     help_text += "--print-source                           Print the source code file and line number for each log entry.\n";
     help_text += "-v,  --verbose                           Print log messages to stdout.\n";
     help_text += "-vv, --very-verbose                      Print debug messages and log messages to stdout.\n";
-    help_text += "--autostart-check                        Check if OpenRGB starting at login is enabled.\n";
-    help_text += "--autostart-disable                      Disable OpenRGB starting at login.\n";
-    help_text += "--autostart-enable arguments             Enable OpenRGB to start at login. Requires arguments to give to OpenRGB at login.\n";
+    help_text += "--autostart-check                        Check if ";
+    help_text += APP_NAME;
+    help_text += " starting at login is enabled.\n";
+    help_text += "--autostart-disable                      Disable ";
+    help_text += APP_NAME;
+    help_text += " starting at login.\n";
+    help_text += "--autostart-enable arguments             Enable ";
+    help_text += APP_NAME;
+    help_text += " to start at login. Requires arguments to give to ";
+    help_text += APP_NAME;
+    help_text += " at login.\n";
 
     std::cout << help_text << std::endl;
 }
@@ -431,7 +453,8 @@ void OptionHelp()
 void OptionVersion()
 {
     std::string version_text;
-    version_text += "OpenRGB ";
+    version_text += APP_NAME;
+    version_text += " ";
     version_text += VERSION_STRING;
     version_text += ", for controlling RGB lighting.\n";
     version_text += "  Version:\t\t ";
@@ -1391,7 +1414,8 @@ unsigned int cli_pre_detection(int argc, char* argv[])
                 port_val = std::stoi(port);
             }
 
-            std::string titleString = "OpenRGB ";
+            std::string titleString = APP_NAME;
+            titleString.append(" ");
             titleString.append(VERSION_STRING);
 
             client->SetIP(ip.c_str());
@@ -1420,7 +1444,11 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--server")
         {
+#ifdef RGBSERVER_HEADLESS
+            websocket_start = true;
+#else
             server_start = true;
+#endif
         }
 
         /*---------------------------------------------------------*\
@@ -1435,8 +1463,13 @@ unsigned int cli_pre_detection(int argc, char* argv[])
                     int port = std::stoi(argument);
                     if (port >= 1024 && port <= 65535)
                     {
+#ifdef RGBSERVER_HEADLESS
+                        websocket_port = port;
+                        websocket_start = true;
+#else
                         server_port  = port;
                         server_start = true;
+#endif
                     }
                     else
                     {
@@ -1470,8 +1503,13 @@ unsigned int cli_pre_detection(int argc, char* argv[])
             {
                 std::string host = argument;
 
+#ifdef RGBSERVER_HEADLESS
+                websocket_host = host;
+                websocket_start = true;
+#else
                 server_host  = host;
                 server_start = true;
+#endif
             }
             else
             {
@@ -1624,7 +1662,7 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--autostart-check")
         {
-            AutoStart auto_start("OpenRGB");
+            AutoStart auto_start(APP_NAME);
 
             if(auto_start.IsAutoStartEnabled())
             {
@@ -1641,7 +1679,7 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--autostart-disable")
         {
-            AutoStart auto_start("OpenRGB");
+            AutoStart auto_start(APP_NAME);
 
             if(auto_start.DisableAutoStart())
             {
@@ -1660,17 +1698,18 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         {
             if (argument != "")
             {
-                std::string desc = "OpenRGB ";
+                std::string desc = APP_NAME;
+                desc += " ";
                 desc += VERSION_STRING;
                 desc += ", for controlling RGB lighting.";
 
-                AutoStart       auto_start("OpenRGB");
+                AutoStart       auto_start(APP_NAME);
                 AutoStartInfo   auto_start_interface;
 
                 auto_start_interface.args        = argument;
                 auto_start_interface.category    = "Utility;";
                 auto_start_interface.desc        = desc;
-                auto_start_interface.icon        = "OpenRGB";
+                auto_start_interface.icon        = APP_EXECUTABLE_NAME;
                 auto_start_interface.path        = auto_start.GetExePath();
 
                 if(auto_start.EnableAutoStart(auto_start_interface))
@@ -1698,7 +1737,12 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--gui")
         {
+#ifndef RGBSERVER_HEADLESS
             ret_flags |= RET_FLAG_START_GUI;
+#else
+            print_help = true;
+            break;
+#endif
         }
 
         /*---------------------------------------------------------*\
@@ -1706,7 +1750,12 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--i2c-tools" || option == "--yolo")
         {
+#ifndef RGBSERVER_HEADLESS
             ret_flags |= RET_FLAG_START_GUI | RET_FLAG_I2C_TOOLS;
+#else
+            print_help = true;
+            break;
+#endif
         }
 
         /*---------------------------------------------------------*\
@@ -1714,7 +1763,12 @@ unsigned int cli_pre_detection(int argc, char* argv[])
         \*---------------------------------------------------------*/
         else if(option == "--startminimized")
         {
+#ifndef RGBSERVER_HEADLESS
             ret_flags |= RET_FLAG_START_GUI | RET_FLAG_START_MINIMIZED;
+#else
+            print_help = true;
+            break;
+#endif
         }
 
         /*---------------------------------------------------------*\
@@ -1798,7 +1852,15 @@ unsigned int cli_pre_detection(int argc, char* argv[])
 
     if((argc - cfg_args) <= 1)
     {
+#ifdef RGBSERVER_HEADLESS
+        WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
+        ws_server->SetHost(websocket_host);
+        ws_server->SetPort(websocket_port);
+        ws_server->SetEnabled(true);
+        ret_flags |= RET_FLAG_START_WEBSOCKET_SERVER;
+#else
         ret_flags |= RET_FLAG_START_GUI;
+#endif
     }
 
     return(ret_flags);
@@ -1832,7 +1894,7 @@ unsigned int cli_post_detection()
             break;
 
         case RET_FLAG_PRINT_HELP:
-            std::cout << "Run `OpenRGB --help` for syntax" << std::endl;
+            std::cout << "Run `" << APP_EXECUTABLE_NAME << " --help` for syntax" << std::endl;
             exit(-1);
             break;
 

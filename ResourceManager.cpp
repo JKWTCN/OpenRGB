@@ -41,6 +41,7 @@
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include "WebSocketServer.h"
+#include "AppInfo.h"
 #include "SPDAccessor/SPDWrapper.h"
 #include "SPDAccessor/SPDCommon.h"
 #include "filesystem.h"
@@ -52,33 +53,32 @@
 const char* I2C_ERR_WIN =   QT_TRANSLATE_NOOP("ResourceManager",
                                               "<h2>Some internal devices may not be detected:</h2>"
                                               "<p>One or more I2C or SMBus interfaces failed to initialize.</p>"
-                                              "<p><b>RGB DRAM modules, some motherboards' onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB</b> without I2C or SMBus.</p>"
+                                              "<p><b>RGB DRAM modules, some motherboards' onboard RGB lighting, and RGB Graphics Cards, will not be available in " APP_NAME "</b> without I2C or SMBus.</p>"
                                               "<h4>How to fix this:</h4>"
                                               "<p>On Windows, this is usually caused by a failure to load the PawnIO driver.</p>"
-                                              "<p>You must first install <a href='https://pawnio.eu/'>PawnIO</a>, then you must OpenRGB as administrator in order to access these devices.</p>"
-                                              "<p>See <a href='https://help.openrgb.org/'>help.openrgb.org</a> for additional troubleshooting steps if you keep seeing this message.<br></p>"
+                                              "<p>You must first install PawnIO, then you must run " APP_NAME " as administrator in order to access these devices.</p>"
+                                              "<p>Check your device access configuration if you keep seeing this message.<br></p>"
                                               "<h3>If you are not using internal RGB on a desktop this message is not important to you.</h3>");
 const char* I2C_ERR_LINUX = QT_TRANSLATE_NOOP("ResourceManager",
                                               "<h2>Some internal devices may not be detected:</h2>"
                                               "<p>One or more I2C or SMBus interfaces failed to initialize.</p>"
-                                              "<p><b>RGB DRAM modules, some motherboards' onboard RGB lighting, and RGB Graphics Cards, will not be available in OpenRGB</b> without I2C or SMBus.</p>"
+                                              "<p><b>RGB DRAM modules, some motherboards' onboard RGB lighting, and RGB Graphics Cards, will not be available in " APP_NAME "</b> without I2C or SMBus.</p>"
                                               "<h4>How to fix this:</h4>"
                                               "<p>On Linux, this is usually because the i2c-dev module is not loaded.</p>"
                                               "<p>You must load the i2c-dev module along with the correct i2c driver for your motherboard. "
                                               "This is usually i2c-piix4 for AMD systems and i2c-i801 for Intel systems.</p>"
-                                              "<p>See <a href='https://help.openrgb.org/'>help.openrgb.org</a> for additional troubleshooting steps if you keep seeing this message.<br></p>"
+                                              "<p>Check your device access configuration if you keep seeing this message.<br></p>"
                                               "<h3>If you are not using internal RGB on a desktop this message is not important to you.</h3>");
 
 const char* UDEV_MISSING =  QT_TRANSLATE_NOOP("ResourceManager",
                                               "<h2>WARNING:</h2>"
-                                              "<p>The OpenRGB udev rules are not installed.</p>"
-                                              "<p>Most devices will not be available unless running OpenRGB as root.</p>"
-                                              "<p>If using AppImage, Flatpak, or self-compiled versions of OpenRGB you must install the udev rules manually</p>"
-                                              "<p>See <a href='https://openrgb.org/udev'>https://openrgb.org/udev</a> to install the udev rules manually</p>");
+                                              "<p>The " APP_NAME " udev rules are not installed.</p>"
+                                              "<p>Most devices will not be available unless running " APP_NAME " as root.</p>"
+                                              "<p>If using a self-compiled version of " APP_NAME " you must install the udev rules manually.</p>");
 const char* UDEV_MUTLI =    QT_TRANSLATE_NOOP("ResourceManager",
                                               "<h2>WARNING:</h2>"
-                                              "<p>Multiple OpenRGB udev rules are installed.</p>"
-                                              "<p>The udev rules file 60-openrgb.rules is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.</p>"
+                                              "<p>Multiple " APP_NAME " udev rules are installed.</p>"
+                                              "<p>The udev rules file " APP_UDEV_RULES_FILE " is installed in both /etc/udev/rules.d and /usr/lib/udev/rules.d.</p>"
                                               "<p>Multiple udev rules files can conflict, it is recommended to remove one of them.</p>");
 
 
@@ -156,7 +156,7 @@ ResourceManager::ResourceManager()
     \*-----------------------------------------------------*/
     settings_manager        = new SettingsManager();
 
-    settings_manager->LoadSettings(GetConfigurationDirectory() / "OpenRGB.json");
+    settings_manager->LoadSettings(GetConfigurationDirectory() / APP_CONFIG_FILE_NAME);
 
     /*-----------------------------------------------------*\
     | Configure the log manager                             |
@@ -977,7 +977,7 @@ void ResourceManager::SetupConfigurationDirectory()
     \*-----------------------------------------------------*/
     if(config_dir != "")
     {
-        config_dir.append("OpenRGB");
+        config_dir.append(APP_CONFIG_DIR_NAME);
 
         /*-------------------------------------------------*\
         | Create OpenRGB configuration directory if it      |
@@ -999,7 +999,7 @@ filesystem::path ResourceManager::GetConfigurationDirectory()
 void ResourceManager::SetConfigurationDirectory(const filesystem::path &directory)
 {
     config_dir = directory;
-    settings_manager->LoadSettings(directory / "OpenRGB.json");
+    settings_manager->LoadSettings(directory / APP_CONFIG_FILE_NAME);
     profile_manager->SetConfigurationDirectory(directory);
 
     rgb_controllers_sizes.clear();
@@ -1083,7 +1083,8 @@ bool ResourceManager::AttemptLocalConnection()
 
     auto_connection_client = new NetworkClient(ResourceManager::get()->GetRGBControllers());
 
-    std::string titleString = "OpenRGB ";
+    std::string titleString = APP_NAME;
+    titleString.append(" ");
     titleString.append(VERSION_STRING);
 
     auto_connection_client->SetName(titleString.c_str());
@@ -1592,16 +1593,16 @@ void ResourceManager::DetectDevicesCoroutine()
     bool udev_not_exist     = false;
     bool udev_multiple      = false;
 
-    if(access("/etc/udev/rules.d/60-openrgb.rules", F_OK) != 0)
+    if(access("/etc/udev/rules.d/" APP_UDEV_RULES_FILE, F_OK) != 0)
     {
-        if(access("/usr/lib/udev/rules.d/60-openrgb.rules", F_OK) != 0)
+        if(access("/usr/lib/udev/rules.d/" APP_UDEV_RULES_FILE, F_OK) != 0)
         {
             udev_not_exist  = true;
         }
     }
     else
     {
-        if(access("/usr/lib/udev/rules.d/60-openrgb.rules", F_OK) == 0)
+        if(access("/usr/lib/udev/rules.d/" APP_UDEV_RULES_FILE, F_OK) == 0)
         {
             udev_multiple   = true;
         }
@@ -2196,7 +2197,7 @@ void ResourceManager::InitCoroutine()
         \*-------------------------------------------------*/
         if(AttemptLocalConnection())
         {
-            LOG_DEBUG("[ResourceManager] Local OpenRGB server connected, running in client mode");
+            LOG_DEBUG("[ResourceManager] Local %s server connected, running in client mode", APP_NAME);
 
             /*---------------------------------------------*\
             | Set auto connection active flag and disable   |
@@ -2220,7 +2221,8 @@ void ResourceManager::InitCoroutine()
         {
             NetworkClient * client = new NetworkClient(rgb_controllers);
 
-            std::string titleString = "OpenRGB ";
+            std::string titleString = APP_NAME;
+            titleString.append(" ");
             titleString.append(VERSION_STRING);
 
             std::string     client_ip   = client_settings["clients"][client_idx]["ip"];

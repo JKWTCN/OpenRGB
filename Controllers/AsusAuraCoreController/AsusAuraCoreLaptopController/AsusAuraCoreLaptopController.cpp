@@ -369,7 +369,7 @@ void AsusAuraCoreLaptopController::SetPowerConfigFromJSON()
         device_settings[section_power]  = pcfg;
         settings_manager->SetSettings(detector_name, device_settings);
         settings_manager->SaveSettings();
-        LOG_DEBUG("[%s] default power config saved to openrgb.json",
+        LOG_DEBUG("[%s] default power config saved to RGBServer.json",
                   aura_core_laptop_device_list[device_index]->dmi_name.c_str());
     }
     else

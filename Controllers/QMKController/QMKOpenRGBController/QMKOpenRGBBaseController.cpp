@@ -21,7 +21,7 @@ QMKOpenRGBBaseController::QMKOpenRGBBaseController(hid_device *dev_handle, const
     /*-------------------------------------------------*\
     | Get QMKOpenRGB settings                           |
     \*-------------------------------------------------*/
-    json qmk_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("QMKOpenRGBDevices");
+    json qmk_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("QMKRGBServerDevices");
     if(qmk_settings.contains("leds_per_update"))
     {
         if(qmk_settings["leds_per_update"] > max_led_count)
@@ -33,7 +33,7 @@ QMKOpenRGBBaseController::QMKOpenRGBBaseController(hid_device *dev_handle, const
             qmk_settings["leds_per_update"] = 1;
         }
         SettingsManager* settings_manager   = ResourceManager::get()->GetSettingsManager();
-        settings_manager->SetSettings("QMKOpenRGBDevices", qmk_settings);
+        settings_manager->SetSettings("QMKRGBServerDevices", qmk_settings);
         settings_manager->SaveSettings();
         leds_per_update = qmk_settings["leds_per_update"];
     }
