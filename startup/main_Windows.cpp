@@ -10,17 +10,28 @@
 \*---------------------------------------------------------*/
 
 #include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <system_error>
 #include <windows.h>
+#include <shellapi.h>
 #include <thread>
+
+#include <QCoreApplication>
+#include <QMetaObject>
 
 #include "cli.h"
 #include "startup.h"
 #include "AppInfo.h"
+#include "filesystem.h"
 #include "LogManager.h"
 #include "NetworkServer.h"
 #include "ResourceManager.h"
+#include "SettingsManager.h"
 #include "StringUtils.h"
 #include "WebSocketServer.h"
 
@@ -30,6 +41,8 @@ static int common_main(int argc, char* argv[]);
 
 static void WINAPI ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv);
 static void ReportServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwWaitHint);
+static int  ProcessServiceCommand(int argc, char* argv[]);
+static bool StopServiceIfRunning(SC_HANDLE service);
 
 static char                  service_name[]             = APP_NAME;
 static SERVICE_TABLE_ENTRY   service_dispatch_table[]   = { { service_name, ServiceMain }, { NULL, NULL } };
@@ -42,6 +55,7 @@ static volatile bool         service_stop_requested;
 static bool                  have_console;
 
 static std::mutex            service_status_mutex;
+static filesystem::path      service_settings_path;
 
 /*---------------------------------------------------------*\
 | Detection progress goes from 0 to 100 twice, passing an   |
@@ -49,6 +63,847 @@ static std::mutex            service_status_mutex;
 \*---------------------------------------------------------*/
 static int                   detection_pass;
 static unsigned int          lastpercent                = 101;
+
+/*---------------------------------------------------------*\
+| AttachParentConsole                                      |
+|                                                           |
+|   Enable stdout/stderr when launched from a terminal.     |
+\*---------------------------------------------------------*/
+static void AttachParentConsole()
+{
+    if(have_console)
+    {
+        return;
+    }
+
+    if(AttachConsole(ATTACH_PARENT_PROCESS))
+    {
+        freopen("CONIN$",  "r", stdin);
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+        have_console = true;
+    }
+}
+
+/*---------------------------------------------------------*\
+| GetExecutablePath                                        |
+|                                                           |
+|   Get current executable path as filesystem::path.        |
+\*---------------------------------------------------------*/
+static filesystem::path GetExecutablePath()
+{
+    WCHAR exe_path_wchar[MAX_PATH];
+    GetModuleFileNameW(NULL, exe_path_wchar, MAX_PATH);
+
+    std::string exe_path_string = StringUtils::wstring_to_string(std::wstring(exe_path_wchar));
+
+    return filesystem::path(exe_path_string);
+}
+
+/*---------------------------------------------------------*\
+| GetServiceConfigurationDirectory                         |
+\*---------------------------------------------------------*/
+static filesystem::path GetServiceConfigurationDirectory()
+{
+    filesystem::path exe_path = GetExecutablePath();
+    return exe_path.remove_filename() / filesystem::u8path("service_config");
+}
+
+/*---------------------------------------------------------*\
+| GetServiceSettingsPath                                   |
+\*---------------------------------------------------------*/
+static filesystem::path GetServiceSettingsPath()
+{
+    return GetServiceConfigurationDirectory() / filesystem::u8path(APP_CONFIG_FILE_NAME);
+}
+
+/*---------------------------------------------------------*\
+| RemoveLegacyServiceEndpointFiles                         |
+\*---------------------------------------------------------*/
+static void RemoveLegacyServiceEndpointFiles()
+{
+    filesystem::path exe_path = GetExecutablePath();
+    filesystem::path exe_dir  = exe_path.remove_filename();
+
+    const char* legacy_files[] =
+    {
+        "rgb_server_service.json",
+        "openrgb_service.json"
+    };
+
+    for(const char* legacy_file : legacy_files)
+    {
+        try
+        {
+            filesystem::path legacy_path = exe_dir / filesystem::u8path(legacy_file);
+            if(filesystem::exists(legacy_path))
+            {
+                filesystem::remove(legacy_path);
+            }
+        }
+        catch(...)
+        {
+            /* Best effort cleanup only. */
+        }
+    }
+}
+
+/*---------------------------------------------------------*\
+| LoadJsonFile                                             |
+\*---------------------------------------------------------*/
+static json LoadJsonFile(const filesystem::path& file_path)
+{
+    json data = json::object();
+
+    try
+    {
+        if(filesystem::exists(file_path))
+        {
+            std::ifstream file(file_path.string(), std::ios::in | std::ios::binary);
+            if(file)
+            {
+                file >> data;
+            }
+        }
+    }
+    catch(...)
+    {
+        data = json::object();
+    }
+
+    if(!data.is_object())
+    {
+        data = json::object();
+    }
+
+    return data;
+}
+
+/*---------------------------------------------------------*\
+| SaveJsonFile                                             |
+\*---------------------------------------------------------*/
+static void SaveJsonFile(const filesystem::path& file_path, const json& data)
+{
+    filesystem::create_directories(file_path.parent_path());
+
+    std::ofstream file(file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+    if(file)
+    {
+        file << data.dump(4);
+    }
+}
+
+/*---------------------------------------------------------*\
+| WriteServiceRuntimeInfo                                  |
+\*---------------------------------------------------------*/
+static void WriteServiceRuntimeInfo(unsigned short port, bool running)
+{
+    if(service_settings_path.empty())
+    {
+        service_settings_path = GetServiceSettingsPath();
+    }
+
+    try
+    {
+        json data = LoadJsonFile(service_settings_path);
+        json service_settings = data.value("Service", json::object());
+
+        if(!service_settings.is_object())
+        {
+            service_settings = json::object();
+        }
+
+        service_settings["name"]           = "RGB Server";
+        service_settings["host"]           = "127.0.0.1";
+        service_settings["port"]           = port;
+        service_settings["websocket_port"] = port;
+        service_settings["pid"]            = running ? GetCurrentProcessId() : 0;
+        service_settings["running"]        = running;
+
+        data["Service"] = service_settings;
+        SaveJsonFile(service_settings_path, data);
+    }
+    catch(...)
+    {
+        /* Best effort; WebSocketServer will try again once it is listening. */
+    }
+}
+
+/*---------------------------------------------------------*\
+| WriteServiceRuntimeInfoToSettings                        |
+\*---------------------------------------------------------*/
+static void WriteServiceRuntimeInfoToSettings(unsigned short port, bool running)
+{
+    SettingsManager* settings_manager = ResourceManager::get()->GetSettingsManager();
+
+    if(!settings_manager)
+    {
+        return;
+    }
+
+    json service_settings = settings_manager->GetSettings("Service");
+
+    if(!service_settings.is_object())
+    {
+        service_settings = json::object();
+    }
+
+    service_settings["name"]           = "RGB Server";
+    service_settings["host"]           = "127.0.0.1";
+    service_settings["port"]           = port;
+    service_settings["websocket_port"] = port;
+    service_settings["pid"]            = running ? GetCurrentProcessId() : 0;
+    service_settings["running"]        = running;
+
+    settings_manager->SetSettings("Service", service_settings);
+    settings_manager->SaveSettings();
+}
+
+/*---------------------------------------------------------*\
+| AppendServiceLog                                         |
+\*---------------------------------------------------------*/
+static void AppendServiceLog(const std::string& message)
+{
+    try
+    {
+        filesystem::path settings_path = service_settings_path.empty() ? GetServiceSettingsPath() : service_settings_path;
+        filesystem::create_directories(settings_path.parent_path());
+
+        std::ofstream log_file(settings_path.parent_path() / filesystem::u8path("RGBServer.service.log"), std::ios::app);
+        log_file << message << std::endl;
+    }
+    catch(...)
+    {
+        /* Best effort diagnostic logging. */
+    }
+}
+
+/*---------------------------------------------------------*\
+| GetConfiguredServicePort                                 |
+\*---------------------------------------------------------*/
+static unsigned short GetConfiguredServicePort()
+{
+    if(service_settings_path.empty())
+    {
+        service_settings_path = GetServiceSettingsPath();
+    }
+
+    json data = LoadJsonFile(service_settings_path);
+    json service_settings = data.value("Service", json::object());
+
+    if(service_settings.is_object())
+    {
+        int port = service_settings.value("websocket_port", service_settings.value("port", 6743));
+        if((port >= 1024) && (port <= 65535))
+        {
+            return (unsigned short)port;
+        }
+    }
+
+    return 6743;
+}
+
+/*---------------------------------------------------------*\
+| SaveConfiguredServicePort                                |
+\*---------------------------------------------------------*/
+static void SaveConfiguredServicePort(unsigned short port)
+{
+    service_settings_path = GetServiceSettingsPath();
+
+    json data = LoadJsonFile(service_settings_path);
+    json service_settings = data.value("Service", json::object());
+
+    if(!service_settings.is_object())
+    {
+        service_settings = json::object();
+    }
+
+    service_settings["name"]           = "RGB Server";
+    service_settings["host"]           = "127.0.0.1";
+    service_settings["port"]           = port;
+    service_settings["websocket_port"] = port;
+
+    data["Service"] = service_settings;
+    SaveJsonFile(service_settings_path, data);
+}
+
+/*---------------------------------------------------------*\
+| PrintWindowsError                                        |
+\*---------------------------------------------------------*/
+static void PrintWindowsError(const char* operation, DWORD error)
+{
+    std::string message = std::system_category().message(error);
+    printf("%s failed with error code %lu \"%s\"\n", operation, error, message.c_str());
+
+    if(error == ERROR_ACCESS_DENIED)
+    {
+        printf("Run this command from an elevated Administrator terminal.\n");
+    }
+}
+
+/*---------------------------------------------------------*\
+| HasServiceCommand                                        |
+\*---------------------------------------------------------*/
+static bool HasServiceCommand(int argc, char* argv[])
+{
+    for(int arg_idx = 1; arg_idx < argc; arg_idx++)
+    {
+        if((strcmp(argv[arg_idx], "--install_service") == 0)
+        || (strcmp(argv[arg_idx], "--uninstall_service") == 0))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*---------------------------------------------------------*\
+| IsServiceCommand                                         |
+\*---------------------------------------------------------*/
+static bool IsServiceCommand(int argc, char* argv[], const char* command)
+{
+    for(int arg_idx = 1; arg_idx < argc; arg_idx++)
+    {
+        if(strcmp(argv[arg_idx], command) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*---------------------------------------------------------*\
+| ParsePortArgument                                        |
+\*---------------------------------------------------------*/
+static bool ParsePortArgument(const char* option, const char* argument, unsigned short* port)
+{
+    if((argument == NULL) || (argument[0] == '\0'))
+    {
+        printf("Error: Missing argument for %s\n", option);
+        return false;
+    }
+
+    try
+    {
+        int port_value = std::stoi(argument);
+
+        if((port_value < 1024) || (port_value > 65535))
+        {
+            printf("Error: Port out of range for %s: %d (1024-65535)\n", option, port_value);
+            return false;
+        }
+
+        *port = (unsigned short)port_value;
+        return true;
+    }
+    catch(...)
+    {
+        printf("Error: Invalid data in %s argument (expected a number in range 1024-65535)\n", option);
+        return false;
+    }
+}
+
+/*---------------------------------------------------------*\
+| GetRequestedServicePort                                  |
+\*---------------------------------------------------------*/
+static bool GetRequestedServicePort(int argc, char* argv[], unsigned short* port, bool* port_specified)
+{
+    *port_specified = false;
+
+    for(int arg_idx = 1; arg_idx < argc; arg_idx++)
+    {
+        if((strcmp(argv[arg_idx], "--port") == 0)
+        || (strcmp(argv[arg_idx], "--websocket-port") == 0))
+        {
+            if((arg_idx + 1) >= argc)
+            {
+                printf("Error: Missing argument for %s\n", argv[arg_idx]);
+                return false;
+            }
+
+            if(!ParsePortArgument(argv[arg_idx], argv[arg_idx + 1], port))
+            {
+                return false;
+            }
+
+            *port_specified = true;
+            arg_idx++;
+        }
+        else if(strcmp(argv[arg_idx], "--server-port") == 0)
+        {
+            printf("Error: --server-port is not supported with --install_service. Use --port or --websocket-port for the service WebSocket port.\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*---------------------------------------------------------*\
+| IsProcessElevated                                        |
+\*---------------------------------------------------------*/
+static bool IsProcessElevated()
+{
+    HANDLE token = NULL;
+
+    if(!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+    {
+        return false;
+    }
+
+    TOKEN_ELEVATION elevation;
+    DWORD return_length = 0;
+    bool elevated = false;
+
+    if(GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &return_length))
+    {
+        elevated = elevation.TokenIsElevated != 0;
+    }
+
+    CloseHandle(token);
+    return elevated;
+}
+
+/*---------------------------------------------------------*\
+| QuoteCommandLineArgument                                 |
+\*---------------------------------------------------------*/
+static std::string QuoteCommandLineArgument(const char* argument)
+{
+    std::string arg(argument);
+
+    if(arg.find_first_of(" \t\"") == std::string::npos)
+    {
+        return arg;
+    }
+
+    std::string quoted = "\"";
+    unsigned int backslashes = 0;
+
+    for(char ch : arg)
+    {
+        if(ch == '\\')
+        {
+            backslashes++;
+            continue;
+        }
+
+        if(ch == '"')
+        {
+            quoted.append(backslashes * 2 + 1, '\\');
+            quoted.push_back(ch);
+            backslashes = 0;
+            continue;
+        }
+
+        quoted.append(backslashes, '\\');
+        backslashes = 0;
+        quoted.push_back(ch);
+    }
+
+    quoted.append(backslashes * 2, '\\');
+    quoted.push_back('"');
+
+    return quoted;
+}
+
+/*---------------------------------------------------------*\
+| RelaunchElevated                                         |
+\*---------------------------------------------------------*/
+static int RelaunchElevated(int argc, char* argv[])
+{
+    filesystem::path exe_path = GetExecutablePath();
+    std::string exe_path_string = exe_path.string();
+    std::string working_directory = exe_path.parent_path().string();
+    std::string parameters;
+
+    for(int arg_idx = 1; arg_idx < argc; arg_idx++)
+    {
+        if(!parameters.empty())
+        {
+            parameters += " ";
+        }
+
+        parameters += QuoteCommandLineArgument(argv[arg_idx]);
+    }
+
+    SHELLEXECUTEINFOA shell_execute_info;
+    memset(&shell_execute_info, 0, sizeof(shell_execute_info));
+
+    shell_execute_info.cbSize       = sizeof(shell_execute_info);
+    shell_execute_info.fMask        = SEE_MASK_NOCLOSEPROCESS;
+    shell_execute_info.lpVerb       = "runas";
+    shell_execute_info.lpFile       = exe_path_string.c_str();
+    shell_execute_info.lpParameters = parameters.c_str();
+    shell_execute_info.lpDirectory  = working_directory.c_str();
+    shell_execute_info.nShow        = SW_HIDE;
+
+    if(!ShellExecuteExA(&shell_execute_info))
+    {
+        DWORD error = GetLastError();
+
+        if(error == ERROR_CANCELLED)
+        {
+            printf("Administrator elevation was cancelled.\n");
+        }
+        else
+        {
+            PrintWindowsError("ShellExecuteEx", error);
+        }
+
+        return EXIT_FAILURE;
+    }
+
+    if(shell_execute_info.hProcess)
+    {
+        WaitForSingleObject(shell_execute_info.hProcess, INFINITE);
+
+        DWORD exit_code = EXIT_SUCCESS;
+        if(!GetExitCodeProcess(shell_execute_info.hProcess, &exit_code))
+        {
+            PrintWindowsError("GetExitCodeProcess", GetLastError());
+            exit_code = EXIT_FAILURE;
+        }
+
+        CloseHandle(shell_execute_info.hProcess);
+
+        if(exit_code == EXIT_SUCCESS)
+        {
+            printf("Service command completed successfully.\n");
+        }
+        else
+        {
+            printf("Service command failed with exit code %lu.\n", exit_code);
+        }
+
+        return (int)exit_code;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+/*---------------------------------------------------------*\
+| WaitForServiceState                                      |
+\*---------------------------------------------------------*/
+static bool WaitForServiceState(SC_HANDLE service, DWORD desired_state, DWORD timeout_ms)
+{
+    SERVICE_STATUS_PROCESS status;
+    DWORD bytes_needed;
+    DWORD elapsed_ms = 0;
+
+    while(QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&status, sizeof(status), &bytes_needed))
+    {
+        if(status.dwCurrentState == desired_state)
+        {
+            return true;
+        }
+
+        if(elapsed_ms >= timeout_ms)
+        {
+            return false;
+        }
+
+        Sleep(500);
+        elapsed_ms += 500;
+    }
+
+    return false;
+}
+
+/*---------------------------------------------------------*\
+| StartInstalledService                                    |
+\*---------------------------------------------------------*/
+static int StartInstalledService(SC_HANDLE service)
+{
+    if(StartService(service, 0, NULL))
+    {
+        if(!WaitForServiceState(service, SERVICE_RUNNING, 30000))
+        {
+            printf("%s service start was requested but did not report running within 30 seconds.\n", service_name);
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
+    }
+
+    DWORD error = GetLastError();
+
+    if(error == ERROR_SERVICE_ALREADY_RUNNING)
+    {
+        printf("%s service is already running.\n", service_name);
+        return EXIT_SUCCESS;
+    }
+
+    PrintWindowsError("StartService", error);
+    return EXIT_FAILURE;
+}
+
+/*---------------------------------------------------------*\
+| InstallService                                           |
+\*---------------------------------------------------------*/
+static int InstallService(int argc, char* argv[])
+{
+    unsigned short requested_port = 6743;
+    bool port_specified = false;
+
+    if(!GetRequestedServicePort(argc, argv, &requested_port, &port_specified))
+    {
+        return EXIT_FAILURE;
+    }
+
+    RemoveLegacyServiceEndpointFiles();
+
+    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+
+    if(!service_control_manager)
+    {
+        PrintWindowsError("OpenSCManager", GetLastError());
+        return EXIT_FAILURE;
+    }
+
+    filesystem::path exe_path = GetExecutablePath();
+    std::string binary_path = "\"" + exe_path.string() + "\"";
+
+    SC_HANDLE service = CreateService(
+        service_control_manager,
+        service_name,
+        service_name,
+        SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP,
+        SERVICE_WIN32_OWN_PROCESS,
+        SERVICE_AUTO_START,
+        SERVICE_ERROR_NORMAL,
+        binary_path.c_str(),
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL);
+
+    if(!service)
+    {
+        DWORD error = GetLastError();
+
+        if(error != ERROR_SERVICE_EXISTS)
+        {
+            PrintWindowsError("CreateService", error);
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+
+        service = OpenService(service_control_manager, service_name, SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
+
+        if(!service)
+        {
+            PrintWindowsError("OpenService", GetLastError());
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+
+        if(!ChangeServiceConfig(
+            service,
+            SERVICE_WIN32_OWN_PROCESS,
+            SERVICE_AUTO_START,
+            SERVICE_ERROR_NORMAL,
+            binary_path.c_str(),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            service_name))
+        {
+            PrintWindowsError("ChangeServiceConfig", GetLastError());
+            CloseServiceHandle(service);
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+
+        printf("%s service already existed and was updated.\n", service_name);
+    }
+    else
+    {
+        printf("%s service installed.\n", service_name);
+    }
+
+    if(port_specified)
+    {
+        SaveConfiguredServicePort(requested_port);
+        printf("%s service WebSocket port set to %u.\n", service_name, requested_port);
+    }
+    else if(!filesystem::exists(GetServiceSettingsPath()))
+    {
+        SaveConfiguredServicePort(6743);
+    }
+
+    if(!StopServiceIfRunning(service))
+    {
+        CloseServiceHandle(service);
+        CloseServiceHandle(service_control_manager);
+        return EXIT_FAILURE;
+    }
+
+    int start_result = StartInstalledService(service);
+
+    CloseServiceHandle(service);
+    CloseServiceHandle(service_control_manager);
+
+    return start_result;
+}
+
+/*---------------------------------------------------------*\
+| StopServiceIfRunning                                     |
+\*---------------------------------------------------------*/
+static bool StopServiceIfRunning(SC_HANDLE service)
+{
+    SERVICE_STATUS_PROCESS status;
+    DWORD bytes_needed;
+
+    if(!QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&status, sizeof(status), &bytes_needed))
+    {
+        PrintWindowsError("QueryServiceStatusEx", GetLastError());
+        return false;
+    }
+
+    if(status.dwCurrentState == SERVICE_STOPPED)
+    {
+        return true;
+    }
+
+    if(status.dwCurrentState != SERVICE_STOP_PENDING)
+    {
+        SERVICE_STATUS stop_status;
+        if(!ControlService(service, SERVICE_CONTROL_STOP, &stop_status))
+        {
+            DWORD error = GetLastError();
+            if(error != ERROR_SERVICE_NOT_ACTIVE)
+            {
+                PrintWindowsError("ControlService", error);
+                return false;
+            }
+        }
+    }
+
+    if(!WaitForServiceState(service, SERVICE_STOPPED, 30000))
+    {
+        printf("%s service did not stop within 30 seconds.\n", service_name);
+        return false;
+    }
+
+    return true;
+}
+
+/*---------------------------------------------------------*\
+| UninstallService                                         |
+\*---------------------------------------------------------*/
+static int UninstallService()
+{
+    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+
+    if(!service_control_manager)
+    {
+        PrintWindowsError("OpenSCManager", GetLastError());
+        return EXIT_FAILURE;
+    }
+
+    SC_HANDLE service = OpenService(service_control_manager, service_name, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
+
+    if(!service)
+    {
+        DWORD error = GetLastError();
+
+        if(error == ERROR_SERVICE_DOES_NOT_EXIST)
+        {
+            RemoveLegacyServiceEndpointFiles();
+            WriteServiceRuntimeInfo(GetConfiguredServicePort(), false);
+            printf("%s service is not installed.\n", service_name);
+            CloseServiceHandle(service_control_manager);
+            return EXIT_SUCCESS;
+        }
+
+        PrintWindowsError("OpenService", error);
+        CloseServiceHandle(service_control_manager);
+        return EXIT_FAILURE;
+    }
+
+    if(!StopServiceIfRunning(service))
+    {
+        CloseServiceHandle(service);
+        CloseServiceHandle(service_control_manager);
+        return EXIT_FAILURE;
+    }
+
+    if(!DeleteService(service))
+    {
+        PrintWindowsError("DeleteService", GetLastError());
+        CloseServiceHandle(service);
+        CloseServiceHandle(service_control_manager);
+        return EXIT_FAILURE;
+    }
+
+    RemoveLegacyServiceEndpointFiles();
+    WriteServiceRuntimeInfo(GetConfiguredServicePort(), false);
+    printf("%s service uninstalled.\n", service_name);
+
+    CloseServiceHandle(service);
+    CloseServiceHandle(service_control_manager);
+
+    return EXIT_SUCCESS;
+}
+
+/*---------------------------------------------------------*\
+| ProcessServiceCommand                                    |
+\*---------------------------------------------------------*/
+static int ProcessServiceCommand(int argc, char* argv[])
+{
+    if(!IsProcessElevated())
+    {
+        return RelaunchElevated(argc, argv);
+    }
+
+    if(IsServiceCommand(argc, argv, "--install_service"))
+    {
+        return InstallService(argc, argv);
+    }
+
+    if(IsServiceCommand(argc, argv, "--uninstall_service"))
+    {
+        return UninstallService();
+    }
+
+    return EXIT_FAILURE;
+}
+
+/*---------------------------------------------------------*\
+| RequestApplicationShutdown                               |
+\*---------------------------------------------------------*/
+static void RequestApplicationShutdown()
+{
+    service_stop_requested = true;
+    startup_request_shutdown();
+    ResourceManager::get()->StopDeviceDetection();
+
+    QCoreApplication* app = QCoreApplication::instance();
+    if(app)
+    {
+        WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
+        if(ws_server)
+        {
+            QMetaObject::invokeMethod(ws_server, "StopServer", Qt::QueuedConnection);
+        }
+
+        QMetaObject::invokeMethod(app, "quit", Qt::QueuedConnection);
+    }
+}
+
+/*---------------------------------------------------------*\
+| ServiceStarted                                           |
+\*---------------------------------------------------------*/
+static void ServiceStarted()
+{
+    AppendServiceLog("Service reported running.");
+    ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
+}
 
 /*---------------------------------------------------------*\
 | ServiceStartupProgress                                    |
@@ -175,9 +1030,10 @@ static void ReportServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWO
     }
 
     last_state                      = dwCurrentState;
-    service_status.dwCurrentState   = dwCurrentState;
-    service_status.dwWin32ExitCode  = dwWin32ExitCode;
-    service_status.dwWaitHint       = dwWaitHint;
+    service_status.dwCurrentState               = dwCurrentState;
+    service_status.dwWin32ExitCode              = dwWin32ExitCode;
+    service_status.dwServiceSpecificExitCode    = (dwWin32ExitCode == ERROR_SERVICE_SPECIFIC_ERROR) ? 1 : 0;
+    service_status.dwWaitHint                   = dwWaitHint;
 
     SetServiceStatus(service_status_handle, &service_status);
 
@@ -215,7 +1071,7 @@ static DWORD WINAPI ServiceControlHandler(DWORD dwControl, DWORD dwEventType, LP
         case SERVICE_CONTROL_STOP:
         case SERVICE_CONTROL_PRESHUTDOWN:
             ReportServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 10000);
-            service_stop_requested = true;
+            RequestApplicationShutdown();
             break;
 
         default:
@@ -373,6 +1229,12 @@ int main(int argc, char* argv[])
 {
     started_as_service = false;
 
+    if(HasServiceCommand(argc, argv))
+    {
+        AttachParentConsole();
+        return ProcessServiceCommand(argc, argv);
+    }
+
     /*-----------------------------------------------------*\
     | This will call ServiceMain() if we are started as a   |
     | service                                               |
@@ -437,17 +1299,7 @@ int main(int argc, char* argv[])
     /*-----------------------------------------------------*\
     | Attach console output                                 |
     \*-----------------------------------------------------*/
-    if(AttachConsole(ATTACH_PARENT_PROCESS))
-    {
-        /*-------------------------------------------------*\
-        | We are running under some terminal context;       |
-        | otherwise leave the GUI and CRT alone             |
-        \*-------------------------------------------------*/
-        freopen("CONIN$",  "r", stdin);
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-        have_console = true;
-    }
+    AttachParentConsole();
 
     return common_main(argc, argv);
 }
@@ -529,36 +1381,64 @@ static void WaitWhileServerOnline(NetworkServer* srv)
 static int common_main(int argc, char* argv[])
 {
     unsigned int ret_flags;
+    std::unique_ptr<QCoreApplication> service_app;
 
     if(started_as_service)
     {
+        startup_set_service_mode(true);
+        startup_set_service_started_callback(ServiceStarted);
+
+        if(QCoreApplication::instance() == nullptr)
+        {
+            service_app.reset(new QCoreApplication(argc, argv));
+            LOG_TRACE("[service] QCoreApplication created before ResourceManager");
+        }
+
         /*-------------------------------------------------*\
         | Passing command line arguments to a service is    |
         | difficult, can cause all kinds of trouble and     |
         | doesn't have a way to warn about them             |
         \*-------------------------------------------------*/
         ret_flags = RET_FLAG_START_WEBSOCKET_SERVER | RET_FLAG_NO_AUTO_CONNECT;
-        WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
-        ws_server->SetHost("0.0.0.0");
-        ws_server->SetPort(6743);
-        ws_server->SetEnabled(true);
 
         /*-------------------------------------------------*\
         | Get the path to the executable and create a       |
         | directory called service_config there, use this   |
         | as the service's configuration directory          |
         \*-------------------------------------------------*/
-        WCHAR exe_path_wchar[MAX_PATH];
-        GetModuleFileNameW(NULL, exe_path_wchar, MAX_PATH);
-
-        std::string exe_path_string = StringUtils::wstring_to_string(std::wstring(exe_path_wchar));
-
-        filesystem::path exe_path(exe_path_string);
-        filesystem::path config_path = exe_path.remove_filename() / filesystem::u8path("service_config");
+        filesystem::path config_path = GetServiceConfigurationDirectory();
+        service_settings_path = GetServiceSettingsPath();
 
         filesystem::create_directories(config_path);
+        RemoveLegacyServiceEndpointFiles();
 
         ResourceManager::get()->SetConfigurationDirectory(config_path);
+
+        unsigned short service_port = GetConfiguredServicePort();
+        WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
+
+        ws_server->SetHost("127.0.0.1");
+        ws_server->SetPort(service_port);
+        ws_server->SetEnabled(true);
+        ws_server->SetEndpointFilePath(service_settings_path.string());
+
+        WriteServiceRuntimeInfo(service_port, false);
+        WriteServiceRuntimeInfoToSettings(service_port, false);
+        AppendServiceLog("Service startup requested. WebSocket target 127.0.0.1:" + std::to_string(service_port));
+
+        /*-------------------------------------------------*\
+        | The WebSocket server is started from startup()     |
+        | once the Qt event loop is ready, so that all       |
+        | socket I/O happens on the owning thread.  Starting |
+        | it here would race the event loop and break        |
+        | signal delivery.                                   |
+        \-------------------------------------------------*/
+
+        if(service_stop_requested)
+        {
+            AppendServiceLog("Service stop was already requested before startup.");
+            return EXIT_SUCCESS;
+        }
     }
     else
     {
@@ -611,11 +1491,32 @@ static int common_main(int argc, char* argv[])
         ResourceManager::get()->UnregisterDetectionProgressCallback(ServiceStartupProgress, NULL);
     }
 
-
     /*-----------------------------------------------------*\
     | Perform ResourceManager cleanup before exiting        |
     \*-----------------------------------------------------*/
-    ResourceManager::get()->Cleanup();
+    if(started_as_service && (exitval != EXIT_SUCCESS))
+    {
+        WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
+        std::string websocket_error = ws_server ? ws_server->GetLastError() : "WebSocket server object is null";
+        AppendServiceLog("Service startup failed: " + websocket_error);
+    }
+
+    if(started_as_service && startup_shutdown_requested())
+    {
+        AppendServiceLog("Service cleanup skipped for shutdown request.");
+    }
+    else
+    {
+        ResourceManager::get()->Cleanup();
+    }
+
+    if(started_as_service)
+    {
+        unsigned short service_port = GetConfiguredServicePort();
+        WriteServiceRuntimeInfoToSettings(service_port, false);
+        WriteServiceRuntimeInfo(service_port, false);
+        AppendServiceLog("Service exited.");
+    }
 
     LOG_TRACE("%s finishing with exit code %d", APP_NAME, exitval);
 

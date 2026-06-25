@@ -405,6 +405,11 @@ void OptionHelp()
     help_text += "--websocket                              Starts the WebSocket server (JSON-RPC 2.0 API)\n";
     help_text += "--websocket-host                         Sets the WebSocket server host. Default: 0.0.0.0 (all network interfaces)\n";
     help_text += "--websocket-port                         Sets the WebSocket server port. Default: 6743 (1024-65535)\n";
+#ifdef _WIN32
+    help_text += "--install_service                        Installs and starts " APP_NAME " as an automatic Windows service\n";
+    help_text += "--uninstall_service                      Stops and removes the " APP_NAME " Windows service\n";
+    help_text += "--port                                   Sets the Windows service WebSocket port when used with --install_service\n";
+#endif
     help_text += "-l,  --list-devices                      Lists every compatible device with their number\n";
     help_text += "-d,  --device [0-9 | \"name\"]             Selects device to apply colors and/or effect to, or applies to all devices if omitted\n";
     help_text += "                                           Basic string search is implemented 3 characters or more\n";

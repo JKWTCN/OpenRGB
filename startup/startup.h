@@ -10,3 +10,7 @@
 #pragma once
 
 int startup(int argc, char* argv[], unsigned int ret_flags);
+void startup_set_service_mode(bool service_mode);
+void startup_set_service_started_callback(void (*callback)(void));
+void startup_request_shutdown();
+bool startup_shutdown_requested();

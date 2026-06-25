@@ -18,11 +18,27 @@
 #include "WebSocketServer.h"
 #include "AppInfo.h"
 #include "LogManager.h"
+#include "SettingsManager.h"
+#include "startup/startup.h"
 #include <QHostAddress>
 #include <QUrlQuery>
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QThread>
+#include <fstream>
+
+static bool IsLoopbackAddress(const QHostAddress& address)
+{
+    if((address == QHostAddress::LocalHost) || (address == QHostAddress::LocalHostIPv6))
+    {
+        return true;
+    }
+
+    bool ok = false;
+    quint32 ipv4_address = address.toIPv4Address(&ok);
+
+    return ok && ((ipv4_address & 0xFF000000) == 0x7F000000);
+}
 
 WebSocketServer::WebSocketServer(std::vector<RGBController *> &controllers,
                                  ResourceManager *resource_manager,
@@ -58,7 +74,9 @@ WebSocketServer::~WebSocketServer()
 \*---------------------------------------------------------*/
 void WebSocketServer::StartServer()
 {
-    // If called from a different thread, invoke in the correct thread
+    // If called from a different thread, invoke in the correct thread.  All
+    // QWebSocketServer / QWebSocket I/O must happen on this object's owning
+    // thread, which runs the Qt event loop (cli_app->exec()).
     if (QThread::currentThread() != this->thread())
     {
         QMetaObject::invokeMethod(this, "StartServer", Qt::QueuedConnection);
@@ -67,16 +85,19 @@ void WebSocketServer::StartServer()
 
     if (server_online)
     {
+        last_error.clear();
         LOG_VERBOSE("[WebSocketServer] StartServer called but server is already online");
         return;
     }
 
     if (!enabled)
     {
+        last_error = "server is not enabled";
         LOG_WARNING("[WebSocketServer] StartServer called but server is not enabled");
         return;
     }
 
+    last_error.clear();
     LOG_INFO("[WebSocketServer] Starting server on %s:%d", host.c_str(), port);
 
     // Create WebSocket server (no parent to avoid threading issues)
@@ -99,18 +120,30 @@ void WebSocketServer::StartServer()
 
     // Start listening
     QString host_str = QString::fromStdString(host);
-    if (ws_server->listen(QHostAddress(host_str), port))
+    QHostAddress listen_address(host_str);
+    if (ws_server->listen(listen_address, port))
     {
         server_online = true;
         server_listening = true;
         LOG_INFO("[WebSocketServer] Server started successfully on %s:%d", host.c_str(), port);
+        WriteEndpointFile();
         emit ServerStateChanged();
     }
     else
     {
+        QString error_string = ws_server->errorString();
+        if(error_string.isEmpty())
+        {
+            error_string = QString("listen returned false without errorString (host='%1', address='%2', address_is_null=%3, port=%4)")
+                .arg(host_str)
+                .arg(listen_address.toString())
+                .arg(listen_address.isNull() ? "true" : "false")
+                .arg(port);
+        }
+        last_error = error_string.toStdString();
         LOG_ERROR("[WebSocketServer] Failed to start server on %s:%d - %s",
                   host.c_str(), port,
-                  ws_server->errorString().toStdString().c_str());
+                  last_error.c_str());
         delete ws_server;
         ws_server = nullptr;
         server_online = false;
@@ -121,7 +154,7 @@ void WebSocketServer::StartServer()
 
 void WebSocketServer::StopServer()
 {
-    // If called from a different thread, invoke in the correct thread
+    // If called from a different thread, invoke in the correct thread.
     if (QThread::currentThread() != this->thread())
     {
         QMetaObject::invokeMethod(this, "StopServer", Qt::QueuedConnection);
@@ -166,6 +199,7 @@ void WebSocketServer::StopServer()
 
     server_online = false;
     server_listening = false;
+    ClearEndpointFile();
     emit ServerStateChanged();
 
     LOG_INFO("[WebSocketServer] Server stopped");
@@ -208,6 +242,71 @@ void WebSocketServer::SetRequireAuth(bool require)
     this->require_auth = require;
 }
 
+void WebSocketServer::SetEndpointFilePath(const std::string &path)
+{
+    endpoint_file_path = filesystem::path(path);
+}
+
+void WebSocketServer::EnsureOnApplicationThread()
+{
+    // Must only be called before StartServer()/StopServer() create any sockets.
+    QCoreApplication* app = QCoreApplication::instance();
+    QThread* app_thread = app ? app->thread() : nullptr;
+    QThread* cur_thread = QThread::currentThread();
+    QThread* my_thread = this->thread();
+
+    auto writeDiag = [&](const std::string& line)
+    {
+        try
+        {
+            filesystem::path dp;
+            if(!endpoint_file_path.empty())
+            {
+                dp = endpoint_file_path.parent_path();
+            }
+            dp /= "ensure.diag";
+            std::ofstream diag(dp, std::ios::app);
+            if(diag)
+            {
+                diag << line << std::endl;
+            }
+        }
+        catch(...) {}
+    };
+
+    writeDiag("app=" + std::string(app ? "exists" : "null")
+              + " app_thread=" + std::to_string(reinterpret_cast<uintptr_t>(app_thread))
+              + " cur=" + std::to_string(reinterpret_cast<uintptr_t>(cur_thread))
+              + " my_thread=" + std::to_string(reinterpret_cast<uintptr_t>(my_thread))
+              + " parent=" + (this->parent() ? "yes" : "no"));
+
+    if(app_thread == nullptr)
+    {
+        LOG_WARNING("[WebSocketServer] EnsureOnApplicationThread: no QCoreApplication yet");
+        return;
+    }
+
+    if(my_thread == app_thread)
+    {
+        writeDiag("skip: already on app thread");
+        return;
+    }
+
+    // QObject::moveToThread() refuses an object that still has a parent, so
+    // detach first.  The ResourceManager singleton outlives the event loop in
+    // service mode and never destructs during normal shutdown, so lifetime is
+    // managed by the process; detaching here is safe.
+    this->setParent(nullptr);
+    this->moveToThread(app_thread);
+    bool moved = (this->thread() == app_thread);
+
+    writeDiag("moveToThread moved=" + std::string(moved ? "1" : "0")
+              + " now_thread=" + std::to_string(reinterpret_cast<uintptr_t>(this->thread())));
+
+    LOG_INFO("[WebSocketServer] Moved onto application thread %p (was %p, moved=%d)",
+             static_cast<void*>(app_thread), static_cast<void*>(my_thread), moved);
+}
+
 /*---------------------------------------------------------*\
 | Server State                                              |
 \*---------------------------------------------------------*/
@@ -224,6 +323,11 @@ bool WebSocketServer::GetOnline() const
 bool WebSocketServer::GetListening() const
 {
     return server_listening;
+}
+
+std::string WebSocketServer::GetLastError() const
+{
+    return last_error;
 }
 
 std::string WebSocketServer::GetHost() const
@@ -523,15 +627,51 @@ void WebSocketServer::OnTextMessageReceived(const QString &message)
         SendToClient(socket, error_response);
         return;
     }
+
+    if(!request.is_array()
+    && request.contains("method")
+    && request["method"].is_string()
+    && (request["method"].get<std::string>() == JSONRPCProtocol::Methods::SHUTDOWN))
+    {
+        int id = request.value("id", 0);
+        nlohmann::json response;
+        response["jsonrpc"] = "2.0";
+        response["id"] = id;
+
+        if(!IsLoopbackAddress(socket->peerAddress()))
+        {
+            response["error"]["code"] = JSONRPCProtocol::ERR_OPERATION_NOT_PERMITTED;
+            response["error"]["message"] = "Shutdown is only permitted from loopback clients";
+            SendToClient(socket, response);
+            return;
+        }
+
+        response["result"]["success"] = true;
+        response["result"]["message"] = "Shutdown scheduled";
+        SendToClient(socket, response);
+        ScheduleShutdown();
+        return;
+    }
+
     if (request.is_array())
     {
-        nlohmann::json responses = rpc_handler->HandleBatchRequest(request);
+        nlohmann::json responses = rpc_handler->HandleBatchRequest(request, IsLoopbackAddress(socket->peerAddress()));
+        bool shutdown_requested = rpc_handler->TakeShutdownRequested();
         SendToClient(socket, responses);
+        if(shutdown_requested)
+        {
+            ScheduleShutdown();
+        }
     }
     else
     {
-        nlohmann::json response = rpc_handler->HandleRequest(request);
+        nlohmann::json response = rpc_handler->HandleRequest(request, IsLoopbackAddress(socket->peerAddress()));
+        bool shutdown_requested = rpc_handler->TakeShutdownRequested();
         SendToClient(socket, response);
+        if(shutdown_requested)
+        {
+            ScheduleShutdown();
+        }
     }
 }
 
@@ -613,6 +753,7 @@ void WebSocketServer::SendToClient(QWebSocket *client,
 
     QString message = QString::fromStdString(response.dump());
     client->sendTextMessage(message);
+    client->flush();
 }
 
 bool WebSocketServer::AuthenticateClient(QWebSocket *socket, const QString &token)
@@ -655,4 +796,164 @@ QString WebSocketServer::ExtractTokenFromRequest(const QWebSocket *socket)
     QUrlQuery query(resource_name);
 
     return query.queryItemValue("token");
+}
+
+void WebSocketServer::ScheduleShutdown()
+{
+    LOG_INFO("[WebSocketServer] Shutdown requested by local JSON-RPC client");
+    startup_request_shutdown();
+
+    QCoreApplication* app = QCoreApplication::instance();
+    QTimer::singleShot(1000, app, [this, app]() {
+        if(resource_manager)
+        {
+            resource_manager->StopDeviceDetection();
+        }
+
+        StopServer();
+
+        if(app)
+        {
+            app->quit();
+        }
+    });
+}
+
+void WebSocketServer::WriteEndpointFile()
+{
+    if(endpoint_file_path.empty())
+    {
+        return;
+    }
+
+    try
+    {
+        if(resource_manager && resource_manager->GetSettingsManager())
+        {
+            SettingsManager* settings_manager = resource_manager->GetSettingsManager();
+            nlohmann::json service_settings = settings_manager->GetSettings("Service");
+
+            if(!service_settings.is_object())
+            {
+                service_settings = nlohmann::json::object();
+            }
+
+            service_settings["name"]           = "RGB Server";
+            service_settings["host"]           = "127.0.0.1";
+            service_settings["port"]           = port;
+            service_settings["websocket_port"] = port;
+            service_settings["pid"]            = QCoreApplication::applicationPid();
+            service_settings["running"]        = true;
+
+            settings_manager->SetSettings("Service", service_settings);
+            settings_manager->SaveSettings();
+            return;
+        }
+
+        nlohmann::json settings = nlohmann::json::object();
+
+        if(filesystem::exists(endpoint_file_path))
+        {
+            std::ifstream input_file(endpoint_file_path.string(), std::ios::in | std::ios::binary);
+            if(input_file)
+            {
+                input_file >> settings;
+            }
+        }
+
+        if(!settings.is_object())
+        {
+            settings = nlohmann::json::object();
+        }
+
+        nlohmann::json service_settings = settings.value("Service", nlohmann::json::object());
+        if(!service_settings.is_object())
+        {
+            service_settings = nlohmann::json::object();
+        }
+
+        service_settings["name"]           = "RGB Server";
+        service_settings["host"]           = "127.0.0.1";
+        service_settings["port"]           = port;
+        service_settings["websocket_port"] = port;
+        service_settings["pid"]            = QCoreApplication::applicationPid();
+        service_settings["running"]        = true;
+
+        settings["Service"] = service_settings;
+
+        std::ofstream file(endpoint_file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        file << settings.dump(4);
+        file << std::endl;
+    }
+    catch(const std::exception& e)
+    {
+        LOG_WARNING("[WebSocketServer] Failed to write endpoint file %s: %s",
+                    endpoint_file_path.string().c_str(), e.what());
+    }
+}
+
+void WebSocketServer::ClearEndpointFile()
+{
+    if(endpoint_file_path.empty())
+    {
+        return;
+    }
+
+    try
+    {
+        if(resource_manager && resource_manager->GetSettingsManager())
+        {
+            SettingsManager* settings_manager = resource_manager->GetSettingsManager();
+            nlohmann::json service_settings = settings_manager->GetSettings("Service");
+
+            if(!service_settings.is_object())
+            {
+                service_settings = nlohmann::json::object();
+            }
+
+            service_settings["running"] = false;
+            service_settings["pid"]     = 0;
+
+            settings_manager->SetSettings("Service", service_settings);
+            settings_manager->SaveSettings();
+            return;
+        }
+
+        if(!filesystem::exists(endpoint_file_path))
+        {
+            return;
+        }
+
+        nlohmann::json settings = nlohmann::json::object();
+        std::ifstream input_file(endpoint_file_path.string(), std::ios::in | std::ios::binary);
+        if(input_file)
+        {
+            input_file >> settings;
+        }
+
+        if(!settings.is_object())
+        {
+            settings = nlohmann::json::object();
+        }
+
+        nlohmann::json service_settings = settings.value("Service", nlohmann::json::object());
+        if(!service_settings.is_object())
+        {
+            service_settings = nlohmann::json::object();
+        }
+
+        service_settings["running"] = false;
+        service_settings["pid"]     = 0;
+
+        settings["Service"] = service_settings;
+
+        std::ofstream file(endpoint_file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        file << settings.dump(4);
+        file << std::endl;
+    }
+    catch(const std::exception& e)
+    {
+        LOG_WARNING("[WebSocketServer] Failed to remove endpoint file %s: %s",
+                    endpoint_file_path.string().c_str(), e.what());
+    }
 }

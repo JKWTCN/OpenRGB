@@ -41,7 +41,8 @@ void JSONRPCHandler::SetProfileManager(ProfileManagerInterface *profile_manager)
 /*---------------------------------------------------------*\
 | Main Request Handler                                      |
 \*---------------------------------------------------------*/
-nlohmann::json JSONRPCHandler::HandleRequest(const nlohmann::json &request)
+nlohmann::json JSONRPCHandler::HandleRequest(const nlohmann::json &request,
+                                             bool client_is_loopback)
 {
     try
     {
@@ -64,7 +65,7 @@ nlohmann::json JSONRPCHandler::HandleRequest(const nlohmann::json &request)
         int id = request.value("id", 0);
 
         // Call the method
-        nlohmann::json result = CallMethod(method, params);
+        nlohmann::json result = CallMethod(method, params, client_is_loopback);
 
         // Check if result is an error
         if (result.contains("error"))
@@ -86,7 +87,8 @@ nlohmann::json JSONRPCHandler::HandleRequest(const nlohmann::json &request)
     }
 }
 
-nlohmann::json JSONRPCHandler::HandleBatchRequest(const nlohmann::json &requests)
+nlohmann::json JSONRPCHandler::HandleBatchRequest(const nlohmann::json &requests,
+                                                  bool client_is_loopback)
 {
     nlohmann::json responses = nlohmann::json::array();
 
@@ -98,17 +100,25 @@ nlohmann::json JSONRPCHandler::HandleBatchRequest(const nlohmann::json &requests
 
     for (const auto &request : requests)
     {
-        responses.push_back(HandleRequest(request));
+        responses.push_back(HandleRequest(request, client_is_loopback));
     }
 
     return responses;
+}
+
+bool JSONRPCHandler::TakeShutdownRequested()
+{
+    bool requested = shutdown_requested;
+    shutdown_requested = false;
+    return requested;
 }
 
 /*---------------------------------------------------------*\
 | Method Dispatcher                                         |
 \*---------------------------------------------------------*/
 nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
-                                          const nlohmann::json &params)
+                                          const nlohmann::json &params,
+                                          bool client_is_loopback)
 {
     // Device Management
     if (method == JSONRPCProtocol::Methods::GET_CONTROLLERS)
@@ -207,6 +217,10 @@ nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
     else if (method == JSONRPCProtocol::Methods::GET_CLIENTS)
     {
         return GetClients(params);
+    }
+    else if (method == JSONRPCProtocol::Methods::SHUTDOWN)
+    {
+        return ShutdownServer(params, client_is_loopback);
     }
     // Plugin Management
     else if (method == JSONRPCProtocol::Methods::GET_PLUGINS)
@@ -905,6 +919,23 @@ nlohmann::json JSONRPCHandler::GetClients(const nlohmann::json &params)
     nlohmann::json result;
     result["clients"] = nlohmann::json::array();
     // This will be implemented by WebSocketServer
+    return result;
+}
+
+nlohmann::json JSONRPCHandler::ShutdownServer(const nlohmann::json &params,
+                                              bool client_is_loopback)
+{
+    if(!client_is_loopback)
+    {
+        return CreateError(JSONRPCProtocol::ERR_OPERATION_NOT_PERMITTED,
+                           "Shutdown is only permitted from loopback clients");
+    }
+
+    shutdown_requested = true;
+
+    nlohmann::json result;
+    result["success"] = true;
+    result["message"] = "Shutdown scheduled";
     return result;
 }
 

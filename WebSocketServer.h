@@ -16,6 +16,7 @@
 #include <vector>
 #include <mutex>
 #include <string>
+#include "filesystem.h"
 #include "RGBController.h"
 #include "ResourceManager.h"
 #include "ProfileManager.h"
@@ -46,11 +47,19 @@ public:
     void            SetAuthToken(const std::string& token);
     void            SetAuthTokens(const std::vector<std::string>& tokens);
     void            SetRequireAuth(bool require);
+    void            SetEndpointFilePath(const std::string& path);
+
+    // Move this object (and therefore all of its Qt networking) onto the
+    // thread running the QCoreApplication event loop.  Required in service
+    // mode, where the singleton is constructed on a thread without an event
+    // loop; StartServer()/socket I/O must run on the application thread.
+    void            EnsureOnApplicationThread();
 
     // Server state
     bool            GetEnabled() const;
     bool            GetOnline() const;
     bool            GetListening() const;
+    std::string     GetLastError() const;
     std::string     GetHost() const;
     unsigned short  GetPort() const;
     unsigned int    GetNumClients() const;
@@ -89,11 +98,15 @@ private:
                                const nlohmann::json& response);
     bool            AuthenticateClient(QWebSocket* socket, const QString& token);
     QString         ExtractTokenFromRequest(const QWebSocket* socket);
+    void            ScheduleShutdown();
+    void            WriteEndpointFile();
+    void            ClearEndpointFile();
 
     std::string                         host;
     unsigned short                      port;
     bool                                enabled;
     bool                                require_auth;
+    filesystem::path                    endpoint_file_path;
 
     QWebSocketServer*                   ws_server;
     std::vector<WebSocketClientInfo*>   clients;
@@ -111,4 +124,5 @@ private:
 
     std::atomic<bool>                   server_online;
     std::atomic<bool>                   server_listening;
+    std::string                         last_error;
 };

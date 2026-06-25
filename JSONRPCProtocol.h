@@ -120,6 +120,7 @@ namespace Methods
     const char* const GET_PROTOCOL_VERSION      = "server.getProtocolVersion";
     const char* const GET_SERVER_INFO           = "server.getServerInfo";
     const char* const GET_CLIENTS               = "server.getClients";
+    const char* const SHUTDOWN                  = "server.shutdown";
 
     // Plugin Management
     const char* const GET_PLUGINS               = "plugin.getPlugins";

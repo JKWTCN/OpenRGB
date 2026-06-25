@@ -131,7 +131,7 @@ ResourceManager::ResourceManager()
 {
     /*-----------------------------------------------------*\
     | Initialize Detection Variables                        |
-    \*-----------------------------------------------------*/
+    \-----------------------------------------------------*/
     auto_connection_client      = NULL;
     auto_connection_active      = false;
     detection_enabled           = true;

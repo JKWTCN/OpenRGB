@@ -14,8 +14,12 @@
 #include "startup.h"
 #include "LogManager.h"
 
+#include <atomic>
+#include <memory>
+#include <fstream>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QThread>
 
 #ifndef RGBSERVER_HEADLESS
 #include <QApplication>
@@ -42,6 +46,30 @@ void sigHandler(int s)
     qApp->quit();
 }
 #endif
+
+static bool startup_service_mode = false;
+static std::atomic<bool> startup_shutdown_requested_flag(false);
+static void (*startup_service_started_callback)(void) = nullptr;
+
+void startup_set_service_mode(bool service_mode)
+{
+    startup_service_mode = service_mode;
+}
+
+void startup_set_service_started_callback(void (*callback)(void))
+{
+    startup_service_started_callback = callback;
+}
+
+void startup_request_shutdown()
+{
+    startup_shutdown_requested_flag = true;
+}
+
+bool startup_shutdown_requested()
+{
+    return startup_shutdown_requested_flag;
+}
 
 /******************************************************************************************\
 *                                                                                          *
@@ -150,40 +178,69 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
         | event loop for WebSocketServer and other Qt      |
         | network services                                 |
         \*-------------------------------------------------*/
-        QCoreApplication cli_app(argc, argv);
-        LOG_TRACE("[startup] QCoreApplication created for CLI mode");
+        QCoreApplication* cli_app = QCoreApplication::instance();
+        std::unique_ptr<QCoreApplication> cli_app_owner;
+
+        if(cli_app == nullptr)
+        {
+            cli_app_owner.reset(new QCoreApplication(argc, argv));
+            cli_app = cli_app_owner.get();
+            LOG_TRACE("[startup] QCoreApplication created for CLI mode");
+        }
+        else
+        {
+            LOG_TRACE("[startup] Reusing existing QCoreApplication for CLI mode");
+        }
 
         /*-------------------------------------------------*\
-        | Wait for initialization to finish                 |
+        | Wait for initialization to finish.  In service    |
+        | mode the Qt event loop must start first so        |
+        | WebSocketServer calls queued from ResourceManager |
+        | can run on the owning thread.                     |
         \*-------------------------------------------------*/
-        ResourceManager::get()->WaitForInitialization();
+        if(!startup_service_mode)
+        {
+            ResourceManager::get()->WaitForInitialization();
+        }
 
         if(ret_flags & RET_FLAG_START_SERVER)
         {
             NetworkServer* server = ResourceManager::get()->GetServer();
             if(server)
             {
+                if(startup_service_mode && startup_service_started_callback)
+                {
+                    startup_service_started_callback();
+                }
+
                 /*-----------------------------------------*\
                 | Start the event loop to process Qt events |
                 | Exit when server is stopped               |
                 \*-----------------------------------------*/
-                QTimer::singleShot(0, [&cli_app, server]() {
-                    if(!server->GetOnline())
+                bool server_was_online = server->GetOnline();
+                QTimer* server_check_timer = new QTimer(cli_app);
+                QObject::connect(server_check_timer, &QTimer::timeout, [cli_app, server, server_was_online]() mutable {
+                    if(startup_service_mode)
                     {
-                        cli_app.quit();
+                        return;
                     }
-                });
 
-                QTimer* server_check_timer = new QTimer(&cli_app);
-                QObject::connect(server_check_timer, &QTimer::timeout, [&cli_app, server]() {
-                    if(!server->GetOnline())
+                    if(server->GetOnline())
                     {
-                        cli_app.quit();
+                        server_was_online = true;
+                    }
+                    else if(server_was_online)
+                    {
+                        cli_app->quit();
                     }
                 });
                 server_check_timer->start(1000);
 
-                exitval = cli_app.exec();
+                exitval = cli_app->exec();
+                if(startup_service_mode && !startup_shutdown_requested())
+                {
+                    ResourceManager::get()->WaitForInitialization();
+                }
                 delete server_check_timer;
             }
             else
@@ -196,27 +253,80 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
             if(ws_server)
             {
+                /*-------------------------------------------------*\
+                | The WebSocketServer singleton may have been       |
+                | constructed on a thread without an event loop     |
+                | (before QCoreApplication existed).  Move it onto   |
+                | the application thread so that StartServer() and  |
+                | all socket I/O run on the event-loop thread.      |
+                \-------------------------------------------------*/
+                ws_server->EnsureOnApplicationThread();
+
+                if(!ws_server->GetOnline())
+                {
+                    ws_server->StartServer();
+                }
+
+                /*-------------------------------------------------*\
+                | Diagnostic: record StartServer outcome so service  |
+                | startup failures (e.g. listen errors) are visible  |
+                | even when LogManager file output is disabled.      |
+                \-------------------------------------------------*/
+                if(startup_service_mode)
+                {
+                    try
+                    {
+                        filesystem::path diag_path = ResourceManager::get()->GetConfigurationDirectory();
+                        diag_path /= "ws.diag";
+                        std::ofstream diag(diag_path, std::ios::app);
+                        if(diag)
+                        {
+                        Qt::HANDLE cur_id = QThread::currentThreadId();
+                        QThread* owner = ws_server->thread();
+                        diag << "cur_thread=" << reinterpret_cast<unsigned long long>(cur_id)
+                             << " same_ws=" << (QThread::currentThread() == owner ? 1 : 0)
+                             << " online=" << (ws_server->GetOnline() ? 1 : 0)
+                             << " listening=" << (ws_server->GetListening() ? 1 : 0)
+                             << " err=[" << ws_server->GetLastError() << "]"
+                             << std::endl;
+                        }
+                    }
+                    catch(...) {}
+                }
+
+                if(startup_service_mode && startup_service_started_callback)
+                {
+                    startup_service_started_callback();
+                }
+
                 /*-----------------------------------------*\
                 | Start the event loop to process Qt events |
                 | Exit when WebSocket server is stopped    |
                 \*-----------------------------------------*/
-                QTimer::singleShot(0, [&cli_app, ws_server]() {
-                    if(!ws_server->GetOnline())
+                bool server_was_online = ws_server->GetOnline();
+                QTimer* server_check_timer = new QTimer(cli_app);
+                QObject::connect(server_check_timer, &QTimer::timeout, [cli_app, ws_server, server_was_online]() mutable {
+                    if(startup_service_mode)
                     {
-                        cli_app.quit();
+                        return;
+                    }
+
+                    if(ws_server->GetOnline())
+                    {
+                        server_was_online = true;
+                    }
+                    else if(server_was_online)
+                    {
+                        cli_app->quit();
                     }
                 });
+                server_check_timer->start(startup_service_mode ? 100 : 1000);
 
-                QTimer* server_check_timer = new QTimer(&cli_app);
-                QObject::connect(server_check_timer, &QTimer::timeout, [&cli_app, ws_server]() {
-                    if(!ws_server->GetOnline())
-                    {
-                        cli_app.quit();
-                    }
-                });
-                server_check_timer->start(1000);
-
-                exitval = cli_app.exec();
+                exitval = cli_app->exec();
+                if(startup_service_mode && !startup_shutdown_requested())
+                {
+                    ResourceManager::get()->WaitForInitialization();
+                }
                 delete server_check_timer;
             }
             else
@@ -229,7 +339,7 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             /*-----------------------------------------*\
             | No server mode, process any pending events |
             \*-----------------------------------------*/
-            cli_app.processEvents();
+            cli_app->processEvents();
         }
     }
 

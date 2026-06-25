@@ -39,21 +39,25 @@ public:
     ~JSONRPCHandler();
 
     // Main request handler
-    nlohmann::json  HandleRequest(const nlohmann::json& request);
+    nlohmann::json  HandleRequest(const nlohmann::json& request,
+                                  bool client_is_loopback = false);
 
     // Batch request support
-    nlohmann::json  HandleBatchRequest(const nlohmann::json& requests);
+    nlohmann::json  HandleBatchRequest(const nlohmann::json& requests,
+                                       bool client_is_loopback = false);
 
     // Set profile manager
     void            SetProfileManager(ProfileManagerInterface* profile_manager);
 
     // Helper functions for external use
     nlohmann::json  ControllerToJSON(RGBController* controller);
+    bool            TakeShutdownRequested();
 
 private:
     // Method dispatchers
     nlohmann::json  CallMethod(const std::string& method,
-                              const nlohmann::json& params);
+                              const nlohmann::json& params,
+                              bool client_is_loopback);
 
     // Device management methods
     nlohmann::json  GetControllers(const nlohmann::json& params);
@@ -89,6 +93,8 @@ private:
     nlohmann::json  GetProtocolVersion(const nlohmann::json& params);
     nlohmann::json  GetServerInfo(const nlohmann::json& params);
     nlohmann::json  GetClients(const nlohmann::json& params);
+    nlohmann::json  ShutdownServer(const nlohmann::json& params,
+                                   bool client_is_loopback);
 
     // Plugin methods
     nlohmann::json  GetPlugins(const nlohmann::json& params);
@@ -114,4 +120,5 @@ private:
     std::shared_future<void>        rescan_future;
     std::mutex                      rescan_mutex;
     bool                            rescan_in_progress = false;
+    bool                            shutdown_requested = false;
 };
