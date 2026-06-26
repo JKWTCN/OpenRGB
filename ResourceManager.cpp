@@ -428,6 +428,11 @@ std::vector<RGBController*> & ResourceManager::GetRGBControllers()
     return rgb_controllers;
 }
 
+std::mutex & ResourceManager::GetDeviceListChangeMutex()
+{
+    return DeviceListChangeMutex;
+}
+
 void ResourceManager::RegisterI2CBusDetector(I2CBusDetectorFunction detector)
 {
     i2c_bus_detectors.push_back(detector);

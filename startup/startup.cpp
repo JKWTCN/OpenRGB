@@ -13,7 +13,7 @@
 #include "WebSocketServer.h"
 #include "startup.h"
 #include "LogManager.h"
-
+#include "AppInfo.h"
 #include <atomic>
 #include <memory>
 #include <QCoreApplication>

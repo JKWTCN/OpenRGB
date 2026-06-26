@@ -112,6 +112,14 @@ private:
     nlohmann::json  ModeToJSON(RGBController* controller, int mode_idx);
     nlohmann::json  LEDToJSON(RGBController* controller, int led_idx);
 
+    /*---------------------------------------------------------*\
+    | Acquires the ResourceManager device-list mutex.  Every   |
+    | RPC method that touches the controllers vector must hold |
+    | the returned lock for the whole access so it cannot race |
+    | with an asynchronous rescan rebuilding the list.         |
+    \*---------------------------------------------------------*/
+    std::unique_lock<std::mutex> LockControllerList();
+
     std::vector<RGBController*>&    controllers;
     ResourceManager*                resource_manager;
     ProfileManagerInterface*        profile_manager;

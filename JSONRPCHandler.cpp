@@ -243,6 +243,8 @@ nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
 \*---------------------------------------------------------*/
 nlohmann::json JSONRPCHandler::GetControllers(const nlohmann::json &params)
 {
+    auto lock = LockControllerList();
+
     nlohmann::json result;
     nlohmann::json controllers_array = nlohmann::json::array();
 
@@ -257,6 +259,8 @@ nlohmann::json JSONRPCHandler::GetControllers(const nlohmann::json &params)
 
 nlohmann::json JSONRPCHandler::GetControllerCount(const nlohmann::json &params)
 {
+    auto lock = LockControllerList();
+
     nlohmann::json result;
     result["count"] = controllers.size();
     return result;
@@ -269,6 +273,8 @@ nlohmann::json JSONRPCHandler::GetControllerData(const nlohmann::json &params)
         return CreateError(JSONRPCProtocol::INVALID_PARAMS,
                            "Missing 'deviceIndex' parameter");
     }
+
+    auto lock = LockControllerList();
 
     unsigned int device_idx = params["deviceIndex"];
 
@@ -290,6 +296,8 @@ nlohmann::json JSONRPCHandler::GetControllerInfo(const nlohmann::json &params)
         return CreateError(JSONRPCProtocol::INVALID_PARAMS,
                            "Missing 'deviceIndex' parameter");
     }
+
+    auto lock = LockControllerList();
 
     unsigned int device_idx = params["deviceIndex"];
 
@@ -371,8 +379,12 @@ nlohmann::json JSONRPCHandler::SetLEDColor(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, ledIndex, color");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int led_idx = params["ledIndex"];
+    RGBColor color = ParseColor(params["color"]);
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -388,7 +400,6 @@ nlohmann::json JSONRPCHandler::SetLEDColor(const nlohmann::json &params)
                            "LED index out of range");
     }
 
-    RGBColor color = ParseColor(params["color"]);
     controller->SetLED(led_idx, color);
     controller->UpdateLEDs();
 
@@ -405,8 +416,12 @@ nlohmann::json JSONRPCHandler::SetZoneColor(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, zoneIndex, color");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int zone_idx = params["zoneIndex"];
+    RGBColor color = ParseColor(params["color"]);
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -422,7 +437,6 @@ nlohmann::json JSONRPCHandler::SetZoneColor(const nlohmann::json &params)
                            "Zone index out of range");
     }
 
-    RGBColor color = ParseColor(params["color"]);
     controller->SetAllZoneLEDs(zone_idx, color);
     controller->UpdateLEDs();
 
@@ -439,6 +453,10 @@ nlohmann::json JSONRPCHandler::SetAllColors(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, color");
     }
 
+    RGBColor color = ParseColor(params["color"]);
+
+    auto lock = LockControllerList();
+
     unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
@@ -448,7 +466,6 @@ nlohmann::json JSONRPCHandler::SetAllColors(const nlohmann::json &params)
     }
 
     RGBController *controller = controllers[device_idx];
-    RGBColor color = ParseColor(params["color"]);
 
     controller->SetAllLEDs(color);
     controller->UpdateLEDs();
@@ -466,6 +483,16 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, colors");
     }
 
+    const auto &colors = params["colors"];
+
+    if (!colors.is_array())
+    {
+        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                           "'colors' must be an array");
+    }
+
+    auto lock = LockControllerList();
+
     unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
@@ -475,13 +502,6 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
     }
 
     RGBController *controller = controllers[device_idx];
-    const auto &colors = params["colors"];
-
-    if (!colors.is_array())
-    {
-        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
-                           "'colors' must be an array");
-    }
 
     for (const auto &color_item : colors)
     {
@@ -516,8 +536,11 @@ nlohmann::json JSONRPCHandler::SetMode(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, modeIndex");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int mode_idx = params["modeIndex"];
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -549,6 +572,8 @@ nlohmann::json JSONRPCHandler::SetCustomMode(const nlohmann::json &params)
                            "Missing 'deviceIndex' parameter");
     }
 
+    auto lock = LockControllerList();
+
     unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
@@ -574,15 +599,6 @@ nlohmann::json JSONRPCHandler::UpdateMode(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, mode");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
-
-    if (!ValidateDeviceIndex(device_idx))
-    {
-        return CreateError(JSONRPCProtocol::ERR_DEVICE_INDEX_OUT_OF_RANGE,
-                           "Device index out of range");
-    }
-
-    RGBController *controller = controllers[device_idx];
     const auto &mode_obj = params["mode"];
 
     if (!mode_obj.contains("index"))
@@ -592,6 +608,18 @@ nlohmann::json JSONRPCHandler::UpdateMode(const nlohmann::json &params)
     }
 
     unsigned int mode_idx = mode_obj["index"];
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
+
+    if (!ValidateDeviceIndex(device_idx))
+    {
+        return CreateError(JSONRPCProtocol::ERR_DEVICE_INDEX_OUT_OF_RANGE,
+                           "Device index out of range");
+    }
+
+    RGBController *controller = controllers[device_idx];
 
     if (mode_idx >= controller->modes.size())
     {
@@ -644,6 +672,8 @@ nlohmann::json JSONRPCHandler::GetZones(const nlohmann::json &params)
                            "Missing 'deviceIndex' parameter");
     }
 
+    auto lock = LockControllerList();
+
     unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
@@ -673,9 +703,12 @@ nlohmann::json JSONRPCHandler::ResizeZone(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, zoneIndex, newSize");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int zone_idx = params["zoneIndex"];
     int new_size = params["newSize"];
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -713,8 +746,11 @@ nlohmann::json JSONRPCHandler::ClearSegments(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, zoneIndex");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int zone_idx = params["zoneIndex"];
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -745,8 +781,21 @@ nlohmann::json JSONRPCHandler::AddSegment(const nlohmann::json &params)
                            "Missing required parameters: deviceIndex, zoneIndex, segment");
     }
 
-    unsigned int device_idx = params["deviceIndex"];
     unsigned int zone_idx = params["zoneIndex"];
+    const auto &segment_obj = params["segment"];
+
+    unsigned int start_idx = segment_obj.value("start", 0);
+    unsigned int leds_count = segment_obj.value("length", 0);
+    std::string name = segment_obj.value("name", "");
+
+    segment new_seg;
+    new_seg.name = name;
+    new_seg.start_idx = start_idx;
+    new_seg.leds_count = leds_count;
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
 
     if (!ValidateDeviceIndex(device_idx))
     {
@@ -761,17 +810,6 @@ nlohmann::json JSONRPCHandler::AddSegment(const nlohmann::json &params)
         return CreateError(JSONRPCProtocol::ERR_ZONE_INDEX_OUT_OF_RANGE,
                            "Zone index out of range");
     }
-
-    const auto &segment_obj = params["segment"];
-
-    unsigned int start_idx = segment_obj.value("start", 0);
-    unsigned int leds_count = segment_obj.value("length", 0);
-    std::string name = segment_obj.value("name", "");
-
-    segment new_seg;
-    new_seg.name = name;
-    new_seg.start_idx = start_idx;
-    new_seg.leds_count = leds_count;
 
     controller->AddSegment(zone_idx, new_seg);
 
@@ -994,6 +1032,16 @@ nlohmann::json JSONRPCHandler::CreateResult(const nlohmann::json &result_data, i
 bool JSONRPCHandler::ValidateDeviceIndex(unsigned int device_idx)
 {
     return device_idx < controllers.size();
+}
+
+std::unique_lock<std::mutex> JSONRPCHandler::LockControllerList()
+{
+    if (resource_manager)
+    {
+        return std::unique_lock<std::mutex>(resource_manager->GetDeviceListChangeMutex());
+    }
+    // No resource manager (defensive): return a non-owning, unlocked guard.
+    return std::unique_lock<std::mutex>();
 }
 
 bool JSONRPCHandler::ValidateZoneIndex(unsigned int device_idx, unsigned int zone_idx)

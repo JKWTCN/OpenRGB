@@ -149,6 +149,31 @@ static void RemoveLegacyServiceEndpointFiles()
 }
 
 /*---------------------------------------------------------*\
+| RemoveServiceConfigurationDirectory                       |
+|                                                           |
+|   Remove the service_config directory and everything in   |
+|   it (configuration, runtime info and log files). Used    |
+|   when the service is uninstalled so it doesn't leave     |
+|   leftover files behind.                                  |
+\*---------------------------------------------------------*/
+static void RemoveServiceConfigurationDirectory()
+{
+    try
+    {
+        filesystem::path service_config_path = GetServiceConfigurationDirectory();
+
+        if(filesystem::exists(service_config_path))
+        {
+            filesystem::remove_all(service_config_path);
+        }
+    }
+    catch(...)
+    {
+        /* Best effort cleanup only. */
+    }
+}
+
+/*---------------------------------------------------------*\
 | LoadJsonFile                                             |
 \*---------------------------------------------------------*/
 static json LoadJsonFile(const filesystem::path& file_path)
@@ -815,7 +840,7 @@ static int UninstallService()
         if(error == ERROR_SERVICE_DOES_NOT_EXIST)
         {
             RemoveLegacyServiceEndpointFiles();
-            WriteServiceRuntimeInfo(GetConfiguredServicePort(), false);
+            RemoveServiceConfigurationDirectory();
             printf("%s service is not installed.\n", service_name);
             CloseServiceHandle(service_control_manager);
             return EXIT_SUCCESS;
@@ -842,7 +867,7 @@ static int UninstallService()
     }
 
     RemoveLegacyServiceEndpointFiles();
-    WriteServiceRuntimeInfo(GetConfiguredServicePort(), false);
+    RemoveServiceConfigurationDirectory();
     printf("%s service uninstalled.\n", service_name);
 
     CloseServiceHandle(service);

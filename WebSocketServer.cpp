@@ -331,8 +331,21 @@ void WebSocketServer::RegisterClientInfoChangeCallback(WebSocketServerCallback c
 
 void WebSocketServer::DeviceListChanged()
 {
+    // Take a consistent snapshot of the controller count under the device-list
+    // lock so we don't read size() while a rescan is rebuilding the vector.
+    unsigned int count;
+    if (resource_manager)
+    {
+        std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
+        count = controllers.size();
+    }
+    else
+    {
+        count = controllers.size();
+    }
+
     nlohmann::json data;
-    data["controllerCount"] = controllers.size();
+    data["controllerCount"] = count;
     BroadcastNotification(JSONRPCProtocol::Events::DEVICE_LIST_CHANGED, data);
 }
 
@@ -349,10 +362,24 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
     data["controllerCount"] = device_count;
     data["message"] = "Device scan completed";
 
+    // Serialize the controllers under the device-list lock: this runs right
+    // after a rescan finishes, concurrent with any RPC that may touch the
+    // list, so we must not iterate the vector without it.
     nlohmann::json controllers_array = nlohmann::json::array();
-    for (unsigned int i = 0; i < controllers.size(); i++)
+    if (resource_manager)
     {
-        controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+        std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
+        for (unsigned int i = 0; i < controllers.size(); i++)
+        {
+            controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+        }
+    }
+    else
+    {
+        for (unsigned int i = 0; i < controllers.size(); i++)
+        {
+            controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+        }
     }
     data["controllers"] = controllers_array;
 

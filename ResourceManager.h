@@ -148,6 +148,16 @@ public:
 
     std::vector<RGBController*> & GetRGBControllers();
 
+    /*---------------------------------------------------------*\
+    | Returns the mutex that guards rgb_controllers during    |
+    | UpdateDeviceList().  Any code that reads/writes the     |
+    | controller vector (e.g. the JSON-RPC handler) must hold |
+    | this lock for the duration of the access, otherwise it  |
+    | can race with an in-flight rescan and observe the list  |
+    | mid-rebuild (transient size==0, dangling iterators).    |
+    \*---------------------------------------------------------*/
+    std::mutex & GetDeviceListChangeMutex();
+
     void RegisterI2CBusDetector         (I2CBusDetectorFunction     detector);
     void RegisterDeviceDetector         (std::string name, DeviceDetectorFunction     detector);
     void RegisterI2CDeviceDetector      (std::string name, I2CDeviceDetectorFunction  detector);
