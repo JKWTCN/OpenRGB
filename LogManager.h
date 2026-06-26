@@ -63,6 +63,8 @@ private:
     std::recursive_mutex entry_mutex;
     std::mutex section_mutex;
     std::ofstream log_stream;
+    filesystem::path current_log_path = "";
+    bool log_has_entries = false;
 
     std::vector<LogDialogShowCallback>  dialog_show_callbacks;
     std::vector<void*>                  dialog_show_callback_args;
@@ -78,6 +80,7 @@ private:
 
     // Logfile max level
     unsigned int loglevel = LL_INFO;
+    int configured_log_limit = 0;
 
     // Verbosity (stdout) max level
     unsigned int verbosity = LL_WARNING;
@@ -85,17 +88,36 @@ private:
     //Clock from LogManager creation
     std::chrono::time_point<std::chrono::steady_clock> base_clock;
 
+    /*-------------------------------------------------*\
+    | Per-day log rotation (service mode only)          |
+    \*-------------------------------------------------*/
+    bool                daily_rollover    = false;
+    bool                service_log_mode  = false;
+    std::string         daily_basename    = "";
+    std::string         configured_log_template = "RGBServer_#.log";
+    filesystem::path    log_base_dir      = "";
+    filesystem::path    service_log_dir   = "";
+    std::string         current_log_date  = "";
+    int                 daily_log_limit   = 0;
+
     // A non-guarded append()
     void _append(const char* filename, int line, unsigned int level, const char* fmt, va_list va);
 
     // A non-guarded flush()
     void _flush();
 
-    void rotate_logs(const filesystem::path& folder, const filesystem::path& templ, int max_count);
+    // Opens (or reopens, on day rollover) the log file used in service mode.
+    // Service mode uses one file per day (RGBServer_YYYYMMDD.log), appended to
+    // across same-day restarts, and rolled over at midnight while running.
+    void _open_daily_log(const std::string& yyyymmdd);
+
+    void rotate_logs(const filesystem::path& folder, const filesystem::path& templ, int max_count, const char* timestamp_regex);
 
 public:
     static LogManager* get();
     void configure(json config, const filesystem::path & defaultDir);
+    void setServiceLogDirectory(const filesystem::path& defaultDir);
+    void reconfigure_daily_log(const filesystem::path& defaultDir);
     void flush();
     void append(const char* filename, int line, unsigned int level, const char* fmt, ...);
     void setLoglevel(unsigned int);

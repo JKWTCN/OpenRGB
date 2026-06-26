@@ -33,6 +33,7 @@
 #include <sstream>
 #include <hidapi.h>
 #include "cli.h"
+#include "startup/startup.h"
 #include "pci_ids/pci_ids.h"
 #include "ResourceManager.h"
 #include "ProfileManager.h"
@@ -150,6 +151,12 @@ ResourceManager::ResourceManager()
     DetectDevicesThread         = new std::thread(&ResourceManager::BackgroundThreadFunction, this);
 
     SetupConfigurationDirectory();
+
+    if(startup_is_service_mode() && !startup_get_service_configuration_directory().empty())
+    {
+        config_dir = startup_get_service_configuration_directory();
+        filesystem::create_directories(config_dir);
+    }
 
     /*-----------------------------------------------------*\
     | Load settings from file                               |
@@ -1009,6 +1016,17 @@ void ResourceManager::SetConfigurationDirectory(const filesystem::path &director
 
     rgb_controllers_sizes.clear();
     rgb_controllers_sizes   = profile_manager->LoadProfileToList("sizes", true);
+
+    /*-------------------------------------------------*\
+    | If a service explicitly repoints the application   |
+    | configuration directory, move the daily log along  |
+    | with it. The normal Windows service path keeps     |
+    | ResourceManager on %APPDATA%\RGB Server.           |
+    \*-------------------------------------------------*/
+    if(startup_is_service_mode())
+    {
+        LogManager::get()->reconfigure_daily_log(directory);
+    }
 }
 
 NetworkServer* ResourceManager::GetServer()

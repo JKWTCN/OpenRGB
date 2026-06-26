@@ -17,6 +17,7 @@
 
 #include "filesystem.h"
 #include "AppInfo.h"
+#include "startup/startup.h"
 
 const char* LogManager::log_codes[] = {"FATAL:", "ERROR:", "Warning:", "Info:", "Verbose:", "Debug:", "Trace:", "Dialog:"};
 
@@ -26,6 +27,26 @@ const char* TimestampPattern = "%04d%02d%02d_%02d%02d%02d";
 | Relies on the structure of the template above             |
 \*---------------------------------------------------------*/
 const char* TimestampRegex = "[0-9]{8}_[0-9]{6}";
+const char* DailyDateRegex = "[0-9]{8}";
+
+static std::string GetDailyLogBasename(const std::string& logtempl)
+{
+    filesystem::path log_path = filesystem::u8path(logtempl);
+    std::string basename = log_path.stem().generic_u8string();
+    size_t marker = basename.find("#");
+
+    if(marker != basename.npos)
+    {
+        basename.erase(marker);
+    }
+
+    while(!basename.empty() && ((basename.back() == '_') || (basename.back() == '-') || (basename.back() == '.') || (basename.back() == ' ')))
+    {
+        basename.pop_back();
+    }
+
+    return basename.empty() ? "RGBServer" : basename;
+}
 
 LogManager::LogManager()
 {
@@ -86,6 +107,7 @@ void LogManager::configure(json config, const filesystem::path& defaultDir)
         {
             loglimit = config["file_count_limit"];
         }
+        configured_log_limit = loglimit;
 
         if(config.contains("log_file"))
         {
@@ -116,51 +138,92 @@ void LogManager::configure(json config, const filesystem::path& defaultDir)
                     }
                 }
             }
-            /*---------------------------------------------*\
-            | If the # symbol is found in the log file      |
-            | name, replace it with a timestamp             |
-            \*---------------------------------------------*/
-            time_t t = time(0);
-            struct tm* tmp = localtime(&t);
-            char time_string[64];
-            snprintf(time_string, 64, TimestampPattern, 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday, tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+            configured_log_template = logtempl;
 
-            std::string logname = logtempl;
-            size_t oct = logname.find("#");
-            if(oct != logname.npos)
+            /*---------------------------------------------*\
+            | Service mode uses one log file per day        |
+            | (RGBServer_YYYYMMDD.log), appended to across  |
+            | same-day restarts and rolled over at midnight |
+            | while running. Non-service mode keeps the     |
+            | per-launch file with full timestamp.          |
+            \*---------------------------------------------*/
+            if(startup_is_service_mode() || service_log_mode)
             {
-                logname.replace(oct, 1, time_string);
-            }
+                time_t t = time(0);
+                struct tm* tmp = localtime(&t);
+                char date_string[16];
+                snprintf(date_string, sizeof(date_string), "%04d%02d%02d", 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday);
 
-            /*---------------------------------------------*\
-            | If the path is relative, use logs dir         |
-            \*---------------------------------------------*/
-            filesystem::path p = filesystem::u8path(logname);
-            if(p.is_relative())
+                daily_rollover  = true;
+                daily_log_limit = loglimit;
+                daily_basename  = GetDailyLogBasename(logtempl);
+
+                filesystem::path log_path = filesystem::u8path(logtempl);
+                if(log_path.is_absolute() && log_path.has_parent_path())
+                {
+                    log_base_dir = log_path.parent_path();
+                }
+                else if(!service_log_dir.empty())
+                {
+                    log_base_dir = service_log_dir / "logs";
+                }
+                else
+                {
+                    log_base_dir = defaultDir / "logs";
+                }
+
+                _open_daily_log(date_string);
+            }
+            else
             {
-                p = defaultDir / "logs" / logname;
+                /*-----------------------------------------*\
+                | If the # symbol is found in the log file |
+                | name, replace it with a timestamp        |
+                \-----------------------------------------*/
+                time_t t = time(0);
+                struct tm* tmp = localtime(&t);
+                char time_string[64];
+                snprintf(time_string, 64, TimestampPattern, 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday, tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+
+                std::string logname = logtempl;
+                size_t oct = logname.find("#");
+                if(oct != logname.npos)
+                {
+                    logname.replace(oct, 1, time_string);
+                }
+
+                /*---------------------------------------------*\
+                | If the path is relative, use logs dir         |
+                \*---------------------------------------------*/
+                filesystem::path p = filesystem::u8path(logname);
+                if(p.is_relative())
+                {
+                    p = defaultDir / "logs" / logname;
+                }
+                filesystem::create_directories(p.parent_path());
+
+                /*---------------------------------------------*\
+                | "Log rotation": remove old log files          |
+                | exceeding the current configured limit        |
+                \*---------------------------------------------*/
+                rotate_logs(p.parent_path(), filesystem::u8path(logtempl).filename(), loglimit, TimestampRegex);
+
+                /*---------------------------------------------*\
+                | Open the logfile                              |
+                \*---------------------------------------------*/
+                current_log_path = p;
+                log_has_entries  = false;
+                log_stream.open(p);
+
+                /*---------------------------------------------*\
+                | Print Git Commit info, version, etc.          |
+                \*---------------------------------------------*/
+                log_stream << "    " << APP_NAME << " v" << VERSION_STRING << std::endl;
+                log_stream << "    Commit: " << GIT_COMMIT_ID << " from " << GIT_COMMIT_DATE << std::endl;
+                log_stream << "    Launched: " << time_string << std::endl;
+                log_stream << "====================================================================================================" << std::endl;
+                log_stream << std::endl;
             }
-            filesystem::create_directories(p.parent_path());
-
-            /*---------------------------------------------*\
-            | "Log rotation": remove old log files          |
-            | exceeding the current configured limit        |
-            \*---------------------------------------------*/
-            rotate_logs(p.parent_path(), filesystem::u8path(logtempl).filename(), loglimit);
-
-            /*---------------------------------------------*\
-            | Open the logfile                              |
-            \*---------------------------------------------*/
-            log_stream.open(p);
-
-            /*---------------------------------------------*\
-            | Print Git Commit info, version, etc.          |
-            \*---------------------------------------------*/
-            log_stream << "    " << APP_NAME << " v" << VERSION_STRING << std::endl;
-            log_stream << "    Commit: " << GIT_COMMIT_ID << " from " << GIT_COMMIT_DATE << std::endl;
-            log_stream << "    Launched: " << time_string << std::endl;
-            log_stream << "====================================================================================================" << std::endl;
-            log_stream << std::endl;
         }
     }
 
@@ -194,6 +257,126 @@ void LogManager::configure(json config, const filesystem::path& defaultDir)
     _flush();
 }
 
+void LogManager::_open_daily_log(const std::string& yyyymmdd)
+{
+    /*-----------------------------------------------------*\
+    | Build the per-day log filename in the form            |
+    | <basename>_YYYYMMDD.log                               |
+    \*-----------------------------------------------------*/
+    std::string basename = daily_basename.empty() ? APP_NAME : daily_basename;
+    std::string logname  = basename + "_" + yyyymmdd + ".log";
+
+    filesystem::path p = log_base_dir / logname;
+    filesystem::create_directories(p.parent_path());
+
+    /*-----------------------------------------------------*\
+    | Log rotation template: the date is a 8-digit run,     |
+    | so reuse rotate_logs() with a matching template       |
+    \*-----------------------------------------------------*/
+    std::string rot_templ = basename + "_#.log";
+    rotate_logs(p.parent_path(), filesystem::u8path(rot_templ).filename(), daily_log_limit, DailyDateRegex);
+
+    /*-----------------------------------------------------*\
+    | Append to the file if it already exists (same-day     |
+    | restart), so all entries for a given day land in one   |
+    | file. Only print the header on first creation.         |
+    \*-----------------------------------------------------*/
+    bool file_existed = filesystem::exists(p) && filesystem::file_size(p) > 0;
+
+    current_log_path = p;
+    log_has_entries  = file_existed;
+    log_stream.open(p, std::ios::app);
+
+    if(!file_existed && log_stream.is_open())
+    {
+        time_t t = time(0);
+        struct tm* tmp = localtime(&t);
+        char time_string[64];
+        snprintf(time_string, 64, TimestampPattern, 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday, tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+
+        log_stream << "    " << APP_NAME << " v" << VERSION_STRING << std::endl;
+        log_stream << "    Commit: " << GIT_COMMIT_ID << " from " << GIT_COMMIT_DATE << std::endl;
+        log_stream << "    Launched: " << time_string << std::endl;
+        log_stream << "====================================================================================================" << std::endl;
+        log_stream << std::endl;
+    }
+
+    current_log_date = yyyymmdd;
+}
+
+void LogManager::setServiceLogDirectory(const filesystem::path& defaultDir)
+{
+    std::lock_guard<std::recursive_mutex> grd(entry_mutex);
+
+    service_log_mode = true;
+    service_log_dir  = defaultDir;
+
+    if(log_file_enabled)
+    {
+        if(log_stream.is_open())
+        {
+            log_stream.flush();
+            log_stream.close();
+
+            if(!daily_rollover && !log_has_entries && !current_log_path.empty())
+            {
+                std::error_code ec;
+                filesystem::remove(current_log_path, ec);
+            }
+        }
+
+        daily_rollover  = true;
+        daily_log_limit = configured_log_limit;
+        daily_basename  = GetDailyLogBasename(configured_log_template);
+        log_base_dir    = defaultDir / "logs";
+
+        time_t t = time(0);
+        struct tm* tmp = localtime(&t);
+        char date_string[16];
+        snprintf(date_string, sizeof(date_string), "%04d%02d%02d", 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday);
+
+        _open_daily_log(date_string);
+        _flush();
+    }
+}
+
+void LogManager::reconfigure_daily_log(const filesystem::path& defaultDir)
+{
+    std::lock_guard<std::recursive_mutex> grd(entry_mutex);
+
+    /*-------------------------------------------------*\
+    | Nothing to do unless daily rollover is active     |
+    \*-------------------------------------------------*/
+    if(!daily_rollover)
+    {
+        return;
+    }
+
+    /*-------------------------------------------------*\
+    | Close any log file opened against the wrong       |
+    | directory (the ResourceManager constructor runs   |
+    | before the service directory is repointed) and    |
+    | reopen against the real directory.                |
+    \*-------------------------------------------------*/
+    if(log_stream.is_open())
+    {
+        log_stream.flush();
+        log_stream.close();
+    }
+
+    service_log_dir = defaultDir;
+    log_base_dir    = defaultDir / "logs";
+
+    time_t t = time(0);
+    struct tm* tmp = localtime(&t);
+    char date_string[16];
+    snprintf(date_string, sizeof(date_string), "%04d%02d%02d", 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday);
+
+    _open_daily_log(date_string);
+
+    _flush();
+}
+
 void LogManager::_flush()
 {
     /*-----------------------------------------------------*\
@@ -219,6 +402,7 @@ void LogManager::_flush()
                 }
 
                 log_stream << std::endl;
+                log_has_entries = true;
             }
         }
 
@@ -254,6 +438,27 @@ void LogManager::_append(const char* filename, int line, unsigned int level, con
     }
 
     /*-----------------------------------------------------*\
+    | In service mode, roll over to a new file when the     |
+    | calendar day changes, so a long-running service gets  |
+    | one file per day. _append() runs under entry_mutex,   |
+    | so the close/reopen here is thread-safe.              |
+    \*-----------------------------------------------------*/
+    if(daily_rollover && log_stream.is_open())
+    {
+        time_t t = time(0);
+        struct tm* tmp = localtime(&t);
+        char today[16];
+        snprintf(today, sizeof(today), "%04d%02d%02d", 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday);
+
+        if(current_log_date != today)
+        {
+            log_stream.flush();
+            log_stream.close();
+            _open_daily_log(today);
+        }
+    }
+
+    /*-----------------------------------------------------*\
     | Create a new message                                  |
     \*-----------------------------------------------------*/
     PLogMessage mes = std::make_shared<LogMessage>();
@@ -264,8 +469,16 @@ void LogManager::_append(const char* filename, int line, unsigned int level, con
     va_list va2;
     va_copy(va2, va);
     int len = vsnprintf(nullptr, 0, fmt, va);
-    mes->buffer.resize(len);
-    vsnprintf(&(mes->buffer[0]), len + 1, fmt, va2);
+    if(len < 0)
+    {
+        mes->buffer = "[LogManager] Failed to format log message";
+    }
+    else
+    {
+        std::vector<char> buffer(len + 1);
+        vsnprintf(buffer.data(), buffer.size(), fmt, va2);
+        mes->buffer.assign(buffer.data(), len);
+    }
     va_end(va2);
 
     /*-----------------------------------------------------*\
@@ -403,7 +616,7 @@ void LogManager::UnregisterDialogShowCallback(LogDialogShowCallback callback, vo
     }
 }
 
-void LogManager::rotate_logs(const filesystem::path& folder, const filesystem::path& templ, int max_count)
+void LogManager::rotate_logs(const filesystem::path& folder, const filesystem::path& templ, int max_count, const char* timestamp_regex)
 {
     if(max_count < 1)
     {
@@ -454,7 +667,7 @@ void LogManager::rotate_logs(const filesystem::path& folder, const filesystem::p
         | template                                          |
         \*-------------------------------------------------*/
         case '#':
-            regex_templ.append(TimestampRegex);
+            regex_templ.append(timestamp_regex);
             break;
 
         default:

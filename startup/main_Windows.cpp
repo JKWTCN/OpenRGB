@@ -118,6 +118,27 @@ static filesystem::path GetServiceSettingsPath()
 }
 
 /*---------------------------------------------------------*\
+| GetDefaultUserConfigurationDirectory                      |
+\*---------------------------------------------------------*/
+static filesystem::path GetDefaultUserConfigurationDirectory()
+{
+    filesystem::path config_dir;
+    const wchar_t* appdata = _wgetenv(L"APPDATA");
+
+    if(appdata != NULL)
+    {
+        config_dir = appdata;
+        config_dir.append(APP_CONFIG_DIR_NAME);
+    }
+    else
+    {
+        config_dir = "./";
+    }
+
+    return config_dir;
+}
+
+/*---------------------------------------------------------*\
 | RemoveLegacyServiceEndpointFiles                         |
 \*---------------------------------------------------------*/
 static void RemoveLegacyServiceEndpointFiles()
@@ -289,18 +310,7 @@ static void WriteServiceRuntimeInfoToSettings(unsigned short port, bool running)
 \*---------------------------------------------------------*/
 static void AppendServiceLog(const std::string& message)
 {
-    try
-    {
-        filesystem::path settings_path = service_settings_path.empty() ? GetServiceSettingsPath() : service_settings_path;
-        filesystem::create_directories(settings_path.parent_path());
-
-        std::ofstream log_file(settings_path.parent_path() / filesystem::u8path("RGBServer.service.log"), std::ios::app);
-        log_file << message << std::endl;
-    }
-    catch(...)
-    {
-        /* Best effort diagnostic logging. */
-    }
+    LOG_INFO("[service] %s", message.c_str());
 }
 
 /*---------------------------------------------------------*\
@@ -347,9 +357,56 @@ static void SaveConfiguredServicePort(unsigned short port)
     service_settings["host"]           = "127.0.0.1";
     service_settings["port"]           = port;
     service_settings["websocket_port"] = port;
+    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().string();
 
     data["Service"] = service_settings;
     SaveJsonFile(service_settings_path, data);
+}
+
+/*---------------------------------------------------------*\
+| SaveConfiguredServiceDirectory                           |
+\*---------------------------------------------------------*/
+static void SaveConfiguredServiceDirectory()
+{
+    service_settings_path = GetServiceSettingsPath();
+
+    json data = LoadJsonFile(service_settings_path);
+    json service_settings = data.value("Service", json::object());
+
+    if(!service_settings.is_object())
+    {
+        service_settings = json::object();
+    }
+
+    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().string();
+
+    data["Service"] = service_settings;
+    SaveJsonFile(service_settings_path, data);
+}
+
+/*---------------------------------------------------------*\
+| GetConfiguredServiceDirectory                            |
+\*---------------------------------------------------------*/
+static filesystem::path GetConfiguredServiceDirectory()
+{
+    if(service_settings_path.empty())
+    {
+        service_settings_path = GetServiceSettingsPath();
+    }
+
+    json data = LoadJsonFile(service_settings_path);
+    json service_settings = data.value("Service", json::object());
+
+    if(service_settings.is_object())
+    {
+        std::string config_dir = service_settings.value("configuration_directory", "");
+        if(!config_dir.empty())
+        {
+            return filesystem::u8path(config_dir);
+        }
+    }
+
+    return GetDefaultUserConfigurationDirectory();
 }
 
 /*---------------------------------------------------------*\
@@ -760,6 +817,8 @@ static int InstallService(int argc, char* argv[])
     {
         SaveConfiguredServicePort(6743);
     }
+
+    SaveConfiguredServiceDirectory();
 
     if(!StopServiceIfRunning(service))
     {
@@ -1427,17 +1486,19 @@ static int common_main(int argc, char* argv[])
         ret_flags = RET_FLAG_START_WEBSOCKET_SERVER | RET_FLAG_NO_AUTO_CONNECT;
 
         /*-------------------------------------------------*\
-        | Get the path to the executable and create a       |
-        | directory called service_config there, use this   |
-        | as the service's configuration directory          |
+        | Use service_config for service runtime endpoint   |
+        | state only. Application config and logs remain in |
+        | the normal %APPDATA%\RGB Server directory.        |
         \*-------------------------------------------------*/
-        filesystem::path config_path = GetServiceConfigurationDirectory();
         service_settings_path = GetServiceSettingsPath();
 
-        filesystem::create_directories(config_path);
+        filesystem::create_directories(service_settings_path.parent_path());
         RemoveLegacyServiceEndpointFiles();
 
-        ResourceManager::get()->SetConfigurationDirectory(config_path);
+        filesystem::path app_config_path = GetConfiguredServiceDirectory();
+        filesystem::create_directories(app_config_path);
+        startup_set_service_configuration_directory(app_config_path);
+        LogManager::get()->setServiceLogDirectory(app_config_path);
 
         unsigned short service_port = GetConfiguredServicePort();
         WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();

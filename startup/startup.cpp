@@ -46,12 +46,28 @@ void sigHandler(int s)
 #endif
 
 static bool startup_service_mode = false;
+static filesystem::path startup_service_configuration_directory;
 static std::atomic<bool> startup_shutdown_requested_flag(false);
 static void (*startup_service_started_callback)(void) = nullptr;
 
 void startup_set_service_mode(bool service_mode)
 {
     startup_service_mode = service_mode;
+}
+
+bool startup_is_service_mode()
+{
+    return startup_service_mode;
+}
+
+void startup_set_service_configuration_directory(const filesystem::path& directory)
+{
+    startup_service_configuration_directory = directory;
+}
+
+filesystem::path startup_get_service_configuration_directory()
+{
+    return startup_service_configuration_directory;
 }
 
 void startup_set_service_started_callback(void (*callback)(void))

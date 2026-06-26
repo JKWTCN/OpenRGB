@@ -860,7 +860,6 @@ void WebSocketServer::WriteEndpointFile()
 
             settings_manager->SetSettings("Service", service_settings);
             settings_manager->SaveSettings();
-            return;
         }
 
         nlohmann::json settings = nlohmann::json::object();
@@ -929,7 +928,6 @@ void WebSocketServer::ClearEndpointFile()
 
             settings_manager->SetSettings("Service", service_settings);
             settings_manager->SaveSettings();
-            return;
         }
 
         if (!filesystem::exists(endpoint_file_path))
