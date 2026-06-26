@@ -43,6 +43,8 @@ static void WINAPI ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv);
 static void ReportServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwWaitHint);
 static int  ProcessServiceCommand(int argc, char* argv[]);
 static bool StopServiceIfRunning(SC_HANDLE service);
+static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int argc, char* argv[]);
+static int  StartServiceCommand(int argc, char* argv[]);
 
 static char                  service_name[]             = APP_NAME;
 static SERVICE_TABLE_ENTRY   service_dispatch_table[]   = { { service_name, ServiceMain }, { NULL, NULL } };
@@ -431,7 +433,8 @@ static bool HasServiceCommand(int argc, char* argv[])
     for(int arg_idx = 1; arg_idx < argc; arg_idx++)
     {
         if((strcmp(argv[arg_idx], "--install_service") == 0)
-        || (strcmp(argv[arg_idx], "--uninstall_service") == 0))
+        || (strcmp(argv[arg_idx], "--uninstall_service") == 0)
+        || (strcmp(argv[arg_idx], "--start_service") == 0))
         {
             return true;
         }
@@ -722,27 +725,28 @@ static int StartInstalledService(SC_HANDLE service)
 }
 
 /*---------------------------------------------------------*\
-| InstallService                                           |
+| EnsureServiceInstalled                                    |
+|                                                           |
+|   Creates the service if it does not exist, or updates    |
+|   the existing service configuration to point at the      |
+|   current executable. Also applies the requested port     |
+|   and configuration directory settings.                   |
+|                                                           |
+|   Returns an open service handle on success, or NULL on   |
+|   failure. The caller owns the handle and must close it   |
+|   together with the service control manager handle.       |
 \*---------------------------------------------------------*/
-static int InstallService(int argc, char* argv[])
+static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int argc, char* argv[])
 {
     unsigned short requested_port = 6743;
     bool port_specified = false;
 
     if(!GetRequestedServicePort(argc, argv, &requested_port, &port_specified))
     {
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     RemoveLegacyServiceEndpointFiles();
-
-    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
-
-    if(!service_control_manager)
-    {
-        PrintWindowsError("OpenSCManager", GetLastError());
-        return EXIT_FAILURE;
-    }
 
     filesystem::path exe_path = GetExecutablePath();
     std::string binary_path = "\"" + exe_path.string() + "\"";
@@ -769,8 +773,7 @@ static int InstallService(int argc, char* argv[])
         if(error != ERROR_SERVICE_EXISTS)
         {
             PrintWindowsError("CreateService", error);
-            CloseServiceHandle(service_control_manager);
-            return EXIT_FAILURE;
+            return NULL;
         }
 
         service = OpenService(service_control_manager, service_name, SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
@@ -778,8 +781,7 @@ static int InstallService(int argc, char* argv[])
         if(!service)
         {
             PrintWindowsError("OpenService", GetLastError());
-            CloseServiceHandle(service_control_manager);
-            return EXIT_FAILURE;
+            return NULL;
         }
 
         if(!ChangeServiceConfig(
@@ -797,8 +799,7 @@ static int InstallService(int argc, char* argv[])
         {
             PrintWindowsError("ChangeServiceConfig", GetLastError());
             CloseServiceHandle(service);
-            CloseServiceHandle(service_control_manager);
-            return EXIT_FAILURE;
+            return NULL;
         }
 
         printf("%s service already existed and was updated.\n", service_name);
@@ -819,6 +820,30 @@ static int InstallService(int argc, char* argv[])
     }
 
     SaveConfiguredServiceDirectory();
+
+    return service;
+}
+
+/*---------------------------------------------------------*\
+| InstallService                                           |
+\*---------------------------------------------------------*/
+static int InstallService(int argc, char* argv[])
+{
+    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+
+    if(!service_control_manager)
+    {
+        PrintWindowsError("OpenSCManager", GetLastError());
+        return EXIT_FAILURE;
+    }
+
+    SC_HANDLE service = EnsureServiceInstalled(service_control_manager, argc, argv);
+
+    if(!service)
+    {
+        CloseServiceHandle(service_control_manager);
+        return EXIT_FAILURE;
+    }
 
     if(!StopServiceIfRunning(service))
     {
@@ -936,6 +961,127 @@ static int UninstallService()
 }
 
 /*---------------------------------------------------------*\
+| StartServiceCommand                                      |
+|                                                           |
+|   Idempotently make sure the service is running:          |
+|     - If it is not installed, install it (and start it)   |
+|     - If it is installed but not running, start it        |
+|     - If it is already running, do nothing                |
+|                                                           |
+|   If --port/--websocket-port is given, the configured     |
+|   WebSocket port is updated in all cases. When the service|
+|   is already running it is restarted so the new port takes|
+|   effect immediately.                                     |
+\*---------------------------------------------------------*/
+static int StartServiceCommand(int argc, char* argv[])
+{
+    unsigned short requested_port = 6743;
+    bool port_specified = false;
+
+    if(!GetRequestedServicePort(argc, argv, &requested_port, &port_specified))
+    {
+        return EXIT_FAILURE;
+    }
+
+    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+
+    if(!service_control_manager)
+    {
+        PrintWindowsError("OpenSCManager", GetLastError());
+        return EXIT_FAILURE;
+    }
+
+    SC_HANDLE service = OpenService(service_control_manager, service_name,
+        SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
+
+    if(!service)
+    {
+        DWORD error = GetLastError();
+
+        if(error != ERROR_SERVICE_DOES_NOT_EXIST)
+        {
+            PrintWindowsError("OpenService", error);
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+
+        /*-------------------------------------------------*\
+        | Not installed yet: install and start it.          |
+        | EnsureServiceInstalled applies the requested      |
+        | port and configuration directory settings.        |
+        \*-------------------------------------------------*/
+        printf("%s service is not installed. Installing...\n", service_name);
+
+        service = EnsureServiceInstalled(service_control_manager, argc, argv);
+
+        if(!service)
+        {
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+    }
+    else
+    {
+        /*-------------------------------------------------*\
+        | Already installed. Refresh the configuration so   |
+        | any --port change is persisted, then decide       |
+        | whether (re)starting is needed.                   |
+        \*-------------------------------------------------*/
+        if(port_specified)
+        {
+            SaveConfiguredServicePort(requested_port);
+            printf("%s service WebSocket port set to %u.\n", service_name, requested_port);
+        }
+
+        SERVICE_STATUS_PROCESS status;
+        DWORD bytes_needed;
+
+        if(!QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&status, sizeof(status), &bytes_needed))
+        {
+            PrintWindowsError("QueryServiceStatusEx", GetLastError());
+            CloseServiceHandle(service);
+            CloseServiceHandle(service_control_manager);
+            return EXIT_FAILURE;
+        }
+
+        if(status.dwCurrentState == SERVICE_RUNNING)
+        {
+            if(!port_specified)
+            {
+                /*---------------------------------------------*\
+                | Already running and no port change requested: |
+                | nothing to do.                                |
+                \*---------------------------------------------*/
+                printf("%s service is already running.\n", service_name);
+                CloseServiceHandle(service);
+                CloseServiceHandle(service_control_manager);
+                return EXIT_SUCCESS;
+            }
+
+            /*---------------------------------------------*\
+            | Port changed while running: restart so the    |
+            | new port takes effect.                         |
+            \*---------------------------------------------*/
+            printf("%s service is running; restarting to apply new port %u.\n", service_name, requested_port);
+
+            if(!StopServiceIfRunning(service))
+            {
+                CloseServiceHandle(service);
+                CloseServiceHandle(service_control_manager);
+                return EXIT_FAILURE;
+            }
+        }
+    }
+
+    int start_result = StartInstalledService(service);
+
+    CloseServiceHandle(service);
+    CloseServiceHandle(service_control_manager);
+
+    return start_result;
+}
+
+/*---------------------------------------------------------*\
 | ProcessServiceCommand                                    |
 \*---------------------------------------------------------*/
 static int ProcessServiceCommand(int argc, char* argv[])
@@ -953,6 +1099,11 @@ static int ProcessServiceCommand(int argc, char* argv[])
     if(IsServiceCommand(argc, argv, "--uninstall_service"))
     {
         return UninstallService();
+    }
+
+    if(IsServiceCommand(argc, argv, "--start_service"))
+    {
+        return StartServiceCommand(argc, argv);
     }
 
     return EXIT_FAILURE;

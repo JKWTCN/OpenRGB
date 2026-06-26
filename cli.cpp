@@ -408,7 +408,8 @@ void OptionHelp()
 #ifdef _WIN32
     help_text += "--install_service                        Installs and starts " APP_NAME " as an automatic Windows service\n";
     help_text += "--uninstall_service                      Stops and removes the " APP_NAME " Windows service\n";
-    help_text += "--port                                   Sets the Windows service WebSocket port when used with --install_service\n";
+    help_text += "--start_service                          Installs the Windows service if missing, starts it if stopped, does nothing if already running\n";
+    help_text += "--port                                   Sets the Windows service WebSocket port when used with --install_service or --start_service\n";
 #endif
     help_text += "-l,  --list-devices                      Lists every compatible device with their number\n";
     help_text += "-d,  --device [0-9 | \"name\"]             Selects device to apply colors and/or effect to, or applies to all devices if omitted\n";
