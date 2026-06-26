@@ -9,7 +9,6 @@
 #-----------------------------------------------------------------------------------------------#
 QT +=                                                                                           \
     core                                                                                        \
-    websockets                                                                                  \
 
 #-----------------------------------------------------------------------------------------------#
 # Set compiler to use C++17 to make std::filesystem available                                   #
@@ -99,6 +98,11 @@ DEFINES +=                                                                      
     GIT_COMMIT_DATE=\\"\"\"$$GIT_COMMIT_DATE\\"\"\"                                             \
     GIT_BRANCH=\\"\"\"$$GIT_BRANCH\\"\"\"
 
+# Use standalone (non-boost) asio for websocketpp
+DEFINES +=                                                                                      \
+    ASIO_STANDALONE                                                                             \
+    _WEBSOCKETPP_CPP11_STL_
+
 #-----------------------------------------------------------------------------------------------#
 # GUI dynamically added sources                                                                 #
 #-----------------------------------------------------------------------------------------------#
@@ -157,6 +161,8 @@ INCLUDEPATH +=                                                                  
     dependencies/httplib                                                                        \
     dependencies/json/                                                                          \
     dependencies/mdns                                                                           \
+    dependencies/asio-1.28.0/include                                                            \
+    dependencies/websocketpp                                                                    \
     dmiinfo/                                                                                    \
     hidapi_wrapper/                                                                             \
     i2c_smbus/                                                                                  \
@@ -355,6 +361,8 @@ unix {
 # Windows-specific Configuration                                                                #
 #-----------------------------------------------------------------------------------------------#
 win32:QMAKE_CXXFLAGS += /utf-8
+# Silence websocketpp size_t->uint32_t conversion warnings on MSVC
+win32:QMAKE_CXXFLAGS += /wd4267
 win32:INCLUDEPATH +=                                                                            \
     dependencies/display-library/include                                                        \
     dependencies/hidapi-win/include                                                             \
@@ -401,6 +409,7 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
 
     LIBS +=                                                                                     \
         -lws2_32                                                                                \
+        -lwsock32                                                                               \
         -liphlpapi                                                                              \
         -lshell32                                                                               \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS64/dll" -llibusb-1.0                       \
@@ -415,6 +424,7 @@ win32:contains(QMAKE_TARGET.arch, x86) {
 
     LIBS +=                                                                                     \
         -lws2_32                                                                                \
+        -lwsock32                                                                               \
         -liphlpapi                                                                              \
         -lshell32                                                                               \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS32/dll" -llibusb-1.0                       \

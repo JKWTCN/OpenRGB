@@ -16,10 +16,8 @@
 
 #include <atomic>
 #include <memory>
-#include <fstream>
 #include <QCoreApplication>
 #include <QTimer>
-#include <QThread>
 
 #ifndef RGBSERVER_HEADLESS
 #include <QApplication>
@@ -253,45 +251,9 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
             if(ws_server)
             {
-                /*-------------------------------------------------*\
-                | The WebSocketServer singleton may have been       |
-                | constructed on a thread without an event loop     |
-                | (before QCoreApplication existed).  Move it onto   |
-                | the application thread so that StartServer() and  |
-                | all socket I/O run on the event-loop thread.      |
-                \-------------------------------------------------*/
-                ws_server->EnsureOnApplicationThread();
-
                 if(!ws_server->GetOnline())
                 {
                     ws_server->StartServer();
-                }
-
-                /*-------------------------------------------------*\
-                | Diagnostic: record StartServer outcome so service  |
-                | startup failures (e.g. listen errors) are visible  |
-                | even when LogManager file output is disabled.      |
-                \-------------------------------------------------*/
-                if(startup_service_mode)
-                {
-                    try
-                    {
-                        filesystem::path diag_path = ResourceManager::get()->GetConfigurationDirectory();
-                        diag_path /= "ws.diag";
-                        std::ofstream diag(diag_path, std::ios::app);
-                        if(diag)
-                        {
-                        Qt::HANDLE cur_id = QThread::currentThreadId();
-                        QThread* owner = ws_server->thread();
-                        diag << "cur_thread=" << reinterpret_cast<unsigned long long>(cur_id)
-                             << " same_ws=" << (QThread::currentThread() == owner ? 1 : 0)
-                             << " online=" << (ws_server->GetOnline() ? 1 : 0)
-                             << " listening=" << (ws_server->GetListening() ? 1 : 0)
-                             << " err=[" << ws_server->GetLastError() << "]"
-                             << std::endl;
-                        }
-                    }
-                    catch(...) {}
                 }
 
                 if(startup_service_mode && startup_service_started_callback)

@@ -9,20 +9,25 @@
 
 #pragma once
 
-#include <QString>
-#include <QWebSocket>
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
+
 #include <string>
 #include <chrono>
 
 class WebSocketClientInfo
 {
 public:
-    WebSocketClientInfo(QWebSocket* socket);
+    WebSocketClientInfo(websocketpp::connection_hdl hdl, const std::string& client_ip, unsigned short client_port);
     ~WebSocketClientInfo();
 
-    QWebSocket*             GetSocket() const;
-    QString                 GetClientIP() const;
-    QString                 GetClientString() const;
+    websocketpp::connection_hdl GetHandle() const;
+
+    // Return the remote endpoint as a plain string ("ip:port").  These replace
+    // the former QString-returning accessors; callers that need a C string use
+    // .c_str() / .toStdString() which works identically on std::string.
+    std::string             GetClientIP() const;
+    std::string             GetClientString() const;
     std::string             GetAuthToken() const;
     bool                    IsAuthenticated() const;
 
@@ -34,11 +39,13 @@ public:
     void                    UpdateActivityTime();
 
 private:
-    QWebSocket*             socket;
-    std::string             auth_token;
-    bool                    authenticated;
+    websocketpp::connection_hdl hdl;
+    std::string                 client_ip;
+    unsigned short              client_port;
+    std::string                 auth_token;
+    bool                        authenticated;
 
     // Connection timestamps (milliseconds since epoch)
-    unsigned long long      connection_time;
-    unsigned long long      last_activity_time;
+    unsigned long long          connection_time;
+    unsigned long long          last_activity_time;
 };

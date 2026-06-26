@@ -883,15 +883,15 @@ static void RequestApplicationShutdown()
     startup_request_shutdown();
     ResourceManager::get()->StopDeviceDetection();
 
+    WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
+    if(ws_server)
+    {
+        ws_server->StopServer();
+    }
+
     QCoreApplication* app = QCoreApplication::instance();
     if(app)
     {
-        WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
-        if(ws_server)
-        {
-            QMetaObject::invokeMethod(ws_server, "StopServer", Qt::QueuedConnection);
-        }
-
         QMetaObject::invokeMethod(app, "quit", Qt::QueuedConnection);
     }
 }

@@ -9,13 +9,12 @@
 
 #pragma once
 
-#include <QObject>
-#include <QWebSocketServer>
-#include <QWebSocket>
-#include <QTimer>
 #include <vector>
 #include <mutex>
 #include <string>
+#include <thread>
+#include <atomic>
+#include <memory>
 #include "filesystem.h"
 #include "RGBController.h"
 #include "ResourceManager.h"
@@ -23,84 +22,98 @@
 #include "WebSocketClientInfo.h"
 #include "JSONRPCHandler.h"
 
+// Use standalone (non-boost) asio.  Must be defined before including any
+// websocketpp/asio header that pulls in the asio backend.
+#ifndef ASIO_STANDALONE
+#define ASIO_STANDALONE
+#endif
+
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
+
 typedef void (*WebSocketServerCallback)(void *);
 
-class WebSocketServer : public QObject
+typedef websocketpp::server<websocketpp::config::asio> websocket_server;
+
+class WebSocketServer
 {
-    Q_OBJECT
-
 public:
-    WebSocketServer(std::vector<RGBController*>& controllers,
-                   ResourceManager* resource_manager,
-                   QObject* parent = nullptr);
-
+    WebSocketServer(std::vector<RGBController *>& controllers, ResourceManager *resource_manager);
     ~WebSocketServer();
 
-    // Server control
-    Q_INVOKABLE void StartServer();
-    Q_INVOKABLE void StopServer();
+    /*---------------------------------------------------------*\
+    | Server Control                                            |
+    \*---------------------------------------------------------*/
+    void                            StartServer();
+    void                            StopServer();
 
-    // Configuration
-    void            SetHost(const std::string& host);
-    void            SetPort(unsigned short port);
-    void            SetEnabled(bool enabled);
-    void            SetAuthToken(const std::string& token);
-    void            SetAuthTokens(const std::vector<std::string>& tokens);
-    void            SetRequireAuth(bool require);
-    void            SetEndpointFilePath(const std::string& path);
+    /*---------------------------------------------------------*\
+    | Configuration                                             |
+    \*---------------------------------------------------------*/
+    void                            SetHost(const std::string& host);
+    void                            SetPort(unsigned short port);
+    void                            SetEnabled(bool enabled);
+    void                            SetAuthToken(const std::string& token);
+    void                            SetAuthTokens(const std::vector<std::string>& tokens);
+    void                            SetRequireAuth(bool require);
+    void                            SetEndpointFilePath(const std::string& path);
 
-    // Move this object (and therefore all of its Qt networking) onto the
-    // thread running the QCoreApplication event loop.  Required in service
-    // mode, where the singleton is constructed on a thread without an event
-    // loop; StartServer()/socket I/O must run on the application thread.
-    void            EnsureOnApplicationThread();
+    /*---------------------------------------------------------*\
+    | Server State                                              |
+    \*---------------------------------------------------------*/
+    bool                            GetEnabled() const;
+    bool                            GetOnline() const;
+    bool                            GetListening() const;
+    std::string                     GetLastError() const;
+    std::string                     GetHost() const;
+    unsigned short                  GetPort() const;
+    unsigned int                    GetNumClients() const;
 
-    // Server state
-    bool            GetEnabled() const;
-    bool            GetOnline() const;
-    bool            GetListening() const;
-    std::string     GetLastError() const;
-    std::string     GetHost() const;
-    unsigned short  GetPort() const;
-    unsigned int    GetNumClients() const;
+    /*---------------------------------------------------------*\
+    | Client Information                                        |
+    \*---------------------------------------------------------*/
+    const char*                     GetClientIP(unsigned int client_idx);
+    const char*                     GetClientString(unsigned int client_idx);
 
-    // Client information
-    const char*     GetClientIP(unsigned int client_idx);
-    const char*     GetClientString(unsigned int client_idx);
+    /*---------------------------------------------------------*\
+    | Callbacks for events                                      |
+    \*---------------------------------------------------------*/
+    void                            RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void* arg);
+    void                            DeviceListChanged();
+    void                            ProfileListChanged();
+    void                            ScanComplete(unsigned int device_count);
 
-    // Callbacks for events
-    void            RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void* arg);
-    void            DeviceListChanged();
-    void            ProfileListChanged();
-    void            ScanComplete(unsigned int device_count);
-
-    // Settings integration
-    void            SetProfileManager(ProfileManagerInterface* profile_manager);
-
-signals:
-    void            ClientConnected();
-    void            ClientDisconnected();
-    void            ServerStateChanged();
-    void            SignalBroadcastNotification(const QString& event, const QString& data);
-
-private slots:
-    void            OnNewConnection();
-    void            OnClientDisconnected();
-    void            OnTextMessageReceived(const QString& message);
-    void            OnBinaryMessageReceived(const QByteArray& message);
-    void            OnSocketError();
-    void            OnBroadcastNotification(const QString& event, const QString& data);
+    /*---------------------------------------------------------*\
+    | Settings integration                                      |
+    \*---------------------------------------------------------*/
+    void                            SetProfileManager(ProfileManagerInterface* profile_manager);
 
 private:
-    void            BroadcastNotification(const std::string& event,
-                                        const nlohmann::json& data);
-    void            SendToClient(QWebSocket* client,
-                               const nlohmann::json& response);
-    bool            AuthenticateClient(QWebSocket* socket, const QString& token);
-    QString         ExtractTokenFromRequest(const QWebSocket* socket);
-    void            ScheduleShutdown();
-    void            WriteEndpointFile();
-    void            ClearEndpointFile();
+    /*---------------------------------------------------------*\
+    | websocketpp handlers (run on the io thread)               |
+    \*---------------------------------------------------------*/
+    void                            OnOpen(websocketpp::connection_hdl hdl);
+    void                            OnClose(websocketpp::connection_hdl hdl);
+    void                            OnFail(websocketpp::connection_hdl hdl);
+    void                            OnMessage(websocketpp::connection_hdl hdl, websocket_server::message_ptr msg);
+
+    void                            RunThread();
+    void                            CloseAllConnections();
+    bool                            JoinWithTimeout(std::thread& th, unsigned int timeout_ms);
+
+    /*---------------------------------------------------------*\
+    | Helpers                                                   |
+    \*---------------------------------------------------------*/
+    void                            SendToClient(websocketpp::connection_hdl hdl, const nlohmann::json& response);
+    void                            BroadcastNotification(const std::string& event, const nlohmann::json& data);
+    bool                            IsLoopbackAddress(const std::string& ip) const;
+    bool                            AuthenticateClient(const std::string& token);
+    std::string                     ExtractTokenFromUri(const std::string& uri) const;
+    std::string                     GetRemoteIP(websocketpp::connection_hdl hdl);
+    void                            NotifyClientInfoCallbacks();
+    void                            ScheduleShutdown();
+    void                            WriteEndpointFile();
+    void                            ClearEndpointFile();
 
     std::string                         host;
     unsigned short                      port;
@@ -108,21 +121,30 @@ private:
     bool                                require_auth;
     filesystem::path                    endpoint_file_path;
 
-    QWebSocketServer*                   ws_server;
-    std::vector<WebSocketClientInfo*>   clients;
-    std::mutex                          clients_mutex;
-
-    std::vector<RGBController*>&        controllers;
-    ResourceManager*                    resource_manager;
-    ProfileManagerInterface*            profile_manager;
-    JSONRPCHandler*                     rpc_handler;
-
-    std::vector<std::string>            auth_tokens;
-
-    std::vector<WebSocketServerCallback> client_info_callbacks;
-    std::vector<void*>                  client_info_callback_args;
-
+    websocket_server                   ws_server;
+    std::thread                         io_thread;
+    std::unique_ptr<asio::io_service::work> io_work;
     std::atomic<bool>                   server_online;
     std::atomic<bool>                   server_listening;
+
+    std::vector<RGBController *>&       controllers;
+    ResourceManager *                   resource_manager;
+    ProfileManagerInterface *           profile_manager;
+    JSONRPCHandler *                    rpc_handler;
+
+    mutable std::mutex                      clients_mutex;
+    // Map connection handles to client info.  owner_less is required because
+    // connection_hdl is a weak_ptr.
+    std::map<websocketpp::connection_hdl, WebSocketClientInfo *,
+             std::owner_less<websocketpp::connection_hdl>> clients;
+
+    std::vector<std::string>            auth_tokens;
+    std::vector<WebSocketServerCallback> client_info_callbacks;
+    std::vector<void *>                 client_info_callback_args;
+
     std::string                         last_error;
+
+    // Scratch buffers for the C-string getters
+    mutable std::string                 client_ip_scratch;
+    mutable std::string                 client_string_scratch;
 };

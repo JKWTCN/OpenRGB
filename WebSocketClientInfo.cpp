@@ -10,8 +10,11 @@
 #include "WebSocketClientInfo.h"
 #include <chrono>
 
-WebSocketClientInfo::WebSocketClientInfo(QWebSocket* socket)
-    : socket(socket), authenticated(false), connection_time(0), last_activity_time(0)
+WebSocketClientInfo::WebSocketClientInfo(websocketpp::connection_hdl hdl,
+                                         const std::string& client_ip,
+                                         unsigned short client_port)
+    : hdl(hdl), client_ip(client_ip), client_port(client_port),
+      authenticated(false), connection_time(0), last_activity_time(0)
 {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
@@ -21,30 +24,21 @@ WebSocketClientInfo::WebSocketClientInfo(QWebSocket* socket)
 
 WebSocketClientInfo::~WebSocketClientInfo()
 {
-    // Socket is owned and managed by QWebSocketServer, don't delete it here
 }
 
-QWebSocket* WebSocketClientInfo::GetSocket() const
+websocketpp::connection_hdl WebSocketClientInfo::GetHandle() const
 {
-    return socket;
+    return hdl;
 }
 
-QString WebSocketClientInfo::GetClientIP() const
+std::string WebSocketClientInfo::GetClientIP() const
 {
-    if(socket)
-    {
-        return socket->peerAddress().toString();
-    }
-    return QString();
+    return client_ip;
 }
 
-QString WebSocketClientInfo::GetClientString() const
+std::string WebSocketClientInfo::GetClientString() const
 {
-    if(socket)
-    {
-        return socket->peerAddress().toString() + ":" + QString::number(socket->peerPort());
-    }
-    return QString();
+    return client_ip + ":" + std::to_string(client_port);
 }
 
 std::string WebSocketClientInfo::GetAuthToken() const
