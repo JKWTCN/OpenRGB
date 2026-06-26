@@ -158,6 +158,10 @@ nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
     {
         return SetMultipleColors(params);
     }
+    else if (method == JSONRPCProtocol::Methods::SET_KEY_COLOR)
+    {
+        return SetKeyColor(params);
+    }
     // Mode Control
     else if (method == JSONRPCProtocol::Methods::SET_MODE)
     {
@@ -516,6 +520,63 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
             RGBColor color = ParseColor(color_item["color"]);
             controller->SetLED(led_idx, color);
         }
+    }
+
+    controller->UpdateLEDs();
+
+    nlohmann::json result;
+    result["success"] = true;
+    return result;
+}
+
+/*---------------------------------------------------------*\
+| Set a single key color by key name                        |
+|                                                           |
+|   Looks up the first LED whose name matches "key" and     |
+|   applies the color.  Useful for per-key keyboards where  |
+|   the caller does not know the device-specific LED index. |
+|   Comparison is exact and case-sensitive, matching the    |
+|   names produced by KeyboardLayoutManager (e.g. "A",      |
+|   "Escape", "Space").                                     |
+\*---------------------------------------------------------*/
+nlohmann::json JSONRPCHandler::SetKeyColor(const nlohmann::json &params)
+{
+    if (!params.contains("deviceIndex") || !params.contains("key") || !params.contains("color"))
+    {
+        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                           "Missing required parameters: deviceIndex, key, color");
+    }
+
+    std::string key_name = params["key"];
+    RGBColor color = ParseColor(params["color"]);
+
+    auto lock = LockControllerList();
+
+    unsigned int device_idx = params["deviceIndex"];
+
+    if (!ValidateDeviceIndex(device_idx))
+    {
+        return CreateError(JSONRPCProtocol::ERR_DEVICE_INDEX_OUT_OF_RANGE,
+                           "Device index out of range");
+    }
+
+    RGBController *controller = controllers[device_idx];
+
+    bool found = false;
+    for (unsigned int led_idx = 0; led_idx < controller->leds.size(); led_idx++)
+    {
+        if (controller->leds[led_idx].name == key_name)
+        {
+            controller->SetLED(led_idx, color);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        return CreateError(JSONRPCProtocol::ERR_KEY_NAME_NOT_FOUND,
+                           "Key name not found: " + key_name);
     }
 
     controller->UpdateLEDs();

@@ -71,6 +71,7 @@ private:
     nlohmann::json  SetZoneColor(const nlohmann::json& params);
     nlohmann::json  SetAllColors(const nlohmann::json& params);
     nlohmann::json  SetMultipleColors(const nlohmann::json& params);
+    nlohmann::json  SetKeyColor(const nlohmann::json& params);
 
     // Mode control methods
     nlohmann::json  SetMode(const nlohmann::json& params);

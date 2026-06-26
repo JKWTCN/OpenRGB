@@ -45,9 +45,10 @@ const int ERR_PLUGIN_NOT_FOUND             = -32010;
 const int ERR_PLUGIN_METHOD_FAILED         = -32011;
 const int ERR_OPERATION_NOT_PERMITTED      = -32012;
 const int ERR_DEVICE_BUSY                  = -32013;
-const int ERR_RESIZE_NOT_SUPPORTED         = -32014;
-const int ERR_AUTHENTICATION_FAILED        = -32015;
-const int ERR_INVALID_TOKEN                = -32016;
+    const int ERR_RESIZE_NOT_SUPPORTED         = -32014;
+    const int ERR_AUTHENTICATION_FAILED        = -32015;
+    const int ERR_INVALID_TOKEN                = -32016;
+    const int ERR_KEY_NAME_NOT_FOUND           = -32017;
 
 /*---------------------------------------------------------*\
 | Error Messages                                            |
@@ -77,6 +78,7 @@ inline std::string GetErrorMessage(int error_code)
         case ERR_RESIZE_NOT_SUPPORTED:        return "Resize not supported";
         case ERR_AUTHENTICATION_FAILED:       return "Authentication failed";
         case ERR_INVALID_TOKEN:               return "Invalid token";
+        case ERR_KEY_NAME_NOT_FOUND:          return "Key name not found";
         default:                              return "Unknown error";
     }
 }
@@ -98,6 +100,7 @@ namespace Methods
     const char* const SET_ZONE_COLOR            = "device.setZoneColor";
     const char* const SET_ALL_COLORS            = "device.setAllColors";
     const char* const SET_MULTIPLE_COLORS       = "device.setMultipleColors";
+    const char* const SET_KEY_COLOR             = "device.setKeyColor";
 
     // Mode Control
     const char* const SET_MODE                  = "device.setMode";
