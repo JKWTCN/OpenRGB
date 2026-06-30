@@ -242,9 +242,9 @@ void WebSocketServer::SetRequireAuth(bool require)
     this->require_auth = require;
 }
 
-void WebSocketServer::SetEndpointFilePath(const std::string &path)
+void WebSocketServer::SetEndpointFilePath(const filesystem::path &path)
 {
-    endpoint_file_path = filesystem::path(path);
+    endpoint_file_path = path;
 }
 
 /*---------------------------------------------------------*\
@@ -866,7 +866,7 @@ void WebSocketServer::WriteEndpointFile()
 
         if (filesystem::exists(endpoint_file_path))
         {
-            std::ifstream input_file(endpoint_file_path.string(), std::ios::in | std::ios::binary);
+            std::ifstream input_file(endpoint_file_path, std::ios::in | std::ios::binary);
             if (input_file)
             {
                 input_file >> settings;
@@ -893,7 +893,7 @@ void WebSocketServer::WriteEndpointFile()
 
         settings["Service"] = service_settings;
 
-        std::ofstream file(endpoint_file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        std::ofstream file(endpoint_file_path, std::ios::out | std::ios::binary | std::ios::trunc);
         file << settings.dump(4);
         file << std::endl;
     }
@@ -936,7 +936,7 @@ void WebSocketServer::ClearEndpointFile()
         }
 
         nlohmann::json settings = nlohmann::json::object();
-        std::ifstream input_file(endpoint_file_path.string(), std::ios::in | std::ios::binary);
+        std::ifstream input_file(endpoint_file_path, std::ios::in | std::ios::binary);
         if (input_file)
         {
             input_file >> settings;
@@ -958,7 +958,7 @@ void WebSocketServer::ClearEndpointFile()
 
         settings["Service"] = service_settings;
 
-        std::ofstream file(endpoint_file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        std::ofstream file(endpoint_file_path, std::ios::out | std::ios::binary | std::ios::trunc);
         file << settings.dump(4);
         file << std::endl;
     }

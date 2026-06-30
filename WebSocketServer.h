@@ -56,7 +56,7 @@ public:
     void                            SetAuthToken(const std::string& token);
     void                            SetAuthTokens(const std::vector<std::string>& tokens);
     void                            SetRequireAuth(bool require);
-    void                            SetEndpointFilePath(const std::string& path);
+    void                            SetEndpointFilePath(const filesystem::path& path);
 
     /*---------------------------------------------------------*\
     | Server State                                              |

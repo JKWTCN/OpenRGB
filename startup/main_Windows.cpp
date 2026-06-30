@@ -47,6 +47,19 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
 static int  StartServiceCommand(int argc, char* argv[]);
 
 static char                  service_name[]             = APP_NAME;
+
+/*---------------------------------------------------------*\
+| service_name_w                                            |
+|                                                           |
+|   Wide-character copy of APP_NAME for the Unicode (W)     |
+|   Service Control Manager / Shell APIs, which we must use |
+|   when the executable path may contain non-ASCII chars    |
+|   (otherwise the ANSI APIs corrupt the path).             |
+\*---------------------------------------------------------*/
+#define _WIDE_STRING(x) L##x
+#define WIDE_STRING(x) _WIDE_STRING(x)
+static const wchar_t         service_name_w[]           = WIDE_STRING(APP_NAME);
+
 static SERVICE_TABLE_ENTRY   service_dispatch_table[]   = { { service_name, ServiceMain }, { NULL, NULL } };
 static DWORD                 service_checkpoint         = 1;
 static SERVICE_STATUS_HANDLE service_status_handle;
@@ -91,15 +104,89 @@ static void AttachParentConsole()
 | GetExecutablePath                                        |
 |                                                           |
 |   Get current executable path as filesystem::path.        |
+|                                                           |
+|   The path is taken from GetModuleFileNameW (UTF-16) and  |
+|   constructed straight from the wide string. It must NOT   |
+|   round-trip through a UTF-8 std::string: on this _MBCS    |
+|   build filesystem::path(std::string) decodes the bytes    |
+|   using the system ANSI code page (e.g. GBK/936), which    |
+|   reinterprets the UTF-8 bytes incorrectly and corrupts    |
+|   any non-ASCII characters (mojibake) in the path. The     |
+|   corrupted path then propagates to the service_config     |
+|   directory and the service settings file.                |
 \*---------------------------------------------------------*/
 static filesystem::path GetExecutablePath()
 {
     WCHAR exe_path_wchar[MAX_PATH];
     GetModuleFileNameW(NULL, exe_path_wchar, MAX_PATH);
 
-    std::string exe_path_string = StringUtils::wstring_to_string(std::wstring(exe_path_wchar));
+    return filesystem::path(std::wstring(exe_path_wchar));
+}
 
-    return filesystem::path(exe_path_string);
+/*---------------------------------------------------------*\
+| GetExecutablePathW                                        |
+|                                                           |
+|   Get current executable path as a wide (UTF-16) string.  |
+|                                                           |
+|   Unlike GetExecutablePath() above, this does NOT round-  |
+|   trip through a UTF-8 std::string. The UTF-8 bytes would |
+|   be misinterpreted by the ANSI Win32 APIs on systems     |
+|   whose active code page is not UTF-8 (e.g. GBK/936 on a  |
+|   Chinese system), producing mojibake in the path.        |
+|                                                           |
+|   Use this whenever the path is destined for a wide (W)   |
+|   Service Control Manager or Shell API.                   |
+\*---------------------------------------------------------*/
+static std::wstring GetExecutablePathW()
+{
+    WCHAR exe_path_wchar[MAX_PATH];
+    GetModuleFileNameW(NULL, exe_path_wchar, MAX_PATH);
+
+    return std::wstring(exe_path_wchar);
+}
+
+/*---------------------------------------------------------*\
+| MultiByteToWideACP                                        |
+|                                                           |
+|   Convert a string in the system ANSI code page (the      |
+|   encoding of argv[] and of the CRT in this _MBCS build)  |
+|   to a UTF-16 std::wstring, for passing to wide Win32     |
+|   APIs.                                                   |
+\*---------------------------------------------------------*/
+static std::wstring MultiByteToWideACP(const std::string& str)
+{
+    if(str.empty())
+    {
+        return std::wstring();
+    }
+
+    int length = MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), NULL, 0);
+
+    std::wstring result(length, L'\0');
+
+    MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), &result[0], length);
+
+    return result;
+}
+
+/*---------------------------------------------------------*\
+| GetExecutableDirectoryW                                   |
+|                                                           |
+|   Parent directory of the executable as a wide string.    |
+|   Computed directly on the wide path so it never passes   |
+|   through an ANSI code page.                             |
+\*---------------------------------------------------------*/
+static std::wstring GetExecutableDirectoryW()
+{
+    std::wstring exe_path = GetExecutablePathW();
+
+    size_t separator = exe_path.find_last_of(L"\\/");
+    if(separator == std::wstring::npos)
+    {
+        return std::wstring();
+    }
+
+    return exe_path.substr(0, separator);
 }
 
 /*---------------------------------------------------------*\
@@ -207,7 +294,7 @@ static json LoadJsonFile(const filesystem::path& file_path)
     {
         if(filesystem::exists(file_path))
         {
-            std::ifstream file(file_path.string(), std::ios::in | std::ios::binary);
+            std::ifstream file(file_path, std::ios::in | std::ios::binary);
             if(file)
             {
                 file >> data;
@@ -234,7 +321,7 @@ static void SaveJsonFile(const filesystem::path& file_path, const json& data)
 {
     filesystem::create_directories(file_path.parent_path());
 
-    std::ofstream file(file_path.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream file(file_path, std::ios::out | std::ios::binary | std::ios::trunc);
     if(file)
     {
         file << data.dump(4);
@@ -359,7 +446,7 @@ static void SaveConfiguredServicePort(unsigned short port)
     service_settings["host"]           = "127.0.0.1";
     service_settings["port"]           = port;
     service_settings["websocket_port"] = port;
-    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().string();
+    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().u8string();
 
     data["Service"] = service_settings;
     SaveJsonFile(service_settings_path, data);
@@ -380,7 +467,7 @@ static void SaveConfiguredServiceDirectory()
         service_settings = json::object();
     }
 
-    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().string();
+    service_settings["configuration_directory"] = GetDefaultUserConfigurationDirectory().u8string();
 
     data["Service"] = service_settings;
     SaveJsonFile(service_settings_path, data);
@@ -598,10 +685,16 @@ static std::string QuoteCommandLineArgument(const char* argument)
 \*---------------------------------------------------------*/
 static int RelaunchElevated(int argc, char* argv[])
 {
-    filesystem::path exe_path = GetExecutablePath();
-    std::string exe_path_string = exe_path.string();
-    std::string working_directory = exe_path.parent_path().string();
-    std::string parameters;
+    /*-----------------------------------------------------*\
+    | Use the wide APIs end-to-end. argv[] comes from the   |
+    | CRT in the system ANSI code page, and the executable  |
+    | path may contain non-ASCII characters; converting both |
+    | to UTF-16 and calling ShellExecuteExW avoids the      |
+    | mojibake that ShellExecuteExA would introduce.        |
+    \*-----------------------------------------------------*/
+    std::wstring exe_path_string    = GetExecutablePathW();
+    std::wstring working_directory  = GetExecutableDirectoryW();
+    std::string  parameters;
 
     for(int arg_idx = 1; arg_idx < argc; arg_idx++)
     {
@@ -613,18 +706,20 @@ static int RelaunchElevated(int argc, char* argv[])
         parameters += QuoteCommandLineArgument(argv[arg_idx]);
     }
 
-    SHELLEXECUTEINFOA shell_execute_info;
+    std::wstring parameters_w = MultiByteToWideACP(parameters);
+
+    SHELLEXECUTEINFOW shell_execute_info;
     memset(&shell_execute_info, 0, sizeof(shell_execute_info));
 
     shell_execute_info.cbSize       = sizeof(shell_execute_info);
     shell_execute_info.fMask        = SEE_MASK_NOCLOSEPROCESS;
-    shell_execute_info.lpVerb       = "runas";
+    shell_execute_info.lpVerb       = L"runas";
     shell_execute_info.lpFile       = exe_path_string.c_str();
-    shell_execute_info.lpParameters = parameters.c_str();
+    shell_execute_info.lpParameters = parameters_w.c_str();
     shell_execute_info.lpDirectory  = working_directory.c_str();
     shell_execute_info.nShow        = SW_HIDE;
 
-    if(!ShellExecuteExA(&shell_execute_info))
+    if(!ShellExecuteExW(&shell_execute_info))
     {
         DWORD error = GetLastError();
 
@@ -697,11 +792,54 @@ static bool WaitForServiceState(SC_HANDLE service, DWORD desired_state, DWORD ti
 }
 
 /*---------------------------------------------------------*\
+| IsServiceRunning                                         |
+|                                                          |
+|   Query whether the service is currently running, using |
+|   only the read-only access rights a non-elevated        |
+|   process can obtain. Returns true only when the service |
+|   is installed and reports SERVICE_RUNNING. Returns      |
+|   false (without printing) when the service is not       |
+|   installed, not running, or its status cannot be        |
+|   queried, so the caller can fall back to the elevated   |
+|   path.                                                  |
+\*---------------------------------------------------------*/
+static bool IsServiceRunning()
+{
+    SC_HANDLE service_control_manager = OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT);
+
+    if(!service_control_manager)
+    {
+        return false;
+    }
+
+    SC_HANDLE service = OpenServiceW(service_control_manager, service_name_w, SERVICE_QUERY_STATUS);
+
+    bool running = false;
+
+    if(service)
+    {
+        SERVICE_STATUS_PROCESS status;
+        DWORD bytes_needed;
+
+        if(QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&status, sizeof(status), &bytes_needed))
+        {
+            running = (status.dwCurrentState == SERVICE_RUNNING);
+        }
+
+        CloseServiceHandle(service);
+    }
+
+    CloseServiceHandle(service_control_manager);
+
+    return running;
+}
+
+/*---------------------------------------------------------*\
 | StartInstalledService                                    |
 \*---------------------------------------------------------*/
 static int StartInstalledService(SC_HANDLE service)
 {
-    if(StartService(service, 0, NULL))
+    if(StartServiceW(service, 0, NULL))
     {
         if(!WaitForServiceState(service, SERVICE_RUNNING, 30000))
         {
@@ -748,13 +886,12 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
 
     RemoveLegacyServiceEndpointFiles();
 
-    filesystem::path exe_path = GetExecutablePath();
-    std::string binary_path = "\"" + exe_path.string() + "\"";
+    std::wstring binary_path = L"\"" + GetExecutablePathW() + L"\"";
 
-    SC_HANDLE service = CreateService(
+    SC_HANDLE service = CreateServiceW(
         service_control_manager,
-        service_name,
-        service_name,
+        service_name_w,
+        service_name_w,
         SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP,
         SERVICE_WIN32_OWN_PROCESS,
         SERVICE_AUTO_START,
@@ -776,7 +913,7 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
             return NULL;
         }
 
-        service = OpenService(service_control_manager, service_name, SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
+        service = OpenServiceW(service_control_manager, service_name_w, SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
 
         if(!service)
         {
@@ -784,7 +921,7 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
             return NULL;
         }
 
-        if(!ChangeServiceConfig(
+        if(!ChangeServiceConfigW(
             service,
             SERVICE_WIN32_OWN_PROCESS,
             SERVICE_AUTO_START,
@@ -795,7 +932,7 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
             NULL,
             NULL,
             NULL,
-            service_name))
+            service_name_w))
         {
             PrintWindowsError("ChangeServiceConfig", GetLastError());
             CloseServiceHandle(service);
@@ -829,7 +966,7 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
 \*---------------------------------------------------------*/
 static int InstallService(int argc, char* argv[])
 {
-    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+    SC_HANDLE service_control_manager = OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
 
     if(!service_control_manager)
     {
@@ -907,7 +1044,7 @@ static bool StopServiceIfRunning(SC_HANDLE service)
 \*---------------------------------------------------------*/
 static int UninstallService()
 {
-    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+    SC_HANDLE service_control_manager = OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT);
 
     if(!service_control_manager)
     {
@@ -915,7 +1052,7 @@ static int UninstallService()
         return EXIT_FAILURE;
     }
 
-    SC_HANDLE service = OpenService(service_control_manager, service_name, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
+    SC_HANDLE service = OpenServiceW(service_control_manager, service_name_w, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
 
     if(!service)
     {
@@ -983,7 +1120,7 @@ static int StartServiceCommand(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    SC_HANDLE service_control_manager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+    SC_HANDLE service_control_manager = OpenSCManagerW(NULL, NULL, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
 
     if(!service_control_manager)
     {
@@ -991,7 +1128,7 @@ static int StartServiceCommand(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    SC_HANDLE service = OpenService(service_control_manager, service_name,
+    SC_HANDLE service = OpenServiceW(service_control_manager, service_name_w,
         SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
 
     if(!service)
@@ -1086,6 +1223,35 @@ static int StartServiceCommand(int argc, char* argv[])
 \*---------------------------------------------------------*/
 static int ProcessServiceCommand(int argc, char* argv[])
 {
+    /*-----------------------------------------------------*\
+    | Fast path for --start_service: if the service is      |
+    | already running and no port change was requested,     |
+    | there is nothing to do. Skip elevation entirely so    |
+    | the command does not trigger a UAC prompt for the     |
+    | common "make sure it's running" case. Any other case  |
+    | (not installed, not running, port change) needs       |
+    | administrative rights, so we fall through to the      |
+    | elevated path below.                                  |
+    \*-----------------------------------------------------*/
+    if(!IsProcessElevated()
+    && IsServiceCommand(argc, argv, "--start_service"))
+    {
+        unsigned short requested_port = 6743;
+        bool port_specified = false;
+
+        if(!GetRequestedServicePort(argc, argv, &requested_port, &port_specified))
+        {
+            /* Invalid --port argument: fail now rather than after elevating. */
+            return EXIT_FAILURE;
+        }
+
+        if(!port_specified && IsServiceRunning())
+        {
+            printf("%s service is already running.\n", service_name);
+            return EXIT_SUCCESS;
+        }
+    }
+
     if(!IsProcessElevated())
     {
         return RelaunchElevated(argc, argv);
@@ -1657,7 +1823,7 @@ static int common_main(int argc, char* argv[])
         ws_server->SetHost("127.0.0.1");
         ws_server->SetPort(service_port);
         ws_server->SetEnabled(true);
-        ws_server->SetEndpointFilePath(service_settings_path.string());
+        ws_server->SetEndpointFilePath(service_settings_path);
 
         WriteServiceRuntimeInfo(service_port, false);
         WriteServiceRuntimeInfoToSettings(service_port, false);
