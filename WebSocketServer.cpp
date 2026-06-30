@@ -356,6 +356,39 @@ void WebSocketServer::ProfileListChanged()
     BroadcastNotification(JSONRPCProtocol::Events::PROFILE_SAVED, data);
 }
 
+void WebSocketServer::DeviceConnected(unsigned int deviceIndex, const std::string& deviceName)
+{
+    nlohmann::json data;
+    data["deviceIndex"] = deviceIndex;
+    data["deviceName"]   = deviceName;
+
+    BroadcastNotification(JSONRPCProtocol::Events::DEVICE_CONNECTED, data);
+}
+
+void WebSocketServer::DeviceDisconnected(unsigned int deviceIndex)
+{
+    nlohmann::json data;
+    data["deviceIndex"] = deviceIndex;
+
+    BroadcastNotification(JSONRPCProtocol::Events::DEVICE_DISCONNECTED, data);
+}
+
+void WebSocketServer::ProfileSaved(const std::string& profileName)
+{
+    nlohmann::json data;
+    data["profileName"] = profileName;
+
+    BroadcastNotification(JSONRPCProtocol::Events::PROFILE_SAVED, data);
+}
+
+void WebSocketServer::ProfileLoaded(const std::string& profileName)
+{
+    nlohmann::json data;
+    data["profileName"] = profileName;
+
+    BroadcastNotification(JSONRPCProtocol::Events::PROFILE_LOADED, data);
+}
+
 void WebSocketServer::ScanComplete(unsigned int device_count)
 {
     nlohmann::json data;

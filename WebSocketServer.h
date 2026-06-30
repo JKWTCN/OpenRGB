@@ -84,6 +84,19 @@ public:
     void                            ScanComplete(unsigned int device_count);
 
     /*---------------------------------------------------------*\
+    | Per-event notification emitters                           |
+    |                                                           |
+    | Each builds the event payload and forwards it to          |
+    | BroadcastNotification().  Callers are responsible for any |
+    | required locking; none of these methods acquire the       |
+    | device-list mutex themselves.                             |
+    \*---------------------------------------------------------*/
+    void                            DeviceConnected(unsigned int deviceIndex, const std::string& deviceName);
+    void                            DeviceDisconnected(unsigned int deviceIndex);
+    void                            ProfileSaved(const std::string& profileName);
+    void                            ProfileLoaded(const std::string& profileName);
+
+    /*---------------------------------------------------------*\
     | Settings integration                                      |
     \*---------------------------------------------------------*/
     void                            SetProfileManager(ProfileManagerInterface* profile_manager);

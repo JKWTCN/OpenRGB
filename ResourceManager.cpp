@@ -808,6 +808,20 @@ void ResourceManager::UpdateDeviceList()
     DeviceListChangeMutex.lock();
 
     /*-----------------------------------------------------*\
+    | Collect per-device add/remove deltas for WebSocket    |
+    | notifications.  Populated during the rebuild below    |
+    | and broadcast once the list is in its final state.    |
+    \*-----------------------------------------------------*/
+    struct AddedDevice
+    {
+        unsigned int    index;
+        std::string     name;
+    };
+
+    std::vector<AddedDevice>    added;
+    std::vector<unsigned int>   removed;
+
+    /*-----------------------------------------------------*\
     | Insert hardware controllers into controller list      |
     \*-----------------------------------------------------*/
     for(unsigned int hw_controller_idx = 0; hw_controller_idx < rgb_controllers_hw.size(); hw_controller_idx++)
@@ -846,6 +860,15 @@ void ResourceManager::UpdateDeviceList()
         if(!found)
         {
             rgb_controllers.insert(rgb_controllers.begin() + hw_controller_idx, rgb_controllers_hw[hw_controller_idx]);
+
+            /*---------------------------------------------*\
+            | Newly connected device: remember its final   |
+            | index and name for the deviceConnected event.|
+            \*---------------------------------------------*/
+            AddedDevice entry;
+            entry.index  = hw_controller_idx;
+            entry.name   = rgb_controllers_hw[hw_controller_idx]->name;
+            added.push_back(entry);
         }
     }
 
@@ -869,6 +892,16 @@ void ResourceManager::UpdateDeviceList()
         if(!still_exists)
         {
             to_remove.push_back(rgb_controllers[controller_idx]);
+
+            /*---------------------------------------------*\
+            | Capture the controller's pre-removal index   |
+            | here, while rgb_controllers is still in its  |
+            | full pre-rebuild state, so the deviceDiscon- |
+            | nected event reports the slot the client     |
+            | currently has cached.  Erasing happens in a  |
+            | later pass and would otherwise shift indices.|
+            \*---------------------------------------------*/
+            removed.push_back(controller_idx);
         }
     }
 
@@ -894,6 +927,29 @@ void ResourceManager::UpdateDeviceList()
     | to this server                                        |
     \*-----------------------------------------------------*/
     server->DeviceListChanged();
+
+    /*-----------------------------------------------------*\
+    | Notify WebSocket clients of per-device connect/      |
+    | disconnect events and the aggregate list change.     |
+    | DeviceListChangeMutex is still held here;            |
+    | BroadcastNotification() only takes clients_mutex, so |
+    | the lock order (device-list -> clients) matches the  |
+    | ScanComplete() path.                                 |
+    \*-----------------------------------------------------*/
+    if(websocket_server)
+    {
+        for(const AddedDevice& entry : added)
+        {
+            websocket_server->DeviceConnected(entry.index, entry.name);
+        }
+
+        for(unsigned int idx : removed)
+        {
+            websocket_server->DeviceDisconnected(idx);
+        }
+
+        websocket_server->DeviceListChanged();
+    }
 
     DeviceListChangeMutex.unlock();
 }

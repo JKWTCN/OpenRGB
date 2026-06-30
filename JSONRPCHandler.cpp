@@ -918,6 +918,17 @@ nlohmann::json JSONRPCHandler::SaveProfile(const nlohmann::json &params)
 
     profile_manager->SaveProfile(profile_name, include_sizes);
 
+    /*---------------------------------------------------------*\
+    | Notify WebSocket clients that a profile was saved.        |
+    \*---------------------------------------------------------*/
+    if(resource_manager)
+    {
+        if(WebSocketServer * ws_server = resource_manager->GetWebSocketServer())
+        {
+            ws_server->ProfileSaved(profile_name);
+        }
+    }
+
     nlohmann::json result;
     result["success"] = true;
     return result;
@@ -949,6 +960,17 @@ nlohmann::json JSONRPCHandler::LoadProfile(const nlohmann::json &params)
 
     profile_manager->LoadProfile(profile_name);
     profile_manager->LoadSizeFromProfile(profile_name);
+
+    /*---------------------------------------------------------*\
+    | Notify WebSocket clients that a profile was loaded.       |
+    \*---------------------------------------------------------*/
+    if(resource_manager)
+    {
+        if(WebSocketServer * ws_server = resource_manager->GetWebSocketServer())
+        {
+            ws_server->ProfileLoaded(profile_name);
+        }
+    }
 
     nlohmann::json result;
     result["success"] = true;
