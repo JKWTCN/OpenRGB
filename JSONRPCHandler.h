@@ -51,6 +51,7 @@ public:
 
     // Helper functions for external use
     nlohmann::json  ControllerToJSON(RGBController* controller);
+    nlohmann::json  ControllerToScanCompleteJSON(RGBController* controller);
     bool            TakeShutdownRequested();
 
 private:
@@ -112,6 +113,9 @@ private:
     nlohmann::json  ZoneToJSON(RGBController* controller, int zone_idx);
     nlohmann::json  ModeToJSON(RGBController* controller, int mode_idx);
     nlohmann::json  LEDToJSON(RGBController* controller, int led_idx);
+    nlohmann::json  LEDToScanCompleteJSON(RGBController* controller, unsigned int led_idx,
+                                          unsigned int x, unsigned int y);
+    nlohmann::json  MatrixLEDsToScanCompleteJSON(RGBController* controller, const zone& matrix_zone);
 
     /*---------------------------------------------------------*\
     | Acquires the ResourceManager device-list mutex.  Every   |

@@ -404,14 +404,14 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
         std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+            controllers_array.push_back(rpc_handler->ControllerToScanCompleteJSON(controllers[i]));
         }
     }
     else
     {
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(rpc_handler->ControllerToJSON(controllers[i]));
+            controllers_array.push_back(rpc_handler->ControllerToScanCompleteJSON(controllers[i]));
         }
     }
     data["controllers"] = controllers_array;
