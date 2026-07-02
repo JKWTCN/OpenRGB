@@ -406,19 +406,28 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
     // after a rescan finishes, concurrent with any RPC that may touch the
     // list, so we must not iterate the vector without it.
     nlohmann::json controllers_array = nlohmann::json::array();
+    auto controller_to_scan_complete_json = [this](RGBController *controller) {
+        if (controller->type == DEVICE_TYPE_KEYBOARD)
+        {
+            return rpc_handler->ControllerToScanCompleteJSON(controller);
+        }
+
+        return rpc_handler->ControllerToJSON(controller);
+    };
+
     if (resource_manager)
     {
         std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(rpc_handler->ControllerToScanCompleteJSON(controllers[i]));
+            controllers_array.push_back(controller_to_scan_complete_json(controllers[i]));
         }
     }
     else
     {
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(rpc_handler->ControllerToScanCompleteJSON(controllers[i]));
+            controllers_array.push_back(controller_to_scan_complete_json(controllers[i]));
         }
     }
     data["controllers"] = controllers_array;

@@ -1221,24 +1221,7 @@ nlohmann::json JSONRPCHandler::ControllerToJSON(RGBController *controller)
 
 nlohmann::json JSONRPCHandler::ControllerToScanCompleteJSON(RGBController *controller)
 {
-    nlohmann::json json_obj = ControllerToJSON(controller);
-
-    if (controller->type != DEVICE_TYPE_KEYBOARD)
-    {
-        return json_obj;
-    }
-
-    for (const zone &z : controller->zones)
-    {
-        if (z.type == ZONE_TYPE_MATRIX && z.matrix_map && z.matrix_map->map &&
-            z.matrix_map->height > 0 && z.matrix_map->width > 0)
-        {
-            json_obj["leds"] = MatrixLEDsToScanCompleteJSON(controller, z);
-            return json_obj;
-        }
-    }
-
-    return json_obj;
+    return ControllerToJSON(controller);
 }
 
 nlohmann::json JSONRPCHandler::ZoneToJSON(RGBController *controller, int zone_idx)
@@ -1329,47 +1312,40 @@ nlohmann::json JSONRPCHandler::LEDToScanCompleteJSON(RGBController *controller, 
     nlohmann::json json_obj;
     const led &l = controller->leds[led_idx];
 
-    json_obj["index"]           = led_idx;
     json_obj["name"]            = l.name;
     json_obj["position"]        = nlohmann::json::array({x, y});
-    json_obj["protocolAddress"] = l.value;
+    json_obj["protocolAddress"] = led_idx;
 
     return json_obj;
 }
 
 nlohmann::json JSONRPCHandler::MatrixLEDsToScanCompleteJSON(RGBController *controller, const zone& matrix_zone)
 {
-    nlohmann::json leds_matrix = nlohmann::json::array();
+    nlohmann::json leds_array = nlohmann::json::array();
     const matrix_map_type *matrix_map = matrix_zone.matrix_map;
 
     for (unsigned int y = 0; y < matrix_map->height; y++)
     {
-        nlohmann::json row = nlohmann::json::array();
-
         for (unsigned int x = 0; x < matrix_map->width; x++)
         {
             unsigned int zone_led_idx = matrix_map->map[(y * matrix_map->width) + x];
 
             if (zone_led_idx == 0xFFFFFFFF || zone_led_idx >= matrix_zone.leds_count)
             {
-                row.push_back(nullptr);
                 continue;
             }
 
             unsigned int led_idx = matrix_zone.start_idx + zone_led_idx;
             if (led_idx >= controller->leds.size())
             {
-                row.push_back(nullptr);
                 continue;
             }
 
-            row.push_back(LEDToScanCompleteJSON(controller, led_idx, x, y));
+            leds_array.push_back(LEDToScanCompleteJSON(controller, led_idx, x, y));
         }
-
-        leds_matrix.push_back(row);
     }
 
-    return leds_matrix;
+    return leds_array;
 }
 
 nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
@@ -1377,8 +1353,35 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
     nlohmann::json json_obj;
     const led &l = controller->leds[led_idx];
 
-    json_obj["name"] = l.name;
-    json_obj["value"] = l.value;
+    json_obj["name"]            = l.name;
+    json_obj["protocolAddress"] = led_idx;
+
+    for(const zone& z : controller->zones)
+    {
+        if(z.type != ZONE_TYPE_MATRIX || z.matrix_map == NULL || z.matrix_map->map == NULL)
+        {
+            continue;
+        }
+
+        if((unsigned int)led_idx < z.start_idx || (unsigned int)led_idx >= (z.start_idx + z.leds_count))
+        {
+            continue;
+        }
+
+        unsigned int zone_led_idx = led_idx - z.start_idx;
+
+        for(unsigned int y = 0; y < z.matrix_map->height; y++)
+        {
+            for(unsigned int x = 0; x < z.matrix_map->width; x++)
+            {
+                if(z.matrix_map->map[(y * z.matrix_map->width) + x] == zone_led_idx)
+                {
+                    json_obj["position"] = nlohmann::json::array({x, y});
+                    return json_obj;
+                }
+            }
+        }
+    }
 
     return json_obj;
 }
