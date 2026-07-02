@@ -52,6 +52,8 @@ WebSocketServer::~WebSocketServer()
 \*---------------------------------------------------------*/
 void WebSocketServer::StartServer()
 {
+    std::lock_guard<std::mutex> state_lock(server_state_mutex);
+
     if (server_online)
     {
         LOG_VERBOSE("[WebSocketServer] StartServer called but server is already online");
@@ -145,6 +147,8 @@ void WebSocketServer::StartServer()
 
 void WebSocketServer::StopServer()
 {
+    std::lock_guard<std::mutex> state_lock(server_state_mutex);
+
     if (!server_online)
     {
         return;
@@ -331,9 +335,7 @@ void WebSocketServer::RegisterClientInfoChangeCallback(WebSocketServerCallback c
 
 void WebSocketServer::DeviceListChanged()
 {
-    // Take a consistent snapshot of the controller count under the device-list
-    // lock so we don't read size() while a rescan is rebuilding the vector.
-    unsigned int count;
+    unsigned int count = 0;
     if (resource_manager)
     {
         std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
@@ -344,8 +346,13 @@ void WebSocketServer::DeviceListChanged()
         count = controllers.size();
     }
 
+    DeviceListChanged(count);
+}
+
+void WebSocketServer::DeviceListChanged(unsigned int controller_count)
+{
     nlohmann::json data;
-    data["controllerCount"] = count;
+    data["controllerCount"] = controller_count;
     BroadcastNotification(JSONRPCProtocol::Events::DEVICE_LIST_CHANGED, data);
 }
 
@@ -667,30 +674,20 @@ void WebSocketServer::CloseAllConnections()
 
 bool WebSocketServer::JoinWithTimeout(std::thread &th, unsigned int timeout_ms)
 {
+    (void)timeout_ms;
+
     if (!th.joinable())
     {
         return true;
     }
 
-    std::atomic<bool> done(false);
-    std::thread waiter([&]() {
-        th.join();
-        done = true;
-    });
-    waiter.detach();
-
-    auto start = std::chrono::steady_clock::now();
-    while (!done)
+    if (th.get_id() == std::this_thread::get_id())
     {
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                           std::chrono::steady_clock::now() - start)
-                           .count();
-        if (elapsed >= timeout_ms)
-        {
-            return false;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        th.detach();
+        return true;
     }
+
+    th.join();
     return true;
 }
 

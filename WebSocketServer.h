@@ -80,6 +80,7 @@ public:
     \*---------------------------------------------------------*/
     void                            RegisterClientInfoChangeCallback(WebSocketServerCallback callback, void* arg);
     void                            DeviceListChanged();
+    void                            DeviceListChanged(unsigned int controller_count);
     void                            ProfileListChanged();
     void                            ScanComplete(unsigned int device_count);
 
@@ -139,6 +140,7 @@ private:
     std::unique_ptr<asio::io_service::work> io_work;
     std::atomic<bool>                   server_online;
     std::atomic<bool>                   server_listening;
+    std::mutex                          server_state_mutex;
 
     std::vector<RGBController *>&       controllers;
     ResourceManager *                   resource_manager;

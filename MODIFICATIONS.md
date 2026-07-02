@@ -31,11 +31,12 @@ See the [LICENSE](LICENSE) file for details.
 - **Solution**: Copy callbacks under lock, then execute without holding the mutex
 - **Impact**: Improved thread safety and reduced potential for deadlocks
 
-#### b) Implemented Controller Reuse in ResourceManager
+#### b) Implemented Controller State Restore in ResourceManager
 - **Problem**: Device settings (modes, colors, zones) were lost when devices were hot-plugged
-- **Solution**: Added `MatchExistingController()` function to detect and reuse existing controllers
+- **Solution**: Detect matching controllers during rediscovery and copy runtime state into the newly opened controller
   - Compares device name, serial, and location to identify the same physical device
-  - Preserves all mode, color, and zone settings when a device is re-detected
+  - Preserves mode and color settings when a device is re-detected
+  - Keeps the newly detected controller object so USB/HID handles are refreshed after hot-plug
   - Only creates new controllers for genuinely new devices
 - **Impact**: Device settings are now preserved across hot-plug events (USB reconnect, driver reload, etc.)
 

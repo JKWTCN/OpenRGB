@@ -15,8 +15,7 @@
 | Modified by JKWTCN <jkwtcn@icloud.com>                   |
 | Date: 2026-04-01                                          |
 | Changes:                                                  |
-|   - Added MatchExistingController() declaration          |
-|   - Added RGBController reuse logic for hot-plug         |
+|   - Added RGBController state restore logic for hot-plug |
 \*---------------------------------------------------------*/
 
 #pragma once
@@ -243,7 +242,6 @@ private:
     bool AttemptLocalConnection();
     bool ProcessPreDetection();
     void ProcessPostDetection();
-    bool MatchExistingController(RGBController* new_controller);
     bool IsAnyDimmDetectorEnabled(json &detector_settings);
     void RunInBackgroundThread(std::function<void()>);
     void BackgroundThreadFunction();

@@ -267,7 +267,7 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
             if(ws_server)
             {
-                if(!ws_server->GetOnline())
+                if(!startup_service_mode && !ws_server->GetOnline())
                 {
                     ws_server->StartServer();
                 }

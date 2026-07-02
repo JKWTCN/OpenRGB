@@ -15,9 +15,8 @@
 | Modified by JKWTCN <jkwtcn@icloud.com>                   |
 | Date: 2026-04-01                                          |
 | Changes:                                                  |
-|   - Implemented controller reuse to preserve device      |
-|     settings during hot-plug events                      |
-|   - Added MatchExistingController() for device detection |
+|   - Implemented controller state restore during          |
+|     hot-plug events                                      |
 |   - Enhanced RescanDevices() with async support          |
 \*---------------------------------------------------------*/
 
@@ -268,11 +267,14 @@ std::vector<i2c_smbus_interface*> & ResourceManager::GetI2CBusses()
 void ResourceManager::RegisterRGBController(RGBController *rgb_controller)
 {
     /*-----------------------------------------------------*\
-    | Check if we can reuse an existing controller          |
+    | Check if we can restore state from an existing        |
+    | controller.  Do not reuse the old controller object   |
+    | itself: USB/HID handles in it belong to the previous  |
+    | device instance and are invalid after hot-plug.       |
     \*-----------------------------------------------------*/
     if(rgb_controllers_hw_cleanup_pending.size() > 0)
     {
-        RGBController* reused_controller = nullptr;
+        RGBController* matched_controller = nullptr;
 
         for(RGBController* existing_controller : rgb_controllers_hw_cleanup_pending)
         {
@@ -334,10 +336,10 @@ void ResourceManager::RegisterRGBController(RGBController *rgb_controller)
             && (existing_controller->GetSerial()      == rgb_controller->GetSerial()     )
             && (location_check                        == true                             ))
             {
-                reused_controller = existing_controller;
+                matched_controller = existing_controller;
                 rgb_controllers_hw_matched.push_back(existing_controller);
 
-                LOG_INFO("[%s] Reusing existing controller (preserving mode and colors)",
+                LOG_INFO("[%s] Restoring mode and colors from existing controller",
                          rgb_controller->GetName().c_str());
 
                 break;
@@ -345,18 +347,55 @@ void ResourceManager::RegisterRGBController(RGBController *rgb_controller)
         }
 
         /*-------------------------------------------------*\
-        | If we found a match, reuse the old controller        |
+        | If we found a match, copy the old runtime state      |
+        | into the newly detected controller.                  |
         \*-------------------------------------------------*/
-        if(reused_controller != nullptr)
+        if(matched_controller != nullptr)
         {
-            /* Delete the new controller that was just created */
-            delete rgb_controller;
+            int matched_mode = -1;
 
-            /* Reuse the existing controller */
-            rgb_controller = reused_controller;
+            for(unsigned int new_mode_idx = 0; new_mode_idx < rgb_controller->modes.size(); new_mode_idx++)
+            {
+                if(matched_controller->active_mode >= 0
+                && matched_controller->active_mode < (int)matched_controller->modes.size()
+                && rgb_controller->modes[new_mode_idx].name  == matched_controller->modes[matched_controller->active_mode].name
+                && rgb_controller->modes[new_mode_idx].value == matched_controller->modes[matched_controller->active_mode].value)
+                {
+                    matched_mode = (int)new_mode_idx;
+                    break;
+                }
+            }
 
-            /* Force lazy device initialization to run again after rediscovery */
-            rgb_controller->ResetDeviceInitialization();
+            if(matched_mode >= 0)
+            {
+                rgb_controller->active_mode = matched_mode;
+            }
+
+            for(mode& new_mode : rgb_controller->modes)
+            {
+                for(const mode& old_mode : matched_controller->modes)
+                {
+                    if(new_mode.name == old_mode.name && new_mode.value == old_mode.value)
+                    {
+                        new_mode.speed      = old_mode.speed;
+                        new_mode.brightness = old_mode.brightness;
+                        new_mode.direction  = old_mode.direction;
+                        new_mode.color_mode = old_mode.color_mode;
+
+                        if(new_mode.colors.size() == old_mode.colors.size())
+                        {
+                            new_mode.colors = old_mode.colors;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if(rgb_controller->colors.size() == matched_controller->colors.size())
+            {
+                rgb_controller->colors = matched_controller->colors;
+            }
         }
     }
 
@@ -948,7 +987,7 @@ void ResourceManager::UpdateDeviceList()
             websocket_server->DeviceDisconnected(idx);
         }
 
-        websocket_server->DeviceListChanged();
+        websocket_server->DeviceListChanged(rgb_controllers.size());
     }
 
     DeviceListChangeMutex.unlock();
@@ -1281,89 +1320,6 @@ void ResourceManager::Cleanup()
     }
 
     RunInBackgroundThread(std::bind(&ResourceManager::HidExitCoroutine, this));
-}
-
-/*---------------------------------------------------------*\
-| MatchExistingController                                   |
-| Attempts to find a matching controller in cleanup_pending |
-| and reuse it instead of creating a new one                |
-\*---------------------------------------------------------*/
-bool ResourceManager::MatchExistingController(RGBController* new_controller)
-{
-    for(RGBController* existing_controller : rgb_controllers_hw_cleanup_pending)
-    {
-        /*-------------------------------------------------*\
-        | Check if this controller has already been matched  |
-        \*-------------------------------------------------*/
-        bool already_matched = false;
-        for(RGBController* matched : rgb_controllers_hw_matched)
-        {
-            if(matched == existing_controller)
-            {
-                already_matched = true;
-                break;
-            }
-        }
-
-        if(already_matched)
-        {
-            continue;
-        }
-
-        /*-------------------------------------------------*\
-        | Perform device matching (same logic as ProfileManager) |
-        \*-------------------------------------------------*/
-        bool location_check;
-
-        if(new_controller->GetLocation().find("HID: ") == 0)
-        {
-            /* HID devices: don't compare location (path may change) */
-            location_check = true;
-        }
-        else if(new_controller->GetLocation().find("I2C: ") == 0)
-        {
-            /* I2C devices: compare only address, not bus number */
-            std::size_t loc = new_controller->GetLocation().rfind(", ");
-            if(loc == std::string::npos)
-            {
-                location_check = false;
-            }
-            else
-            {
-                std::string i2c_address = new_controller->GetLocation().substr(loc + 2);
-                location_check = existing_controller->GetLocation().find(i2c_address) != std::string::npos;
-            }
-        }
-        else
-        {
-            /* Other devices: exact location match required */
-            location_check = (existing_controller->GetLocation() == new_controller->GetLocation());
-        }
-
-        /*-------------------------------------------------*\
-        | Test if controllers match                          |
-        \*-------------------------------------------------*/
-        if((existing_controller->type             == new_controller->type            )
-        && (existing_controller->GetName()        == new_controller->GetName()       )
-        && (existing_controller->GetDescription() == new_controller->GetDescription())
-        && (existing_controller->GetVersion()     == new_controller->GetVersion()    )
-        && (existing_controller->GetSerial()      == new_controller->GetSerial()     )
-        && (location_check                        == true                             ))
-        {
-            /*-------------------------------------------------*\
-            | Found a match! Mark as matched and return it      |
-            \*-------------------------------------------------*/
-            rgb_controllers_hw_matched.push_back(existing_controller);
-
-            LOG_INFO("[ResourceManager] Reusing existing controller: %s (location: %s)",
-                     existing_controller->GetName().c_str(),
-                     existing_controller->GetLocation().c_str());
-
-            return true;
-        }
-    }
-
-    return false;
 }
 
 void ResourceManager::ProcessPreDetectionHooks()
