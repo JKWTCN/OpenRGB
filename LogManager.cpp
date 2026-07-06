@@ -424,6 +424,58 @@ void LogManager::flush()
     _flush();
 }
 
+void LogManager::StartSuppressing()
+{
+    std::lock_guard<std::recursive_mutex> grd(entry_mutex);
+
+    suppress_mode        = true;
+    suppressed_messages.clear();
+}
+
+void LogManager::StopSuppressing(bool flush)
+{
+    std::lock_guard<std::recursive_mutex> grd(entry_mutex);
+
+    /*-----------------------------------------------------*\
+    | Always leave suppression mode first so that _flush /  |
+    | _append run normally afterwards                       |
+    \*-----------------------------------------------------*/
+    suppress_mode = false;
+
+    if(flush)
+    {
+        for(size_t msg = 0; msg < suppressed_messages.size(); msg++)
+        {
+            PLogMessage mes = suppressed_messages[msg];
+
+            /*-----------------------------------------*\
+            | Replay the stdout output that _append     |
+            | would have done for this message          |
+            \-----------------------------------------*/
+            if(mes->level <= verbosity || mes->level == LL_DIALOG)
+            {
+                std::cout << mes->buffer;
+                if(print_source)
+                {
+                    std::cout << " [" << mes->filename << ":" << mes->line << "]";
+                }
+                std::cout << std::endl;
+            }
+
+            temp_messages.push_back(mes);
+
+            if(log_console_enabled)
+            {
+                all_messages.push_back(mes);
+            }
+        }
+
+        _flush();
+    }
+
+    suppressed_messages.clear();
+}
+
 void LogManager::_append(const char* filename, int line, unsigned int level, const char* fmt, va_list va)
 {
     /*-----------------------------------------------------*\
@@ -499,6 +551,18 @@ void LogManager::_append(const char* filename, int line, unsigned int level, con
         {
             dialog_show_callbacks[idx](dialog_show_callback_args[idx], mes);
         }
+    }
+
+    /*-----------------------------------------------------*\
+    | Suppression mode: buffer the message instead of       |
+    | emitting it. FATAL/ERROR/DIALOG are never suppressed  |
+    | so real errors can't be silently dropped.             |
+    \*-----------------------------------------------------*/
+    if(suppress_mode && level > LL_ERROR && level != LL_DIALOG)
+    {
+        suppressed_messages.push_back(mes);
+
+        return;
     }
 
     /*-----------------------------------------------------*\

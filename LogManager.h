@@ -72,6 +72,13 @@ private:
     // A temporary log message storage to hold them until the stream opens
     std::vector<PLogMessage> temp_messages;
 
+    // A log message storage used while suppression mode is active. Messages
+    // produced during a device scan are buffered here and only flushed to the
+    // file/stdout if the scan actually changed the device set; otherwise they
+    // are discarded to keep the log file from growing on every rescan.
+    std::vector<PLogMessage> suppressed_messages;
+    bool                     suppress_mode = false;
+
     // A log message storage that will be displayed in the app
     std::vector<PLogMessage> all_messages;
 
@@ -120,6 +127,18 @@ public:
     void reconfigure_daily_log(const filesystem::path& defaultDir);
     void flush();
     void append(const char* filename, int line, unsigned int level, const char* fmt, ...);
+
+    /*-------------------------------------------------*\
+    | Suppression mode for device-scan logging.         |
+    | While active, INFO/VERBOSE/DEBUG/TRACE messages   |
+    | are buffered in memory instead of written.        |
+    | StartSuppressing() begins buffering;              |
+    | StopSuppressing(true) flushes the buffer,         |
+    | StopSuppressing(false) discards it.               |
+    | FATAL/ERROR/DIALOG are never suppressed.          |
+    \-------------------------------------------------*/
+    void StartSuppressing();
+    void StopSuppressing(bool flush);
     void setLoglevel(unsigned int);
     void setVerbosity(unsigned int);
     void setPrintSource(bool);

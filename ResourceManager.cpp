@@ -1532,6 +1532,14 @@ void ResourceManager::DetectDevicesCoroutine()
 {
     DetectDeviceMutex.lock();
 
+    /*-----------------------------------------------------*\
+    | Buffer scan output until we know whether the device   |
+    | set changed. If nothing changed, the buffer is        |
+    | discarded to avoid growing the log on every rescan;   |
+    | if something changed it is flushed normally.          |
+    \*-----------------------------------------------------*/
+    LogManager::get()->StartSuppressing();
+
     hid_device_info*    current_hid_device;
     float               percent                     = 0.0f;
     float               percent_denominator         = 0.0f;
@@ -2148,8 +2156,25 @@ void ResourceManager::DetectDevicesCoroutine()
     /*-----------------------------------------------------*\
     | Make sure that when the detection is done, progress   |
     | bar is set to 100%                                    |
+    |                                                       |
+    | Decide whether the device set changed before          |
+    | ProcessPostDetection() clears the matched/pending     |
+    | lists:                                                |
+    |   - every newly detected controller must have         |
+    |     matched a previous one (rgb_controllers_hw_matched |
+    |     size == rgb_controllers_hw size), AND             |
+    |   - the count must be unchanged vs last scan          |
+    |     (cleanup_pending size == rgb_controllers_hw size) |
+    | If both hold, nothing changed and the buffered scan   |
+    | output is discarded; otherwise it is flushed.         |
     \*-----------------------------------------------------*/
+    bool devices_changed =
+        (rgb_controllers_hw.size() != rgb_controllers_hw_cleanup_pending.size())
+     || (rgb_controllers_hw_matched.size() != rgb_controllers_hw.size());
+
     ProcessPostDetection();
+
+    LogManager::get()->StopSuppressing(devices_changed);
 
     DetectDeviceMutex.unlock();
 
