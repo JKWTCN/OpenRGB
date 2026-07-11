@@ -65,8 +65,8 @@ REGISTER_HID_DETECTOR("DeepRGB SIG CD",             DetectDRGBControllers, DRGBV
 REGISTER_HID_DETECTOR("DeepRGB Strimer Controller", DetectDRGBControllers, DRGBV2_VID,  DRGB_Strimer_PID);
 
 REGISTER_HID_DETECTOR("YICO 8 ELITE",               DetectDRGBControllers, YICO_VID,    YICO_8_PID);
-REGISTER_HID_DETECTOR("YICO 08 ELITE",              DetectDRGBControllers, YICO_VID,    YICO_08_PID);
-REGISTER_HID_DETECTOR("YICO 08 ELITE",              DetectDRGBControllers, YICO_VID,    YICO_08_1_PID);
+// REGISTER_HID_DETECTOR("YICO 08 ELITE",              DetectDRGBControllers, YICO_VID,    YICO_08_PID);
+// REGISTER_HID_DETECTOR("YICO 08 ELITE",              DetectDRGBControllers, YICO_VID,    YICO_08_1_PID);
 REGISTER_HID_DETECTOR("YICO 14 LCD",                DetectDRGBControllers, DRGBV3_VID,  YICO_14_PID);
 REGISTER_HID_DETECTOR("YICO 16 ELITE",              DetectDRGBControllers, DRGBV4_VID,  YICO_16_PID);
 

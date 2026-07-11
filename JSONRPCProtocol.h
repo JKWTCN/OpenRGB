@@ -99,6 +99,7 @@ namespace Methods
     const char* const SET_LED_COLOR             = "device.setLEDColor";
     const char* const SET_ZONE_COLOR            = "device.setZoneColor";
     const char* const SET_ZONE_MULTIPLE_LED     = "device.setZoneMultipleLed";
+    const char* const SET_MULTIPLE_ZONE_MULTIPLE_LED = "device.setMultipleZoneMultipleLed";
     const char* const SET_ALL_COLORS            = "device.setAllColors";
     const char* const SET_MULTIPLE_COLORS       = "device.setMultipleColors";
     const char* const SET_KEY_COLOR             = "device.setKeyColor";
