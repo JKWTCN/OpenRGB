@@ -150,6 +150,10 @@ nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
     {
         return SetZoneColor(params);
     }
+    else if (method == JSONRPCProtocol::Methods::SET_ZONE_MULTIPLE_LED)
+    {
+        return SetZoneMultipleLed(params);
+    }
     else if (method == JSONRPCProtocol::Methods::SET_ALL_COLORS)
     {
         return SetAllColors(params);
@@ -446,6 +450,108 @@ nlohmann::json JSONRPCHandler::SetZoneColor(const nlohmann::json &params)
 
     nlohmann::json result;
     result["success"] = true;
+    return result;
+}
+
+nlohmann::json JSONRPCHandler::SetZoneMultipleLed(const nlohmann::json &params)
+{
+    if (!params.contains("deviceIndex") || !params.contains("zoneIndex") || !params.contains("color"))
+    {
+        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                           "Missing required parameters: deviceIndex, zoneIndex, color");
+    }
+
+    const nlohmann::json &colors = params["color"];
+    if (params.contains("Force") && !params["Force"].is_boolean())
+    {
+        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                           "'Force' must be a boolean");
+    }
+    const bool force = params.value("Force", false);
+
+    if (!colors.is_array() || colors.empty())
+    {
+        return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                           "'color' must be a non-empty array of RGB arrays");
+    }
+
+    std::vector<RGBColor> parsed_colors;
+    parsed_colors.reserve(colors.size());
+    for (const nlohmann::json &rgb : colors)
+    {
+        if (!rgb.is_array() || rgb.size() != 3
+            || !rgb[0].is_number_unsigned() || !rgb[1].is_number_unsigned() || !rgb[2].is_number_unsigned()
+            || rgb[0].get<unsigned int>() > 255 || rgb[1].get<unsigned int>() > 255 || rgb[2].get<unsigned int>() > 255)
+        {
+            return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                               "Each color must be an RGB array containing three integers from 0 to 255");
+        }
+
+        parsed_colors.push_back(ToRGBColor(rgb[0].get<unsigned int>(),
+                                           rgb[1].get<unsigned int>(),
+                                           rgb[2].get<unsigned int>()));
+    }
+
+    auto lock = LockControllerList();
+    unsigned int device_idx = params["deviceIndex"];
+    unsigned int zone_idx = params["zoneIndex"];
+
+    if (!ValidateDeviceIndex(device_idx))
+    {
+        return CreateError(JSONRPCProtocol::ERR_DEVICE_INDEX_OUT_OF_RANGE,
+                           "Device index out of range");
+    }
+
+    RGBController *controller = controllers[device_idx];
+    if (zone_idx >= controller->zones.size())
+    {
+        return CreateError(JSONRPCProtocol::ERR_ZONE_INDEX_OUT_OF_RANGE,
+                           "Zone index out of range");
+    }
+
+    zone &target_zone = controller->zones[zone_idx];
+    if (parsed_colors.size() != target_zone.leds_count)
+    {
+        if (force)
+        {
+            target_zone.leds_count = static_cast<unsigned int>(parsed_colors.size());
+            target_zone.flags &= ~ZONE_FLAG_RESIZE_EFFECTS_ONLY;
+
+            std::size_t total_led_count = 0;
+            for (std::size_t controller_zone_idx = 0;
+                 controller_zone_idx < controller->zones.size(); ++controller_zone_idx)
+            {
+                total_led_count += controller->GetLEDsInZone(static_cast<unsigned int>(controller_zone_idx));
+            }
+            controller->leds.resize(total_led_count);
+            controller->SetupColors();
+        }
+        else if (parsed_colors.size() < target_zone.leds_min || parsed_colors.size() > target_zone.leds_max)
+        {
+            return CreateError(JSONRPCProtocol::INVALID_PARAMS,
+                               "Color count is outside the zone's supported LED count range");
+        }
+        else
+        {
+            controller->ResizeZone(zone_idx, static_cast<int>(parsed_colors.size()));
+            if (controller->zones[zone_idx].leds_count != parsed_colors.size())
+            {
+                return CreateError(JSONRPCProtocol::ERR_RESIZE_NOT_SUPPORTED,
+                                   "Zone does not support the requested LED count");
+            }
+        }
+    }
+
+    for (std::size_t led_idx = 0; led_idx < parsed_colors.size(); ++led_idx)
+    {
+        controller->zones[zone_idx].colors[led_idx] = parsed_colors[led_idx];
+    }
+    controller->UpdateLEDs();
+
+    nlohmann::json result;
+    result["success"] = true;
+    result["ledCount"] = parsed_colors.size();
+    result["forced"] = force;
     return result;
 }
 

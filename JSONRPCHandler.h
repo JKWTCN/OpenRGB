@@ -70,6 +70,7 @@ private:
     // Color control methods
     nlohmann::json  SetLEDColor(const nlohmann::json& params);
     nlohmann::json  SetZoneColor(const nlohmann::json& params);
+    nlohmann::json  SetZoneMultipleLed(const nlohmann::json& params);
     nlohmann::json  SetAllColors(const nlohmann::json& params);
     nlohmann::json  SetMultipleColors(const nlohmann::json& params);
     nlohmann::json  SetKeyColor(const nlohmann::json& params);
