@@ -31,7 +31,20 @@ RGBController_DRGB::RGBController_DRGB(DRGBController* controller_ptr)
     name        = controller->GetNameString();
     vendor      = "DRGB";
     description = "DRGB Controller Device";
-    type        = DEVICE_TYPE_LEDSTRIP;
+    switch(controller->GetDevicePID())
+    {
+        case YICO_8_PID:
+        case YICO_08_PID:
+        case YICO_08_1_PID:
+        case YICO_14_PID:
+        case YICO_16_PID:
+            type    = DEVICE_TYPE_RGB_CONTROL;
+            break;
+
+        default:
+            type    = DEVICE_TYPE_LEDSTRIP;
+            break;
+    }
     version     = controller->GetFirmwareString();
     location    = controller->GetLocationString();
     serial      = controller->GetSerialString();

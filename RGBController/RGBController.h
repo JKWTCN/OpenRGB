@@ -218,6 +218,8 @@ enum
     DEVICE_TYPE_LAPTOP,
     DEVICE_TYPE_MONITOR,
     DEVICE_TYPE_UNKNOWN,
+    // !!! add new type beginning at 100+ !!!
+    DEVICE_TYPE_RGB_CONTROL=101,
 };
 
 /*------------------------------------------------------------------*\
