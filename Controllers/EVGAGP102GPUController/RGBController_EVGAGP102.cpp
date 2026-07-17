@@ -77,6 +77,8 @@ RGBController_EVGAGP102::RGBController_EVGAGP102(std::vector<EVGAGP102Controller
 
 RGBController_EVGAGP102::~RGBController_EVGAGP102()
 {
+    Shutdown();
+
     for(unsigned int i = 0; i < controllers.size(); i++)
     {
         delete controllers[i];
@@ -101,7 +103,6 @@ void RGBController_EVGAGP102::SetupZones()
         new_zone.leds_min      = 1;
         new_zone.leds_max      = 1;
         new_zone.leds_count    = 1;
-        new_zone.matrix_map    = NULL;
 
         new_led.name           = controllers[i]->GetZoneName();
 
@@ -112,22 +113,15 @@ void RGBController_EVGAGP102::SetupZones()
     SetupColors();
 }
 
-void RGBController_EVGAGP102::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_EVGAGP102::DeviceUpdateLEDs()
 {
     for(unsigned int zone_idx = 0; zone_idx < zones.size(); zone_idx++)
     {
-        UpdateZoneLEDs(zone_idx);
+        DeviceUpdateZoneLEDs(zone_idx);
     }
 }
 
-void RGBController_EVGAGP102::UpdateZoneLEDs(int zone)
+void RGBController_EVGAGP102::DeviceUpdateZoneLEDs(int zone)
 {
     RGBColor color    = colors[zone];
     unsigned char red = RGBGetRValue(color);
@@ -136,7 +130,7 @@ void RGBController_EVGAGP102::UpdateZoneLEDs(int zone)
     controllers[zone]->SetColor(red, grn, blu);
 }
 
-void RGBController_EVGAGP102::UpdateSingleLED(int /*led*/)
+void RGBController_EVGAGP102::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

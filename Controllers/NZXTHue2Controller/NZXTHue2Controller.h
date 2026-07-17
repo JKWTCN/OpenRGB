@@ -57,16 +57,18 @@ enum
     HUE_2_MODE_BREATHING        = 0x07,     /* Breathing mode               */
     HUE_2_MODE_CANDLE           = 0x08,     /* Candle Mode                  */
     HUE_2_MODE_STARRY_NIGHT     = 0x09,     /* Starry Night mode            */
-    HUE_2_MODE_RAINBOW_FLOW     = 0x0b,     /* Rainbow Flow mode            */
-    HUE_2_MODE_SUPER_RAINBOW    = 0x0c,     /* Super Rainbow mode           */
-    HUE_2_MODE_RAINBOW_PULSE    = 0x0d,     /* Rainbow Pulse mode           */
-    HUE_2_NUM_MODES                         /* Number of Hue 2 modes        */
+    HUE_2_MODE_RAINBOW_FLOW     = 0x0B,     /* Rainbow Flow mode            */
+    HUE_2_MODE_SUPER_RAINBOW    = 0x0C,     /* Super Rainbow mode           */
+    HUE_2_MODE_RAINBOW_PULSE    = 0x0D,     /* Rainbow Pulse mode           */
+    HUE_2_NUM_MODES,                        /* Number of Hue 2 modes        */
+
+    HUE_2_MODE_DIRECT           = 0xFFFF,   /* Dummy mode ID for direct mode*/
 };
 
 class NZXTHue2Controller
 {
 public:
-    NZXTHue2Controller(hid_device* dev_handle, unsigned int rgb_channels, unsigned int fan_channels, const char* path, std::string dev_name);
+    NZXTHue2Controller(hid_device* dev_handle, unsigned int rgb_channels, unsigned int fan_channels, const char* path, std::string dev_name, bool use_2023_effects = false);
     ~NZXTHue2Controller();
 
     std::string     GetFirmwareVersion();
@@ -129,6 +131,7 @@ private:
     char            firmware_version[16];
     std::string     location;
     std::string     name;
+    bool            use_2023_effects;
     unsigned int    num_fan_channels;
     unsigned int    num_rgb_channels;
 
@@ -146,6 +149,16 @@ private:
                         );
 
     void            SendEffect
+                        (
+                        unsigned char   channel,
+                        unsigned char   mode,
+                        unsigned char   speed,
+                        bool            direction,
+                        unsigned char   color_count,
+                        unsigned char*  color_data
+                        );
+
+    void            SendEffect2023
                         (
                         unsigned char   channel,
                         unsigned char   mode,

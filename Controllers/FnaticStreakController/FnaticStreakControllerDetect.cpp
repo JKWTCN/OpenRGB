@@ -10,26 +10,30 @@
 \*---------------------------------------------------------*/
 
 #include <hidapi.h>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "FnaticStreakController.h"
 #include "RGBController_FnaticStreak.h"
 
-/*-----------------------------------------------------*\
-| Fnatic keyboard vendor and product IDs                |
-| Based on leddy project keyboard.rs                    |
-| VID: 0x2f0e                                           |
-| PID: 0x0101 (Streak full)                             |
-| PID: 0x0102 (miniStreak)                              |
-| Interface: 1                                          |
-\*-----------------------------------------------------*/
+/*---------------------------------------------------------*\
+| Fnatic keyboard vendor and product IDs                    |
+| Based on leddy project keyboard.rs                        |
+| VID: 0x2f0e                                               |
+| PID: 0x0101 (Streak full)                                 |
+| PID: 0x0102 (miniStreak)                                  |
+| Interface: 1                                              |
+\*---------------------------------------------------------*/
 #define FNATIC_VID                                  0x2F0E
 
 #define FNATIC_STREAK_PID                           0x0101
 #define FNATIC_MINISTREAK_PID                       0x0102
+#define FNATIC_STREAK65_PID                         0x0105
 
-void DetectFnaticStreakKeyboard(hid_device_info* info, const std::string& name)
+DetectedControllers DetectFnaticStreakKeyboard(hid_device_info* info, const std::string& name)
 {
-    hid_device* dev = hid_open_path(info->path);
+    DetectedControllers detected_controllers;
+    hid_device*         dev;
+
+    dev = hid_open_path(info->path);
 
     if(dev)
     {
@@ -39,6 +43,10 @@ void DetectFnaticStreakKeyboard(hid_device_info* info, const std::string& name)
         {
             kb_type = FNATIC_STREAK_TYPE_MINI;
         }
+        else if(info->product_id == FNATIC_STREAK65_PID)
+        {
+            kb_type = FNATIC_STREAK_TYPE_65;
+        }
         else
         {
             kb_type = FNATIC_STREAK_TYPE_FULL;
@@ -47,9 +55,12 @@ void DetectFnaticStreakKeyboard(hid_device_info* info, const std::string& name)
         FnaticStreakController*     controller     = new FnaticStreakController(dev, info, name, kb_type);
         RGBController_FnaticStreak* rgb_controller = new RGBController_FnaticStreak(controller);
 
-        ResourceManager::get()->RegisterRGBController(rgb_controller);
+        detected_controllers.push_back(rgb_controller);
     }
+
+    return(detected_controllers);
 }
 
 REGISTER_HID_DETECTOR_I("Fnatic Streak",      DetectFnaticStreakKeyboard, FNATIC_VID, FNATIC_STREAK_PID,      1);
 REGISTER_HID_DETECTOR_I("Fnatic miniStreak",  DetectFnaticStreakKeyboard, FNATIC_VID, FNATIC_MINISTREAK_PID,  1);
+REGISTER_HID_DETECTOR_I("Fnatic Streak65",    DetectFnaticStreakKeyboard, FNATIC_VID, FNATIC_STREAK65_PID,    1);

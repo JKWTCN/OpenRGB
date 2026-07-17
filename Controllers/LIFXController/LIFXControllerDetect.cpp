@@ -9,31 +9,25 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "LIFXController.h"
+#include "ResourceManager.h"
 #include "RGBController_LIFX.h"
 #include "SettingsManager.h"
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectLIFXControllers                                                                  *
-*                                                                                          *
-*       Detect LIFX devices                                                                *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectLIFXControllers()
+DetectedControllers DetectLIFXControllers()
 {
-    json                    lifx_settings;
+    DetectedControllers detected_controllers;
+    json                lifx_settings;
 
-    /*-------------------------------------------------*\
-    | Get LIFX settings from settings manager           |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Get LIFX settings from settings manager               |
+    \*-----------------------------------------------------*/
     lifx_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("LIFXDevices");
 
-    /*-------------------------------------------------*\
-    | If the Wiz settings contains devices, process     |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | If the Wiz settings contains devices, process         |
+    \*-----------------------------------------------------*/
     if(lifx_settings.contains("devices"))
     {
         for(unsigned int device_idx = 0; device_idx < lifx_settings["devices"].size(); device_idx++)
@@ -50,11 +44,12 @@ void DetectLIFXControllers()
 
                 RGBController_LIFX* rgb_controller = new RGBController_LIFX(controller);
 
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+                detected_controllers.push_back(rgb_controller);
             }
         }
     }
 
-}   /* DetectLIFXControllers() */
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("LIFX", DetectLIFXControllers);

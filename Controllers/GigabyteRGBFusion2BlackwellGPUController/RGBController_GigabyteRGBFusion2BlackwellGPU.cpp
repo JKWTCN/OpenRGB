@@ -201,6 +201,8 @@ RGBController_RGBFusion2BlackwellGPU::RGBController_RGBFusion2BlackwellGPU(RGBFu
 
 RGBController_RGBFusion2BlackwellGPU::~RGBController_RGBFusion2BlackwellGPU()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -220,7 +222,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
         new_zone.leds_min   = 1;
         new_zone.leds_max   = 1;
         new_zone.leds_count = 1;
-        new_zone.matrix_map = NULL;
 
         new_led.name        = new_zone.name;
 
@@ -260,7 +261,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
             new_zone.leds_min   = 1;
             new_zone.leds_max   = 1;
             new_zone.leds_count = 1;
-            new_zone.matrix_map = NULL;
 
             new_led.name        = new_zone.name;
 
@@ -293,7 +293,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
             new_zone.leds_min   = 1;
             new_zone.leds_max   = 1;
             new_zone.leds_count = 1;
-            new_zone.matrix_map = NULL;
 
             new_led.name        = new_zone.name;
 
@@ -338,7 +337,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
             new_zone.leds_min   = 1;
             new_zone.leds_max   = 1;
             new_zone.leds_count = 1;
-            new_zone.matrix_map = NULL;
 
             new_led.name        = new_zone.name;
 
@@ -360,7 +358,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
             fan_zone.leds_min       = RGB_FUSION_2_BLACKWELL_AORUS_MASTER_FAN_LEDS;
             fan_zone.leds_max       = RGB_FUSION_2_BLACKWELL_AORUS_MASTER_FAN_LEDS;
             fan_zone.leds_count     = RGB_FUSION_2_BLACKWELL_AORUS_MASTER_FAN_LEDS;
-            fan_zone.matrix_map     = NULL;
             zones.push_back(fan_zone);
 
             for(unsigned int led_idx = 0; led_idx < fan_zone.leds_count; led_idx++)
@@ -379,7 +376,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
         side_logo.leds_min      = 1;
         side_logo.leds_max      = 1;
         side_logo.leds_count    = 1;
-        side_logo.matrix_map    = NULL;
         zones.push_back(side_logo);
 
         led logo_led;
@@ -392,7 +388,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
         top_logo.leds_min       = 1;
         top_logo.leds_max       = 1;
         top_logo.leds_count     = 1;
-        top_logo.matrix_map     = NULL;
         zones.push_back(top_logo);
 
         led top_led;
@@ -400,14 +395,50 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
         leds.push_back(top_led);
     }
 
-    SetupColors();
-}
+    else if(gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5090D_V2_ICE_LAYOUT)
+    {
+        const char * fan_names[] = { "Right Fan", "Left Fan", "Middle Fan" };
+        for(int i = 0; i < 3; i++)
+        {
+            zone fan_zone;
+            fan_zone.name           = fan_names[i];
+            fan_zone.type           = ZONE_TYPE_SINGLE;
+            fan_zone.leds_min       = 1;
+            fan_zone.leds_max       = 1;
+            fan_zone.leds_count     = 1;
+            zones.push_back(fan_zone);
 
-void RGBController_RGBFusion2BlackwellGPU::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
+            led new_led;
+            new_led.name = fan_names[i];
+            leds.push_back(new_led);
+        }
+
+        zone backplate;
+        backplate.name          = "Backplate";
+        backplate.type          = ZONE_TYPE_SINGLE;
+        backplate.leds_min      = 1;
+        backplate.leds_max      = 1;
+        backplate.leds_count    = 1;
+        zones.push_back(backplate);
+
+        led bp_led;
+        bp_led.name = "Backplate";
+        leds.push_back(bp_led);
+
+        zone side_logo;
+        side_logo.name          = "Side Logo";
+        side_logo.type          = ZONE_TYPE_SINGLE;
+        side_logo.leds_min      = 1;
+        side_logo.leds_max      = 1;
+        side_logo.leds_count    = 1;
+        zones.push_back(side_logo);
+
+        led sl_led;
+        sl_led.name = "Side Logo";
+        leds.push_back(sl_led);
+    }
+
+    SetupColors();
 }
 
 void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
@@ -446,6 +477,10 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
             gpu_zones = 6; // Zones 4 and 5 refer to ui zone 4
             break;
 
+        case RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5090D_V2_ICE_LAYOUT:
+            gpu_zones = 6;
+            break;
+
         default:
             LOG_TRACE("[%s] Invalid GPU layout (%d) when updating LEDs.", name.c_str(), gpu_layout);
             return; // should not happen
@@ -472,7 +507,8 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
             }
             ui_zone_idx = zone_idx - 1; // Map: HW zone 1->UI zone 0, HW zone 2->UI zone 1, HW zone 3->UI zone 2, HW zone 4->UI zone 3
         }
-        else if(gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5080_LAYOUT)
+        else if(gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5080_LAYOUT ||
+                gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5090D_V2_ICE_LAYOUT)
         {
             if(zone_idx == 5)
             {
@@ -523,12 +559,12 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_RGBFusion2BlackwellGPU::UpdateZoneLEDs(int /*zone*/)
+void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_RGBFusion2BlackwellGPU::UpdateSingleLED(int /*led*/)
+void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

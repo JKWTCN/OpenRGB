@@ -58,14 +58,6 @@ VERSION_RPM = $$VERSION_RPM"^"$$SUFFIX
 TARGET      = OpenRGB
 TEMPLATE    = app
 
-message("VERSION_NUM: "$$VERSION_NUM)
-message("VERSION_STR: "$$VERSION_STR)
-message("VERSION_SFX: "$$SUFFIX)
-message("VERSION_DEB: "$$VERSION_DEB)
-message("VERSION_WIX: "$$VERSION_WIX)
-message("VERSION_AUR: "$$VERSION_AUR)
-message("VERSION_RPM: "$$VERSION_RPM)
-message("QT_VERSION:  "$$QT_VERSION)
 #-----------------------------------------------------------------------------------------------#
 # Automatically generated build information                                                     #
 #-----------------------------------------------------------------------------------------------#
@@ -83,7 +75,6 @@ else {
     GIT_BRANCH          = $$system(powershell -ExecutionPolicy Bypass -File scripts/git-get-branch.ps1)
 }
 
-message("GIT_BRANCH: "$$GIT_BRANCH)
 DEFINES +=                                                                                      \
     VERSION_STRING=\\"\"\"$$VERSION_STR\\"\"\"                                                  \
     BUILDDATE_STRING=\\"\"\"$$BUILDDATE\\"\"\"                                                  \
@@ -96,13 +87,13 @@ DEFINES +=                                                                      
 #-----------------------------------------------------------------------------------------------#
 FORMS += $$files("qt/*.ui", true)
 
-for(iter, FORMS) {
+GUI_H               = $$files("qt/*.h", true)
+GUI_CPP             = $$files("qt/*.cpp", true)
+
+for(iter, $$list($$GUI_H)) {
     GUI_INCLUDES += $$dirname(iter)
 }
 GUI_INCLUDES        = $$unique(GUI_INCLUDES)
-
-GUI_H               = $$files("qt/*.h", true)
-GUI_CPP             = $$files("qt/*.cpp", true)
 
 CONTROLLER_H        = $$files("Controllers/*.h", true)
 CONTROLLER_CPP      = $$files("Controllers/*.cpp", true)
@@ -135,6 +126,8 @@ CONTROLLER_CPP         -= $$CONTROLLER_CPP_WINDOWS
 CONTROLLER_CPP         -= $$CONTROLLER_CPP_LINUX
 CONTROLLER_CPP         -= $$CONTROLLER_CPP_FREEBSD
 CONTROLLER_CPP         -= $$CONTROLLER_CPP_MACOS
+
+HID_HOTPLUG_ENABLED = "false"
 
 #-----------------------------------------------------------------------------------------------#
 # OpenRGB Common                                                                                #
@@ -173,6 +166,7 @@ HEADERS +=                                                                      
     Colors.h                                                                                    \
     dependencies/ColorWheel/ColorWheel.h                                                        \
     dependencies/json/nlohmann/json.hpp                                                         \
+    JsonUtils.h                                                                                 \
     LogManager.h                                                                                \
     NetworkClient.h                                                                             \
     NetworkProtocol.h                                                                           \
@@ -181,10 +175,9 @@ HEADERS +=                                                                      
     PluginManager.h                                                                             \
     ProfileManager.h                                                                            \
     ResourceManager.h                                                                           \
-    ResourceManagerInterface.h                                                                  \
+    ResourceManagerCallback.h                                                                   \
     SettingsManager.h                                                                           \
-    Detector.h                                                                                  \
-    DeviceDetector.h                                                                            \
+    DetectionManager.h                                                                          \
     dmiinfo/dmiinfo.h                                                                           \
     filesystem.h                                                                                \
     hidapi_wrapper/hidapi_wrapper.h                                                             \
@@ -199,6 +192,7 @@ HEADERS +=                                                                      
     serial_port/find_usb_serial_port.h                                                          \
     serial_port/serial_port.h                                                                   \
     super_io/super_io.h                                                                         \
+    MathUtils.h                                                                                 \
     StringUtils.h                                                                               \
     SuspendResume/SuspendResume.h                                                               \
     AutoStart/AutoStart.h                                                                       \
@@ -244,11 +238,14 @@ SOURCES +=                                                                      
     dependencies/hueplusplus-1.2.0/src/ZLLSensors.cpp                                           \
     startup/startup.cpp                                                                         \
     cli.cpp                                                                                     \
+    DetectionManager.cpp                                                                        \
     dmiinfo/dmiinfo.cpp                                                                         \
+    JsonUtils.cpp                                                                               \
     LogManager.cpp                                                                              \
     NetworkClient.cpp                                                                           \
     NetworkProtocol.cpp                                                                         \
     NetworkServer.cpp                                                                           \
+    OpenRGBPluginAPI.cpp                                                                        \
     PluginManager.cpp                                                                           \
     ProfileManager.cpp                                                                          \
     ResourceManager.cpp                                                                         \
@@ -265,6 +262,7 @@ SOURCES +=                                                                      
     interop/DeviceGuardManager.cpp                                                              \
     net_port/net_port.cpp                                                                       \
     serial_port/serial_port.cpp                                                                 \
+    MathUtils.cpp                                                                               \
     StringUtils.cpp                                                                             \
     AutoStart/AutoStart.cpp                                                                     \
     KeyboardLayoutManager/KeyboardLayoutManager.cpp                                             \
@@ -272,6 +270,7 @@ SOURCES +=                                                                      
     RGBController/RGBController_Dummy.cpp                                                       \
     RGBController/RGBControllerKeyNames.cpp                                                     \
     RGBController/RGBController_Network.cpp                                                     \
+    RGBController/RGBController_Virtual.cpp                                                     \
 
 RESOURCES +=                                                                                    \
     qt/resources.qrc                                                                            \
@@ -318,6 +317,7 @@ TRANSLATIONS +=                                                                 
     qt/i18n/OpenRGB_pl_PL.ts                                                                    \
     qt/i18n/OpenRGB_pt_BR.ts                                                                    \
     qt/i18n/OpenRGB_ru_RU.ts                                                                    \
+    qt/i18n/OpenRGB_tr_TR.ts 									\
     qt/i18n/OpenRGB_uk_UA.ts                                                                    \
     qt/i18n/OpenRGB_zh_CN.ts                                                                    \
     qt/i18n/OpenRGB_zh_TW.ts                                                                    \
@@ -328,7 +328,7 @@ TRANSLATIONS +=                                                                 
 win32:QMAKE_CXXFLAGS += /utf-8
 win32:INCLUDEPATH +=                                                                            \
     dependencies/display-library/include                                                        \
-    dependencies/hidapi-win/include                                                             \
+    dependencies/hidapi-hotplug-win/include                                                     \
     dependencies/libusb-1.0.27/include                                                          \
     dependencies/mbedtls-3.2.1/include                                                          \
     dependencies/NVFC                                                                           \
@@ -374,7 +374,7 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
         -lws2_32                                                                                \
         -liphlpapi                                                                              \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS64/dll" -llibusb-1.0                       \
-        -L"$$PWD/dependencies/hidapi-win/x64/" -lhidapi                                         \
+        -L"$$PWD/dependencies/hidapi-hotplug-win/x64/" -lhidapi-hotplug                         \
         -L"$$PWD/dependencies/mbedtls-3.2.1/lib/x64/" -lmbedcrypto -lmbedtls -lmbedx509         \
         -L"$$PWD/dependencies/PawnIO/" -lPawnIOLib                                              \
 }
@@ -387,7 +387,7 @@ win32:contains(QMAKE_TARGET.arch, x86) {
         -lws2_32                                                                                \
         -liphlpapi                                                                              \
         -L"$$PWD/dependencies/libusb-1.0.27/VS2019/MS32/dll" -llibusb-1.0                       \
-        -L"$$PWD/dependencies/hidapi-win/x86/" -lhidapi                                         \
+        -L"$$PWD/dependencies/hidapi-hotplug-win/x86/" -lhidapi-hotplug                         \
         -L"$$PWD/dependencies/mbedtls-3.2.1/lib/x86/" -lmbedcrypto -lmbedtls -lmbedx509         \
 }
 
@@ -395,12 +395,14 @@ win32:DEFINES -=                                                                
     UNICODE
 
 win32:DEFINES +=                                                                                \
-    USE_HID_USAGE                                                                               \
     _MBCS                                                                                       \
     WIN32                                                                                       \
     _CRT_SECURE_NO_WARNINGS                                                                     \
     _WINSOCK_DEPRECATED_NO_WARNINGS                                                             \
     WIN32_LEAN_AND_MEAN                                                                         \
+    HID_HOTPLUG_ENABLED=1                                                                       \
+
+win32:HID_HOTPLUG_ENABLED = "true"
 
 win32:RC_ICONS +=                                                                               \
     qt/OpenRGB.ico
@@ -432,10 +434,11 @@ win32:UI_DIR      = _intermediate_$$DESTDIR/.ui
 
 win32:contains(QMAKE_TARGET.arch, x86_64) {
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/libusb-1.0.27/VS2019/MS64/dll/libusb-1.0.dll)\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
-    copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/hidapi-win/x64/hidapi.dll                   )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
+    copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/hidapi-hotplug-win/x64/hidapi-hotplug.dll   )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/PawnIOLib.dll                        )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/modules/SmbusPIIX4.bin               )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/modules/SmbusI801.bin                )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
+    copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/modules/SmbusIntelSkylakeIMC.bin     )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/modules/SmbusNCT6793.bin             )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/PawnIO/modules/LpcIO.bin                    )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
     first.depends = $(first) copydata
@@ -446,7 +449,7 @@ win32:contains(QMAKE_TARGET.arch, x86_64) {
 
 win32:contains(QMAKE_TARGET.arch, x86) {
     copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/libusb-1.0.27/VS2019/MS32/dll/libusb-1.0.dll)\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
-    copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/hidapi-win/x86/hidapi.dll                   )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
+    copydata.commands += $(COPY_FILE) \"$$shell_path($$PWD/dependencies/hidapi-hotplug-win/x86/hidapi-hotplug.dll   )\" \"$$shell_path($$DESTDIR)\" $$escape_expand(\n\t)
 
     first.depends = $(first) copydata
     export(first.depends)
@@ -501,22 +504,19 @@ contains(QMAKE_PLATFORM, linux) {
     # Determine which hidapi to use based on availability                                       #
     #   Prefer hidraw backend, then libusb                                                      #
     #-------------------------------------------------------------------------------------------#
-    packagesExist(hidapi-hidraw) {
-        PKGCONFIG += hidapi-hidraw
-
-        #---------------------------------------------------------------------------------------#
-        # hidapi-hidraw >= 0.10.1 supports USAGE/USAGE_PAGE                                     #
-        # Define USE_HID_USAGE if hidapi-hidraw supports it                                     #
-        #---------------------------------------------------------------------------------------#
-        HIDAPI_HIDRAW_VERSION = $$system($$PKG_CONFIG --modversion hidapi-hidraw)
-        if(versionAtLeast(HIDAPI_HIDRAW_VERSION, "0.10.1")) {
-            DEFINES += USE_HID_USAGE
-        }
+    packagesExist(hidapi-hotplug-hidraw) {
+        PKGCONFIG += hidapi-hotplug-hidraw
+        DEFINES   += HID_HOTPLUG_ENABLED=1
+        HID_HOTPLUG_ENABLED = "true"
     } else {
-        packagesExist(hidapi-libusb) {
-            PKGCONFIG += hidapi-libusb
+        packagesExist(hidapi-hidraw) {
+            PKGCONFIG += hidapi-hidraw
         } else {
-            PKGCONFIG += hidapi
+            packagesExist(hidapi-libusb) {
+                PKGCONFIG += hidapi-libusb
+            } else {
+                PKGCONFIG += hidapi
+            }
         }
     }
 
@@ -637,14 +637,6 @@ contains(QMAKE_PLATFORM, freebsd) {
     #-------------------------------------------------------------------------------------------#
     packagesExist(hidapi-hidraw) {
         PKGCONFIG += hidapi-hidraw
-
-        #---------------------------------------------------------------------------------------#
-        # hidapi-hidraw >= 0.10.1 supports USAGE/USAGE_PAGE                                     #
-        # Define USE_HID_USAGE if hidapi-hidraw supports it                                     #
-        #---------------------------------------------------------------------------------------#
-        packagesExist(hidapi-hidraw>=0.10.1) {
-            DEFINES += USE_HID_USAGE
-        }
     } else {
         packagesExist(hidapi-libusb) {
             PKGCONFIG += hidapi-libusb
@@ -711,10 +703,6 @@ macx {
 
     PKGCONFIG +=                                                                                \
     libusb-1.0                                                                                  \
-    hidapi
-
-    DEFINES +=                                                                                  \
-    USE_HID_USAGE                                                                               \
 
     QMAKE_CXXFLAGS +=                                                                           \
     -Wno-narrowing                                                                              \
@@ -735,6 +723,19 @@ macx {
     startup/main_FreeBSD_Linux_MacOS.cpp                                                        \
 
     SOURCES += $$CONTROLLER_CPP_MACOS
+
+    #-------------------------------------------------------------------------------------------#
+    # Determine which hidapi to use based on availability                                       #
+    #   Prefer hidapi-hotplug if it exists                                                      #
+    #-------------------------------------------------------------------------------------------#
+    packagesExist(hidapi-hotplug) {
+        PKGCONFIG += hidapi-hotplug
+        DEFINES   += HID_HOTPLUG_ENABLED=1
+        HID_HOTPLUG_ENABLED = "true"
+
+    } else {
+        PKGCONFIG += hidapi
+    }
 
     # Use mbedtls 3
     MBEDTLS_PREFIX = $$system(brew --prefix mbedtls@3)
@@ -809,3 +810,21 @@ macx:contains(QMAKE_HOST.arch, x86_64) {
 DISTFILES += \
     debian/openrgb-udev.postinst \
     debian/openrgb.postinst
+
+#-----------------------------------------------------------------------------------------------#
+# Print build configuration                                                                     #
+#-----------------------------------------------------------------------------------------------#
+message("GIT_BRANCH:  "$$GIT_BRANCH)
+message("VERSION_NUM: "$$VERSION_NUM)
+message("VERSION_STR: "$$VERSION_STR)
+message("VERSION_SFX: "$$SUFFIX)
+message("VERSION_DEB: "$$VERSION_DEB)
+message("VERSION_WIX: "$$VERSION_WIX)
+message("VERSION_AUR: "$$VERSION_AUR)
+message("VERSION_RPM: "$$VERSION_RPM)
+message("QT_VERSION:  "$$QT_VERSION)
+equals(HID_HOTPLUG_ENABLED, "true") {
+message("HID Hotplug: Enabled")
+} else {
+message("HID Hotplug: Disabled")
+}

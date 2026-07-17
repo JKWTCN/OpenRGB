@@ -8,7 +8,7 @@
 \*---------------------------------------------------------*/
 
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "PatriotViperSteelController.h"
 #include "LogManager.h"
 #include "RGBController_PatriotViperSteel.h"
@@ -16,15 +16,8 @@
 #include "pci_ids.h"
 
 using namespace std::chrono_literals;
-#define PATRIOT_CONTROLLER_NAME "Patriot Viper Steel"
 
-/******************************************************************************************\
-*                                                                                          *
-*   TestForPatriotViperSteelController                                                     *
-*                                                                                          *
-*       Tests the given address to see if a Patriot Viper Steel controller exists there.   *
-*                                                                                          *
-\******************************************************************************************/
+#define PATRIOT_CONTROLLER_NAME "Patriot Viper Steel"
 
 bool TestForPatriotViperSteelController(i2c_smbus_interface* bus, unsigned char address)
 {
@@ -40,27 +33,17 @@ bool TestForPatriotViperSteelController(i2c_smbus_interface* bus, unsigned char 
     }
 
     return(pass);
+}
 
-}   /* TestForPatriotViperSteelController() */
-
-
-/******************************************************************************************\
-*                                                                                          *
-*   DetectPatriotViperSteelControllers                                                     *
-*                                                                                          *
-*       Detect Patriot Viper Steel RGB controllers on the enumerated I2C busses.           *
-*                                                                                          *
-*           bus - pointer to i2c_smbus_interface where Aura device is connected            *
-*           dev - I2C address of Aura device                                               *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectPatriotViperSteelControllers(i2c_smbus_interface* bus, std::vector<SPDWrapper*> &slots, const std::string &/*name*/)
+DetectedControllers DetectPatriotViperSteelControllers(i2c_smbus_interface* bus, std::vector<SPDWrapper*> &slots, const std::string &/*name*/)
 {
-    unsigned char slots_valid = 0x00;
+    DetectedControllers detected_controllers;
+    unsigned char       slots_valid = 0x00;
 
-    // Check for Patriot Viper controller at 0x77
-    LOG_DEBUG("[%s] Testing bus %d at address 0x77", PATRIOT_CONTROLLER_NAME, bus->port_id);
+    /*-----------------------------------------------------*\
+    | Check for Patriot Viper controller at 0x77            |
+    \*-----------------------------------------------------*/
+    LOG_DEBUG("[%s] Testing bus %d at address 0x77", PATRIOT_CONTROLLER_NAME, bus->info.port_id);
 
     if(TestForPatriotViperSteelController(bus, 0x77))
     {
@@ -84,11 +67,13 @@ void DetectPatriotViperSteelControllers(i2c_smbus_interface* bus, std::vector<SP
         {
             PatriotViperSteelController*     controller     = new PatriotViperSteelController(bus, 0x77);
             RGBController_PatriotViperSteel* rgb_controller = new RGBController_PatriotViperSteel(controller);
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+            detected_controllers.push_back(rgb_controller);
         }
     }
 
-} /* DetectPatriotViperSteelControllers() */
+    return(detected_controllers);
+}
 
-REGISTER_I2C_DIMM_DETECTOR(PATRIOT_CONTROLLER_NAME, DetectPatriotViperSteelControllers, 0xFF7E, SPD_DDR4_SDRAM);
+REGISTER_I2C_DRAM_DETECTOR(PATRIOT_CONTROLLER_NAME, DetectPatriotViperSteelControllers, 0xFF7E, SPD_DDR4_SDRAM);
 

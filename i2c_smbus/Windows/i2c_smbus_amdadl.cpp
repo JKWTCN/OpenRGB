@@ -10,7 +10,7 @@
 \*---------------------------------------------------------*/
 
 #include <string>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "i2c_smbus_amdadl.h"
 #include "LogManager.h"
 #include "pci_ids.h"
@@ -18,7 +18,6 @@
 typedef int ( *ADL2_MAIN_CONTROL_CREATE )(ADL_MAIN_MALLOC_CALLBACK, int, ADL_CONTEXT_HANDLE*);
 typedef int ( *ADL2_MAIN_CONTROL_DESTROY )(ADL_CONTEXT_HANDLE);
 typedef int ( *ADL2_ADAPTER_NUMBEROFADAPTERS_GET ) ( ADL_CONTEXT_HANDLE , int* );
-typedef int ( *ADL2_ADAPTER_PRIMARY_GET) (ADL_CONTEXT_HANDLE, int* lpPrimaryAdapterIndex);
 typedef int ( *ADL2_ADAPTER_ADAPTERINFOX2_GET) (ADL_CONTEXT_HANDLE, AdapterInfo**);
 typedef int ( *ADL2_ADAPTER_ADAPTERINFOX4_GET) (ADL_CONTEXT_HANDLE, int iAdapterIndex, int* numAdapters, AdapterInfoX2** lppAdapterInfoX2);
 typedef int ( *ADL2_DISPLAY_WRITEANDREADI2C) (ADL_CONTEXT_HANDLE, int iAdapterIndex, ADLI2C* plI2C);
@@ -26,7 +25,6 @@ typedef int ( *ADL2_DISPLAY_WRITEANDREADI2C) (ADL_CONTEXT_HANDLE, int iAdapterIn
 ADL2_MAIN_CONTROL_CREATE          ADL2_Main_Control_Create;
 ADL2_MAIN_CONTROL_DESTROY         ADL2_Main_Control_Destroy;
 ADL2_ADAPTER_NUMBEROFADAPTERS_GET ADL2_Adapter_NumberOfAdapters_Get;
-ADL2_ADAPTER_PRIMARY_GET          ADL2_Adapter_Primary_Get;
 ADL2_ADAPTER_ADAPTERINFOX2_GET    ADL2_Adapter_AdapterInfoX2_Get;
 ADL2_ADAPTER_ADAPTERINFOX4_GET    ADL2_Adapter_AdapterInfoX4_Get;
 ADL2_DISPLAY_WRITEANDREADI2C      ADL2_Display_WriteAndReadI2C;
@@ -51,7 +49,6 @@ int LoadLibraries()
         ADL2_Main_Control_Create            = (ADL2_MAIN_CONTROL_CREATE)GetProcAddress(hDLL, "ADL2_Main_Control_Create");
         ADL2_Main_Control_Destroy           = (ADL2_MAIN_CONTROL_DESTROY)GetProcAddress(hDLL, "ADL2_Main_Control_Destroy");
         ADL2_Adapter_NumberOfAdapters_Get   = (ADL2_ADAPTER_NUMBEROFADAPTERS_GET)GetProcAddress(hDLL, "ADL2_Adapter_NumberOfAdapters_Get");
-        ADL2_Adapter_Primary_Get            = (ADL2_ADAPTER_PRIMARY_GET)GetProcAddress(hDLL, "ADL2_Adapter_Primary_Get");
         ADL2_Adapter_AdapterInfoX2_Get      = (ADL2_ADAPTER_ADAPTERINFOX2_GET)GetProcAddress(hDLL, "ADL2_Adapter_AdapterInfoX2_Get");
         ADL2_Adapter_AdapterInfoX4_Get      = (ADL2_ADAPTER_ADAPTERINFOX4_GET)GetProcAddress(hDLL, "ADL2_Adapter_AdapterInfoX4_Get");
         ADL2_Display_WriteAndReadI2C        = (ADL2_DISPLAY_WRITEANDREADI2C)GetProcAddress(hDLL, "ADL2_Display_WriteAndReadI2C");
@@ -62,7 +59,6 @@ int LoadLibraries()
         if( ADL2_Main_Control_Create
          && ADL2_Main_Control_Destroy
          && ADL2_Adapter_NumberOfAdapters_Get
-         && ADL2_Adapter_Primary_Get
          && ADL2_Adapter_AdapterInfoX2_Get
          && ADL2_Adapter_AdapterInfoX4_Get
          && ADL2_Display_WriteAndReadI2C)
@@ -124,19 +120,19 @@ i2c_smbus_amdadl::i2c_smbus_amdadl(ADL_CONTEXT_HANDLE context, int adapter_index
             int sbv_id = (int)std::stoul(sbv_str, nullptr, 16);
             int sbd_id = (int)std::stoul(sbd_str, nullptr, 16);
 
-            this->pci_vendor           = ven_id;
-            this->pci_device           = dev_id;
-            this->pci_subsystem_vendor = sbv_id;
-            this->pci_subsystem_device = sbd_id;
-            this->port_id              = 1;
-            strcpy(this->device_name, "AMD ADL");
+            this->info.pci_vendor           = ven_id;
+            this->info.pci_device           = dev_id;
+            this->info.pci_subsystem_vendor = sbv_id;
+            this->info.pci_subsystem_device = sbd_id;
+            this->info.port_id              = 1;
+            this->adapter_index             = adapter_index;
+            strcpy(this->info.device_name, "AMD ADL");
         }
     }
 }
 
 s32 i2c_smbus_amdadl::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int size, i2c_smbus_data* data)
 {
-    int PrimaryDisplay;
     int ret;
     int data_size = 0;
     char* data_ptr;
@@ -153,12 +149,6 @@ s32 i2c_smbus_amdadl::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
     pI2C->iAddress = addr << 1;
     pI2C->iOffset = 0;
     pI2C->pcData = (char*)data;
-
-    if (ADL_OK != ADL2_Adapter_Primary_Get(context, &PrimaryDisplay))
-    {
-        printf("Cannot get Display!\n");
-        return ADL_ERR;
-    }
 
     switch (size)
     {
@@ -204,7 +194,7 @@ s32 i2c_smbus_amdadl::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
         pI2C->iDataSize = data_size;
         pI2C->pcData = (char *)data_ptr;
 
-        ret = ADL2_Display_WriteAndReadI2C(context, PrimaryDisplay, pI2C);
+        ret = ADL2_Display_WriteAndReadI2C(context, this->adapter_index, pI2C);
     }
     else
     {
@@ -216,7 +206,7 @@ s32 i2c_smbus_amdadl::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
         i2c_buf[0] = command;
         memcpy(&i2c_buf[1], data_ptr, data_size);
 
-        ret = ADL2_Display_WriteAndReadI2C(context, PrimaryDisplay, pI2C);
+        ret = ADL2_Display_WriteAndReadI2C(context, this->adapter_index, pI2C);
     }
 
     return(ret);
@@ -224,7 +214,6 @@ s32 i2c_smbus_amdadl::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
 
 s32 i2c_smbus_amdadl::i2c_xfer(u8 addr, char read_write, int* size, u8* data)
 {
-    int PrimaryDisplay;
     int ret;
     int data_size = *size;
 
@@ -239,24 +228,18 @@ s32 i2c_smbus_amdadl::i2c_xfer(u8 addr, char read_write, int* size, u8* data)
     pI2C->iOffset = 0;
     pI2C->iDataSize = data_size;
 
-    if (ADL_OK != ADL2_Adapter_Primary_Get(context, &PrimaryDisplay))
-    {
-        printf("Cannot get Display!\n");
-        return ADL_ERR;
-    }
-
     if (read_write == I2C_SMBUS_READ)
     {
         pI2C->iAction = ADL_DL_I2C_ACTIONREAD;
         pI2C->pcData = (char*)data;
-        ret = ADL2_Display_WriteAndReadI2C(context, PrimaryDisplay, pI2C);
+        ret = ADL2_Display_WriteAndReadI2C(context, this->adapter_index, pI2C);
     }
     else
     {
         pI2C->iAction = ADL_DL_I2C_ACTIONWRITE;
         pI2C->pcData = (char*)data;
 
-        ret = ADL2_Display_WriteAndReadI2C(context, PrimaryDisplay, pI2C);
+        ret = ADL2_Display_WriteAndReadI2C(context, this->adapter_index, pI2C);
     }
 
     return(ret);
@@ -290,20 +273,20 @@ bool i2c_smbus_amdadl_detect()
                     last_bus_number = current.iBusNumber;
                     i2c_smbus_amdadl * adl_bus = new i2c_smbus_amdadl(context, current.iAdapterIndex);
 
-                    if(adl_bus->pci_vendor != AMD_GPU_VEN)
+                    if(adl_bus->info.pci_vendor != AMD_GPU_VEN)
                     {
                         delete adl_bus;
                         continue;
                     }
 
-                    LOG_INFO("ADL GPU Device %04X:%04X Subsystem: %04X:%04X", adl_bus->pci_vendor, adl_bus->pci_device,adl_bus->pci_subsystem_vendor,adl_bus->pci_subsystem_device);
-                    ResourceManager::get()->RegisterI2CBus(adl_bus);
+                    LOG_INFO("ADL GPU Device %04X:%04X Subsystem: %04X:%04X", adl_bus->info.pci_vendor, adl_bus->info.pci_device, adl_bus->info.pci_subsystem_vendor, adl_bus->info.pci_subsystem_device);
+                    DetectionManager::get()->RegisterI2CBus(adl_bus);
                 }
             }
         }
     }
 
     return(true);
-}   /* DetectAMDADLI2CBusses() */
+}   /* DetectAMDADLI2CBuses() */
 
 REGISTER_I2C_BUS_DETECTOR(i2c_smbus_amdadl_detect);

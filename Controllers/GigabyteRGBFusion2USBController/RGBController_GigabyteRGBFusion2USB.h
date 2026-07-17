@@ -50,11 +50,11 @@ public:
 
     void                        SetupZones();
 
-    void                        ResizeZone(int zone, int new_size);
+    void                        DeviceConfigureZone(int zone_idx);
 
     void                        DeviceUpdateLEDs();
-    void                        UpdateZoneLEDs(int zone);
-    void                        UpdateSingleLED(int led);
+    void                        DeviceUpdateZoneLEDs(int zone);
+    void                        DeviceUpdateSingleLED(int led);
 
     void                        DeviceUpdateMode();
 
@@ -62,16 +62,25 @@ private:
     std::string                 detector_name;
 
     RGBFusion2USBController*    controller;
-    int                         device_num;
+    uint8_t                     device_num;
     RGBColor                    null_color      = 0;
+    bool                        supports_gen2   = 0;
     /*---------------------------------------------------------*\
     | The intial value of device_index should point to the      |
     |   layout for the generic_device                           |
     \*---------------------------------------------------------*/
     uint32_t                    device_index    = 0;
-
+    uint16_t                    product_id      = 0;
+    uint32_t                    effects_mask    = 0;
     void                        Init_Controller();
     int                         GetLED_Zone(int led_idx);
+
+    /*---------------------------------------------------------*\
+    | Per instance layout lookup tables.                        |
+    \*---------------------------------------------------------*/
+    gb_fusion2_device           instance_layout{};
+    gb_fusion2_layout           instance_zones{};
+    std::vector<gb_fusion2_zone*> allocated_zones;
 
     nlohmann::json              WriteCalJsonFrom(
                                     const EncodedCalibration& src);

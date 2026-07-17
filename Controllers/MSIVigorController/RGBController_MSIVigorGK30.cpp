@@ -138,6 +138,8 @@ RGBController_MSIVigorGK30::RGBController_MSIVigorGK30(MSIVigorGK30Controller* c
 
 RGBController_MSIVigorGK30::~RGBController_MSIVigorGK30()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -150,7 +152,6 @@ void RGBController_MSIVigorGK30::SetupZones()
     new_zone.leds_min   = MSI_VIGOR_GK30_LEDS_COUNT;
     new_zone.leds_max   = MSI_VIGOR_GK30_LEDS_COUNT;
     new_zone.leds_count = MSI_VIGOR_GK30_LEDS_COUNT;
-    new_zone.matrix_map = nullptr;
 
     zones.emplace_back(new_zone);
 
@@ -164,24 +165,17 @@ void RGBController_MSIVigorGK30::SetupZones()
     SetupColors();
 }
 
-void RGBController_MSIVigorGK30::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_MSIVigorGK30::DeviceUpdateLEDs()
 {
-    UpdateSingleLED(0);
+    DeviceUpdateSingleLED(0);
 }
 
-void RGBController_MSIVigorGK30::UpdateZoneLEDs(int /*zone*/)
+void RGBController_MSIVigorGK30::DeviceUpdateZoneLEDs(int /*zone*/)
 {
-    UpdateSingleLED(0);
+    DeviceUpdateSingleLED(0);
 }
 
-void RGBController_MSIVigorGK30::UpdateSingleLED(int /*led*/)
+void RGBController_MSIVigorGK30::DeviceUpdateSingleLED(int /*led*/)
 {
     const mode& active = modes[active_mode];
 

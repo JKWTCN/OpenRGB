@@ -148,6 +148,13 @@ RGBController_LaviewTechnology::RGBController_LaviewTechnology(LaviewTechnologyC
     SetupZones();
 }
 
+RGBController_LaviewTechnology::~RGBController_LaviewTechnology()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_LaviewTechnology::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -159,7 +166,6 @@ void RGBController_LaviewTechnology::SetupZones()
     new_zone.leds_min   = 1;
     new_zone.leds_max   = 1;
     new_zone.leds_count = 1;
-    new_zone.matrix_map = NULL;
     zones.push_back(new_zone);
 
     /*---------------------------------------------------------*\
@@ -172,26 +178,17 @@ void RGBController_LaviewTechnology::SetupZones()
     SetupColors();
 }
 
-RGBController_LaviewTechnology::~RGBController_LaviewTechnology()
-{
-    delete controller;
-}
-
-void RGBController_LaviewTechnology::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-}
-
 void RGBController_LaviewTechnology::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_LaviewTechnology::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LaviewTechnology::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateMode();
 }
 
-void RGBController_LaviewTechnology::UpdateSingleLED(int /*led*/)
+void RGBController_LaviewTechnology::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateMode();
 }

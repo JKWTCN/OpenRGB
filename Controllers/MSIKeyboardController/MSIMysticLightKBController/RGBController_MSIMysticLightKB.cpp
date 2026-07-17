@@ -43,15 +43,9 @@ RGBController_MSIKeyboard::RGBController_MSIKeyboard
 
 RGBController_MSIKeyboard::~RGBController_MSIKeyboard()
 {
-    delete controller;
-}
+    Shutdown();
 
-void RGBController_MSIKeyboard::ResizeZone
-(
-    int /*zone*/,
-    int /*new_size*/
-)
-{
+    delete controller;
 }
 
 void RGBController_MSIKeyboard::SetupZones()
@@ -102,11 +96,11 @@ void RGBController_MSIKeyboard::DeviceUpdateLEDs()
     controller->SetMode(msi_mode, speed1, speed2, wave_direction, zone, ck);
 }
 
-void RGBController_MSIKeyboard::UpdateZoneLEDs(int /*zone*/)
+void RGBController_MSIKeyboard::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 }
 
-void RGBController_MSIKeyboard::UpdateSingleLED(int /*led*/)
+void RGBController_MSIKeyboard::DeviceUpdateSingleLED(int /*led*/)
 {
 }
 

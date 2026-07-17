@@ -11,8 +11,9 @@
 
 #include <string>
 #include <hidapi.h>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "QMKVialRGBController.h"
+#include "ResourceManager.h"
 #include "RGBController_QMKVialRGB.h"
 #include "SettingsManager.h"
 
@@ -28,9 +29,12 @@
 #define QMK_USAGE_PAGE                          0xFF60
 #define QMK_USAGE                               0x61
 
-void DetectQMKVialRGBControllers(hid_device_info *info, const std::string&)
+DetectedControllers DetectQMKVialRGBControllers(hid_device_info *info, const std::string&)
 {
-    hid_device *dev = hid_open_path(info->path);
+    DetectedControllers detected_controllers;
+    hid_device*         dev;
+
+    dev = hid_open_path(info->path);
 
     if(dev)
     {
@@ -39,13 +43,15 @@ void DetectQMKVialRGBControllers(hid_device_info *info, const std::string&)
         if(controller->GetSupported())
         {
             RGBController_QMKVialRGB* rgb_controller = new RGBController_QMKVialRGB(controller);
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+            detected_controllers.push_back(rgb_controller);
         }
         else
         {
             delete controller;
         }
     }
+
+    return(detected_controllers);
 }
 
 void RegisterQMKVialRGBDetectors()

@@ -49,6 +49,13 @@ RGBController_LogitechG560::RGBController_LogitechG560(LogitechG560Controller* c
     SetupZones();
 }
 
+RGBController_LogitechG560::~RGBController_LogitechG560()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_LogitechG560::SetupZones()
 {
     zone G560_left_front;
@@ -57,7 +64,6 @@ void RGBController_LogitechG560::SetupZones()
     G560_left_front.leds_min        = 1;
     G560_left_front.leds_max        = 1;
     G560_left_front.leds_count      = 1;
-    G560_left_front.matrix_map      = NULL;
     zones.push_back(G560_left_front);
 
     led G560_left_front_led;
@@ -72,7 +78,6 @@ void RGBController_LogitechG560::SetupZones()
     G560_right_front.leds_min       = 1;
     G560_right_front.leds_max       = 1;
     G560_right_front.leds_count     = 1;
-    G560_right_front.matrix_map     = NULL;
     zones.push_back(G560_right_front);
 
     led G560_right_front_led;
@@ -87,7 +92,6 @@ void RGBController_LogitechG560::SetupZones()
     G560_left_rear.leds_min         = 1;
     G560_left_rear.leds_max         = 1;
     G560_left_rear.leds_count       = 1;
-    G560_left_rear.matrix_map       = NULL;
     zones.push_back(G560_left_rear);
 
     led G560_left_read_led;
@@ -102,7 +106,6 @@ void RGBController_LogitechG560::SetupZones()
     G560_right_rear.leds_min        = 1;
     G560_right_rear.leds_max        = 1;
     G560_right_rear.leds_count      = 1;
-    G560_right_rear.matrix_map      = NULL;
     zones.push_back(G560_right_rear);
 
     led G560_right_rear_led;
@@ -111,13 +114,6 @@ void RGBController_LogitechG560::SetupZones()
     leds.push_back(G560_right_rear_led);
 
     SetupColors();
-}
-
-void RGBController_LogitechG560::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_LogitechG560::DeviceUpdateLEDs()
@@ -132,12 +128,12 @@ void RGBController_LogitechG560::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_LogitechG560::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LogitechG560::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_LogitechG560::UpdateSingleLED(int /*led*/)
+void RGBController_LogitechG560::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

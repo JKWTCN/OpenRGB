@@ -9,39 +9,34 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#include "Detector.h"
-#include "DygmaRaiseController.h"
-#include "RGBController_DygmaRaise.h"
-#include "find_usb_serial_port.h"
 #include <vector>
+#include "DetectionManager.h"
+#include "DygmaRaiseController.h"
+#include "find_usb_serial_port.h"
+#include "RGBController_DygmaRaise.h"
 
 #define DYGMA_RAISE_VID 0x1209
 #define DYGMA_RAISE_PID 0x2201
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectDygmaRaiseControllers                                                            *
-*                                                                                          *
-*       Tests the USB address to see if a DygmaRaise keyboard exists there.                *
-*       Then opens a serial port to communicate with the KB                                *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectDygmaRaiseControllers()
+DetectedControllers DetectDygmaRaiseControllers()
 {
-    std::vector<std::string *> ports = find_usb_serial_port(DYGMA_RAISE_VID, DYGMA_RAISE_PID);
+    DetectedControllers         detected_controllers;
+    std::vector<std::string>    ports = find_usb_serial_port(DYGMA_RAISE_VID, DYGMA_RAISE_PID);
 
     for(std::size_t i = 0; i < ports.size(); i++)
     {
-        if(*ports[i] != "")
+        if(ports[i] != "")
         {
             DygmaRaiseController*     controller     = new DygmaRaiseController();
-            controller->Initialize((char *)ports[i]->c_str());
+            controller->Initialize((char *)ports[i].c_str());
 
             RGBController_DygmaRaise* rgb_controller = new RGBController_DygmaRaise(controller);
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+            detected_controllers.push_back(rgb_controller);
         }
     }
+
+    return(detected_controllers);
 }
 
 REGISTER_DETECTOR("Dygma Raise", DetectDygmaRaiseControllers);

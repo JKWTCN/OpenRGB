@@ -11,8 +11,8 @@
 
 #include "RGBController_ENESMBus.h"
 #include "LogManager.h"
-#include "SettingsManager.h"
 #include "ResourceManager.h"
+#include "SettingsManager.h"
 
 /**------------------------------------------------------------------*\
     @name ENE SMBus Device
@@ -191,6 +191,8 @@ RGBController_ENESMBus::RGBController_ENESMBus(ENESMBusController * controller_p
 
 RGBController_ENESMBus::~RGBController_ENESMBus()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -289,7 +291,7 @@ int RGBController_ENESMBus::GetDeviceMode()
 
 void RGBController_ENESMBus::DeviceUpdateLEDs()
 {
-    if(GetMode() == 0)
+    if(GetActiveMode() == 0)
     {
         controller->SetAllColorsDirect(&colors[0]);
     }
@@ -300,7 +302,7 @@ void RGBController_ENESMBus::DeviceUpdateLEDs()
 
 }
 
-void RGBController_ENESMBus::UpdateZoneLEDs(int zone)
+void RGBController_ENESMBus::DeviceUpdateZoneLEDs(int zone)
 {
     for(std::size_t led_idx = 0; led_idx < zones[zone].leds_count; led_idx++)
     {
@@ -310,7 +312,7 @@ void RGBController_ENESMBus::UpdateZoneLEDs(int zone)
         unsigned char grn   = RGBGetGValue(color);
         unsigned char blu   = RGBGetBValue(color);
 
-        if(GetMode() == 0)
+        if(GetActiveMode() == 0)
         {
             controller->SetLEDColorDirect(led, red, grn, blu);
         }
@@ -321,14 +323,14 @@ void RGBController_ENESMBus::UpdateZoneLEDs(int zone)
     }
 }
 
-void RGBController_ENESMBus::UpdateSingleLED(int led)
+void RGBController_ENESMBus::DeviceUpdateSingleLED(int led)
 {
     RGBColor color    = colors[led];
     unsigned char red = RGBGetRValue(color);
     unsigned char grn = RGBGetGValue(color);
     unsigned char blu = RGBGetBValue(color);
 
-    if(GetMode() == 0)
+    if(GetActiveMode() == 0)
     {
         controller->SetLEDColorDirect(led, red, grn, blu);
     }
@@ -418,8 +420,6 @@ void RGBController_ENESMBus::SetupZones()
         {
             zones[zone_idx].type    = ZONE_TYPE_SINGLE;
         }
-
-        zones[zone_idx].matrix_map  = NULL;
     }
 
     /*---------------------------------------------------------*\
@@ -443,13 +443,6 @@ void RGBController_ENESMBus::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_ENESMBus::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_ENESMBus::DeviceUpdateMode()

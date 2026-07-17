@@ -9,22 +9,17 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#include "Detector.h"
-#include "SeagateController.h"
+#include "DetectionManager.h"
 #include "RGBController_Seagate.h"
+#include "SeagateController.h"
 #include "scsiapi.h"
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectSeagateControllers                                                               *
-*                                                                                          *
-*           Detects Seagate FireCuda HDD devices                                           *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectSeagateControllers()
+DetectedControllers DetectSeagateControllers()
 {
-    scsi_device_info * info = scsi_enumerate(NULL, NULL);
+    DetectedControllers detected_controllers;
+    scsi_device_info *  info;
+
+    info = scsi_enumerate(NULL, NULL);
 
     while(info)
     {
@@ -37,7 +32,7 @@ void DetectSeagateControllers()
                 SeagateController*     controller     = new SeagateController(dev, info->path);
                 RGBController_Seagate* rgb_controller = new RGBController_Seagate(controller);
 
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+                detected_controllers.push_back(rgb_controller);
             }
         }
         info = info->next;
@@ -45,6 +40,7 @@ void DetectSeagateControllers()
 
     scsi_free_enumeration(info);
 
-}   /* DetectSeagateControllers() */
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("Seagate Firecuda HDD", DetectSeagateControllers);

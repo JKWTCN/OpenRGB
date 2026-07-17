@@ -18,13 +18,13 @@ class RGBController_LianLiUniversalScreen : public RGBController
 {
 public:
     RGBController_LianLiUniversalScreen(LianLiUniversalScreenController* controller_ptr);
+    ~RGBController_LianLiUniversalScreen();
 
     void SetupZones();
-    void ResizeZone(int zone, int new_size);
 
     void DeviceUpdateLEDs();
-    void UpdateZoneLEDs(int zone);
-    void UpdateSingleLED(int led);
+    void DeviceUpdateZoneLEDs(int zone);
+    void DeviceUpdateSingleLED(int led);
 
     void DeviceUpdateMode();
 

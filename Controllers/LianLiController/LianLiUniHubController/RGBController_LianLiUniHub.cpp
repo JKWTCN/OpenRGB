@@ -212,7 +212,14 @@ RGBController_LianLiUniHub::RGBController_LianLiUniHub(LianLiUniHubController* c
     Rgbh.color_mode = MODE_COLORS_NONE;
     modes.push_back(Rgbh);
 
-    RGBController_LianLiUniHub::SetupZones();
+    SetupZones();
+}
+
+RGBController_LianLiUniHub::~RGBController_LianLiUniHub()
+{
+    Shutdown();
+
+    delete controller;
 }
 
 void RGBController_LianLiUniHub::SetupZones()
@@ -237,52 +244,60 @@ void RGBController_LianLiUniHub::SetupZones()
     /*-------------------------------------------------*\
     | Set zones and leds                                |
     \*-------------------------------------------------*/
-    int addressableCounter = 1;
-    for(unsigned int channel_idx = 0; channel_idx < zones.size(); channel_idx++)
+    for(std::size_t channel_idx = 0; channel_idx < zones.size(); channel_idx++)
     {
-        zones[channel_idx].name       = "Channel ";
-        zones[channel_idx].name.append(std::to_string(addressableCounter));
-
-        addressableCounter++;
-
-        zones[channel_idx].type       = ZONE_TYPE_LINEAR;
-
-        zones[channel_idx].leds_min   = 0;
-        zones[channel_idx].leds_max   = UNIHUB_CHANLED_COUNT;
+        zones[channel_idx].leds_min                 = 0;
+        zones[channel_idx].leds_max                 = UNIHUB_CHANLED_COUNT;
 
         if(first_run)
         {
-            zones[channel_idx].leds_count = zones[channel_idx].leds_min;
+            zones[channel_idx].flags                = ZONE_FLAG_MANUALLY_CONFIGURABLE_SIZE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_MATRIX_MAP
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_SEGMENTS;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_NAME))
+        {
+            zones[channel_idx].name                 = "Channel ";
+            zones[channel_idx].name.append(std::to_string(channel_idx + 1));
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_SIZE))
+        {
+            zones[channel_idx].leds_count           = 0;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE))
+        {
+            zones[channel_idx].type                 = ZONE_TYPE_LINEAR;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_MATRIX_MAP))
+        {
+            zones[channel_idx].matrix_map.width     = 0;
+            zones[channel_idx].matrix_map.height    = 0;
+            zones[channel_idx].matrix_map.map.resize(0);
         }
 
         for(unsigned int led_ch_idx = 0; led_ch_idx < zones[channel_idx].leds_count; led_ch_idx++)
         {
             led new_led;
-            new_led.name = zones[channel_idx].name;
-            new_led.name.append(", LED ");
-            new_led.name.append(std::to_string(led_ch_idx + 1));
-            new_led.value = channel_idx;
+            new_led.name    = zones[channel_idx].name + ", LED " + std::to_string(led_ch_idx + 1);
+            new_led.value   = (unsigned int)channel_idx;
 
             leds.push_back(new_led);
         }
-
-        zones[channel_idx].matrix_map = NULL;
     }
 
     SetupColors();
 }
 
-void RGBController_LianLiUniHub::ResizeZone(int zone, int new_size)
+void RGBController_LianLiUniHub::DeviceConfigureZone(int zone_idx)
 {
-    if((size_t) zone >= zones.size())
+    if((size_t)zone_idx < zones.size())
     {
-        return;
-    }
-
-    if(((unsigned int)new_size >= zones[zone].leds_min) && ((unsigned int)new_size <= zones[zone].leds_max))
-    {
-        zones[zone].leds_count = new_size;
-
         SetupZones();
     }
 }
@@ -303,7 +318,7 @@ void RGBController_LianLiUniHub::DeviceUpdateLEDs()
     controller->Synchronize();
 }
 
-void RGBController_LianLiUniHub::UpdateZoneLEDs(int zone)
+void RGBController_LianLiUniHub::DeviceUpdateZoneLEDs(int zone)
 {
     if(!initializedMode)
     {
@@ -318,7 +333,7 @@ void RGBController_LianLiUniHub::UpdateZoneLEDs(int zone)
     controller->Synchronize();
 }
 
-void RGBController_LianLiUniHub::UpdateSingleLED(int led)
+void RGBController_LianLiUniHub::DeviceUpdateSingleLED(int led)
 {
     if(!initializedMode)
     {

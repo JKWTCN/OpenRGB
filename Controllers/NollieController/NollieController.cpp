@@ -22,6 +22,21 @@ NollieController::NollieController(hid_device* dev_handle, const char* path, uns
     name        = dev_name;
     usb_vid     = vid;
     usb_pid     = pid;
+
+    /*-----------------------------------------------------*\
+    | Loop through all known devices to look for a PID      |
+    | match                                                 |
+    \*-----------------------------------------------------*/
+    for(unsigned int i = 0; i < NOLLIE_NUM_DEVICES; i++)
+    {
+        if((nollie_device_list[i]->vid == vid) && (nollie_device_list[i]->pid == pid))
+        {
+            /*---------------------------------------------*\
+            | Set device index                              |
+            \*---------------------------------------------*/
+            device_index = i;
+        }
+    }
 }
 
 std::string NollieController::GetLocationString()
@@ -57,7 +72,46 @@ unsigned short NollieController::GetUSBVID()
     return(usb_vid);
 }
 
-void NollieController::InitChLEDs(int *led_num_list,int ch_num)
+unsigned short NollieController::GetNumChannels()
+{
+    return(nollie_device_list[device_index]->channels);
+}
+
+unsigned short NollieController::GetLEDsPerChannel()
+{
+    return(nollie_device_list[device_index]->leds_per_channel);
+}
+
+const int* NollieController::GetChannelIndex()
+{
+    return(nollie_device_list[device_index]->channel_index);
+}
+
+std::string NollieController::GetChannelName(unsigned short channel)
+{
+    std::string channel_name;
+
+    if(channel > 27 )
+    {
+        channel_name = "Channel EXT " + std::to_string(channel + 1 - 28);
+    }
+    else if(channel > 21 )
+    {
+        channel_name = "Channel GPU " + std::to_string(channel + 1 - 22);
+    }
+    else if(channel > 15 )
+    {
+        channel_name = "Channel ATX " + std::to_string(channel + 1 - 16);
+    }
+    else
+    {
+        channel_name = "Channel " + std::to_string(channel + 1);
+    }
+
+    return(channel_name);
+}
+
+void NollieController::InitChLEDs(unsigned int *led_num_list,int ch_num)
 {
     unsigned char   usb_buf[65];
     memset(usb_buf, 0x00, sizeof(usb_buf));
@@ -82,7 +136,8 @@ void NollieController::SetMos(bool mos)
 
 void NollieController::SetChannelLEDs(unsigned char channel, RGBColor* colors, unsigned int num_colors)
 {
-   if(usb_pid == NOLLIE32_PID || usb_pid == NOLLIE16_PID || usb_pid == NOLLIE32_OS21_PID || usb_pid == NOLLIE16_OS21_PID)
+   if(usb_pid == NOLLIE32_PID || usb_pid == NOLLIE16_PID
+   || usb_pid == NOLLIE32_OS2_1_PID || usb_pid == NOLLIE16_OS2_1_PID)
    {
        SendPacket(channel,&colors[0], num_colors);
    }
@@ -162,12 +217,12 @@ void NollieController::SendPacketFS(unsigned char channel,unsigned char packet_i
             packet_interval = 2;
             break;
         case NOLLIE8_PID:
-        case NOLLIE8_OS21_PID:
-        case PRISM8_OS21_PID:
+        case NOLLIE8_OS2_1_PID:
+        case PRISM8_OS2_1_PID:
             packet_interval = 6;
             break;
         case NOLLIE1_PID:
-        case NOLLIE1_OS21_PID:
+        case NOLLIE1_OS2_1_PID:
             packet_interval = 30;
             break;
         default:
@@ -182,7 +237,8 @@ void NollieController::SendPacketFS(unsigned char channel,unsigned char packet_i
         usb_buf[0x02 + (color_idx * 3)] = RGBGetRValue(colors[color_idx]);
         usb_buf[0x03 + (color_idx * 3)] = RGBGetGValue(colors[color_idx]);
         usb_buf[0x04 + (color_idx * 3)] = RGBGetBValue(colors[color_idx]);
-        if(dev_pid == NOLLIE8_PID || dev_pid == NOLLIE1_PID || dev_pid == NOLLIE8_OS21_PID || dev_pid == PRISM8_OS21_PID || dev_pid == NOLLIE1_OS21_PID)
+        if(dev_pid == NOLLIE8_PID || dev_pid == NOLLIE1_PID
+        || dev_pid == NOLLIE8_OS2_1_PID || dev_pid == NOLLIE1_OS2_1_PID || dev_pid == PRISM8_OS2_1_PID)
         {
             usb_buf[0x02 + (color_idx * 3)] = RGBGetGValue(colors[color_idx]);
             usb_buf[0x03 + (color_idx * 3)] = RGBGetRValue(colors[color_idx]);

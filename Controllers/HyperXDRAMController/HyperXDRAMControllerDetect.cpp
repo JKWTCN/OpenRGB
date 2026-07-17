@@ -10,71 +10,33 @@
 \*---------------------------------------------------------*/
 
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "HyperXDRAMController.h"
-#include "LogManager.h"
-#include "RGBController_HyperXDRAM.h"
 #include "i2c_smbus.h"
+#include "LogManager.h"
 #include "pci_ids.h"
+#include "RGBController_HyperXDRAM.h"
 
 using namespace std::chrono_literals;
 
-/******************************************************************************************\
-*                                                                                          *
-*   TestForHyperXDRAMController                                                            *
-*                                                                                          *
-*       Tests the given address to see if a HyperX controller exists there.                *
-*                                                                                          *
-\******************************************************************************************/
 #define HYPERX_CONTROLLER_NAME "HyperX DRAM"
 
 bool TestForHyperXDRAMController(i2c_smbus_interface* bus, unsigned char address)
 {
-    bool pass = false;
+    int res = bus->i2c_smbus_read_byte(address);
 
-    int res = bus->i2c_smbus_write_quick(address, I2C_SMBUS_WRITE);
+    return(res >= 0);
+}
 
-    LOG_DEBUG("[%s] Writing at address %02X, res=%02X", HYPERX_CONTROLLER_NAME, address, res);
-
-    if (res >= 0)
-    {
-        pass = true;
-
-        for (int i = 0xA0; i < 0xB0; i++)
-        {
-            res = bus->i2c_smbus_read_byte_data(address, i);
-
-            if (res != i)
-            {
-                pass = false;
-            }
-        }
-    }
-
-    return(pass);
-
-}   /* TestForHyperXDRAMController() */
-
-
-/******************************************************************************************\
-*                                                                                          *
-*   DetectHyperXDRAMControllers                                                            *
-*                                                                                          *
-*       Detect HyperX DRAM controllers on the enumerated I2C busses.                       *
-*                                                                                          *
-*           bus - pointer to i2c_smbus_interface where Aura device is connected            *
-*           slots - accessors to SPD information of the occupied slots                     *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectHyperXDRAMControllers(i2c_smbus_interface* bus, std::vector<SPDWrapper*> &slots, const std::string &/*name*/)
+DetectedControllers DetectHyperXDRAMControllers(i2c_smbus_interface* bus, std::vector<SPDWrapper*> &slots, const std::string &/*name*/)
 {
-    unsigned char slots_valid   = 0x00;
-    bool          fury_detected = false;
-    bool          pred_detected = false;
+    DetectedControllers detected_controllers;
+    bool                fury_detected = false;
+    bool                pred_detected = false;
+    unsigned char       slots_valid   = 0x00;
 
     // Check for HyperX controller at 0x27
-    LOG_DEBUG("[%s] Testing bus %d at address 0x27", HYPERX_CONTROLLER_NAME, bus->port_id);
+    LOG_DEBUG("[%s] Testing bus %d at address 0x27", HYPERX_CONTROLLER_NAME, bus->info.port_id);
 
     if(TestForHyperXDRAMController(bus, 0x27))
     {
@@ -115,9 +77,11 @@ void DetectHyperXDRAMControllers(i2c_smbus_interface* bus, std::vector<SPDWrappe
             HyperXDRAMController*     controller     = new HyperXDRAMController(bus, 0x27, slots_valid, name);
             RGBController_HyperXDRAM* rgb_controller = new RGBController_HyperXDRAM(controller);
 
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+            detected_controllers.push_back(rgb_controller);
         }
     }
-}   /* DetectHyperXDRAMControllers() */
 
-REGISTER_I2C_DIMM_DETECTOR("HyperX DRAM", DetectHyperXDRAMControllers, JEDEC_KINGSTON, SPD_DDR4_SDRAM);
+    return(detected_controllers);
+}
+
+REGISTER_I2C_DRAM_DETECTOR("HyperX DRAM", DetectHyperXDRAMControllers, JEDEC_KINGSTON, SPD_DDR4_SDRAM);

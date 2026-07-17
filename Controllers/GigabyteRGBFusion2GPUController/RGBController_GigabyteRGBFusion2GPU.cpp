@@ -156,6 +156,8 @@ RGBController_RGBFusion2GPU::RGBController_RGBFusion2GPU(RGBFusion2GPUController
 
 RGBController_RGBFusion2GPU::~RGBController_RGBFusion2GPU()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -176,7 +178,6 @@ void RGBController_RGBFusion2GPU::SetupZones()
         new_zone.leds_min      = 1;
         new_zone.leds_max      = 1;
         new_zone.leds_count    = 1;
-        new_zone.matrix_map    = NULL;
 
         new_led.name           = new_zone.name;
 
@@ -188,13 +189,6 @@ void RGBController_RGBFusion2GPU::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_RGBFusion2GPU::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_RGBFusion2GPU::DeviceUpdateLEDs()
@@ -222,13 +216,13 @@ void RGBController_RGBFusion2GPU::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_RGBFusion2GPU::UpdateZoneLEDs(int zone)
+void RGBController_RGBFusion2GPU::DeviceUpdateZoneLEDs(int zone)
 {
     LOG_TRACE("[%s] Update zone #%d", name.c_str(), zone);
     DeviceUpdateLEDs();
 }
 
-void RGBController_RGBFusion2GPU::UpdateSingleLED(int led)
+void RGBController_RGBFusion2GPU::DeviceUpdateSingleLED(int led)
 {
     LOG_TRACE("[%s] Update single led : %d", name.c_str(), led);
     DeviceUpdateLEDs();

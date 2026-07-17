@@ -20,13 +20,14 @@ class RGBController_LianLiUniHub : public RGBController
 {
 public:
     RGBController_LianLiUniHub(LianLiUniHubController* controller_ptr);
+    ~RGBController_LianLiUniHub();
 
     void SetupZones();
-    void ResizeZone(int zone, int new_size);
+    void DeviceConfigureZone(int zone_idx);
 
     void DeviceUpdateLEDs();
-    void UpdateZoneLEDs(int zone);
-    void UpdateSingleLED(int led);
+    void DeviceUpdateZoneLEDs(int zone);
+    void DeviceUpdateSingleLED(int led);
 
     void DeviceUpdateMode();
 

@@ -19,8 +19,10 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+#include <cctype>
 #include <codecvt>
 #include <locale>
+#include <regex>
 #include <string>
 #include "StringUtils.h"
 
@@ -71,6 +73,16 @@ const char* StringUtils::wchar_to_char(const wchar_t* pwchar)
     return(filePathC);
 }
 
+std::string StringUtils::wchar_to_string(const wchar_t* pwchar)
+{
+    if(pwchar == nullptr)
+    {
+        return std::string();
+    }
+
+    return wstring_to_string(std::wstring(pwchar));
+}
+
 std::string StringUtils::wstring_to_string(const std::wstring wstring)
 {
     std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
@@ -93,4 +105,55 @@ const std::string StringUtils::remove_null_terminating_chars(std::string input)
     }
 
     return(input);
+}
+
+std::string StringUtils::u32int_to_hexString(unsigned int value)
+{
+    char hex_str[20] = {0};
+    snprintf(hex_str, sizeof(hex_str), "%X", value);
+    return std::string(hex_str);
+}
+
+std::string StringUtils::make_filename(std::string input)
+{
+    /*-----------------------------------------------------*\
+    | Replace : characters with - characters                |
+    \*-----------------------------------------------------*/
+    input = std::regex_replace(input, std::regex(":"), "-");
+
+    /*-----------------------------------------------------*\
+    | Remove all other characters                           |
+    \*-----------------------------------------------------*/
+    input = std::regex_replace(input, std::regex("[#%&\\{\\}\\\\<>\\*\\?/!`';@+|=]"), "");
+
+    /*-----------------------------------------------------*\
+    | Remove leading . characters                           |
+    \*-----------------------------------------------------*/
+    input = std::regex_replace(input, std::regex("^\\.+"), "");
+
+    /*-----------------------------------------------------*\
+    | Remove control characters                             |
+    \*-----------------------------------------------------*/
+    input = std::regex_replace(input, std::regex("[\\x00-\\x1F\\x7F]"), "");
+
+    /*-----------------------------------------------------*\
+    | Return complete string                                |
+    \*-----------------------------------------------------*/
+    return(input);
+}
+
+std::string StringUtils::normalize_hex_id(const std::string& id)
+{
+    std::string out;
+    out.reserve(id.size());
+
+    for(char c : id)
+    {
+        if(c != '-')
+        {
+            out += (char)tolower((unsigned char)c);
+        }
+    }
+
+    return out;
 }

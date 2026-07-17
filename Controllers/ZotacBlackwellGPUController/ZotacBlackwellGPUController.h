@@ -47,12 +47,9 @@
 #define ZOTAC_BLACKWELL_GPU_REG_COMMIT          0x17
 
 /*---------------------------------------------------------*\
-| Zone indices                                              |
+| Version register (returns 32-byte ASCII version string)   |
 \*---------------------------------------------------------*/
-#define ZOTAC_BLACKWELL_GPU_ZONE_LOGO           0x00
-#define ZOTAC_BLACKWELL_GPU_ZONE_SIDEBAR        0x01
-#define ZOTAC_BLACKWELL_GPU_ZONE_INFINITY       0x02
-#define ZOTAC_BLACKWELL_GPU_NUM_ZONES           3
+#define ZOTAC_BLACKWELL_GPU_REG_VERSION         0xF0
 
 /*---------------------------------------------------------*\
 | Mode values (from Firestorm V5.0.0.012E reverse eng.)     |

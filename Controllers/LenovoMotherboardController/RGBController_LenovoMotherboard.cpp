@@ -129,6 +129,8 @@ RGBController_LenovoMotherboard::RGBController_LenovoMotherboard(LenovoMotherboa
 
 RGBController_LenovoMotherboard::~RGBController_LenovoMotherboard()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -141,7 +143,6 @@ void RGBController_LenovoMotherboard::SetupZones()
     cpu_fan_zone.leds_min   = 1;
     cpu_fan_zone.leds_max   = 1;
     cpu_fan_zone.leds_count = 1;
-    cpu_fan_zone.matrix_map = nullptr;
 
     zones.emplace_back(cpu_fan_zone);
 
@@ -152,7 +153,6 @@ void RGBController_LenovoMotherboard::SetupZones()
     rear_fan_zone.leds_min   = 1;
     rear_fan_zone.leds_max   = 1;
     rear_fan_zone.leds_count = 1;
-    rear_fan_zone.matrix_map = nullptr;
 
     zones.emplace_back(rear_fan_zone);
 
@@ -165,13 +165,6 @@ void RGBController_LenovoMotherboard::SetupZones()
     leds[1].value = LENOVO_MB_ZONE_2_VALUE;
 
     SetupColors();
-}
-
-void RGBController_LenovoMotherboard::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_LenovoMotherboard::DeviceUpdateLEDs()
@@ -188,12 +181,12 @@ void RGBController_LenovoMotherboard::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_LenovoMotherboard::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LenovoMotherboard::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_LenovoMotherboard::UpdateSingleLED(int /*led*/)
+void RGBController_LenovoMotherboard::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

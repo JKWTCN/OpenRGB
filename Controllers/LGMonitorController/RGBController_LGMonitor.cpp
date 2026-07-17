@@ -91,6 +91,8 @@ RGBController_LGMonitor::RGBController_LGMonitor(LGMonitorController* controller
 
 RGBController_LGMonitor::~RGBController_LGMonitor()
 {
+    Shutdown();
+
     keepalive_thread_run = 0;
     keepalive_thread->join();
     delete keepalive_thread;
@@ -107,7 +109,6 @@ void RGBController_LGMonitor::SetupZones()
     new_zone.leds_min   = 48;
     new_zone.leds_max   = 48;
     new_zone.leds_count = 48;
-    new_zone.matrix_map = nullptr;
 
     zones.emplace_back(new_zone);
 
@@ -121,25 +122,18 @@ void RGBController_LGMonitor::SetupZones()
     SetupColors();
 }
 
-void RGBController_LGMonitor::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_LGMonitor::DeviceUpdateLEDs()
 {
     last_update_time = std::chrono::steady_clock::now();
     controller->SetDirect(colors);
 }
 
-void RGBController_LGMonitor::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LGMonitor::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_LGMonitor::UpdateSingleLED(int /*led*/)
+void RGBController_LGMonitor::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -155,7 +149,7 @@ void RGBController_LGMonitor::KeepaliveThread()
     {
         if((modes[active_mode].value == LG_MONITOR_DIRECT_MODE_VALUE) && (std::chrono::steady_clock::now() - last_update_time) > std::chrono::milliseconds(500))
         {
-            UpdateLEDs();
+            UpdateLEDsInternal();
         }
 
         std::this_thread::sleep_for(15ms);

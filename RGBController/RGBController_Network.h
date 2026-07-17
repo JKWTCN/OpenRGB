@@ -19,24 +19,48 @@ class RGBController_Network : public RGBController
 {
 public:
     RGBController_Network(NetworkClient * client_ptr, unsigned int dev_idx_val);
+    ~RGBController_Network();
 
-    void        SetupZones();
+    unsigned int    GetID();
 
-    void        ClearSegments(int zone);
-    void        AddSegment(int zone, segment new_segment);
-    void        ResizeZone(int zone, int new_size);
+    void            SetHidden(bool hidden);
 
-    void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void            ClearSegments(int zone);
+    void            AddSegment(int zone, segment new_segment);
 
-    void        SetCustomMode();
-    void        DeviceUpdateMode();
-    void        DeviceSaveMode();
+    void            ConfigureZone(int zone_idx, zone new_zone);
+    void            ResizeZone(int zone, int new_size);
 
-    void        UpdateLEDs();
+    void            ConfigureDevice(controller_flags new_flags, std::string new_name);
+
+    void            DeviceUpdateLEDs();
+    void            DeviceUpdateZoneLEDs(int zone);
+    void            DeviceUpdateSingleLED(int led);
+
+    void            SetCustomMode();
+
+    void            SetDeviceSpecificConfiguration(nlohmann::json configuration_json);
+    void            SetDeviceSpecificZoneConfiguration(int zone, nlohmann::json configuration_json);
+
+    void            UpdateLEDs();
+    void            UpdateZoneLEDs(int zone);
+    void            UpdateSingleLED(int led);
+
+    void            UpdateMode();
+    void            UpdateZoneMode(int zone);
+    void            SaveMode();
+
+    void            DeviceUpdateMode();
+    void            DeviceUpdateZoneMode(int zone);
+    void            DeviceSaveMode();
 
 private:
-    NetworkClient *     client;
-    unsigned int        dev_idx;
+    NetworkClient * client;
+    unsigned int    dev_id;
+
+    unsigned char * CreateUpdateLEDsPacket(unsigned int protocol_version);
+    unsigned char * CreateUpdateModePacket(int mode_idx, unsigned int* size, unsigned int protocol_version);
+    unsigned char * CreateUpdateSingleLEDPacket(int led);
+    unsigned char * CreateUpdateZoneLEDsPacket(int zone);
+    unsigned char * CreateUpdateZoneModePacket(int zone_idx, int mode_idx, unsigned int* size, unsigned int protocol_version);
 };

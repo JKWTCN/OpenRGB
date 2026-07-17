@@ -13,20 +13,6 @@
 #include <string>
 #include "RGBController_LianLiUniHubAL.h"
 
-//0xFFFFFFFF indicates an unused entry in matrix
-#define NA  0xFFFFFFFF
-
-static unsigned int matrix_map[8][35] =
-    { {  NA,  NA,  10,  NA,  NA,  11,  NA,  NA,  NA,  NA,  NA,  30,  NA,  NA,  31,  NA,  NA,  NA,  NA,  NA,  50,  NA,  NA,  51,  NA,  NA,  NA,  NA,  NA,  70,  NA,  NA,  71,  NA,  NA},
-      {  NA,   9,  NA,  NA,  NA,  NA,  12,  NA,  NA,  NA,  29,  NA,  NA,  NA,  NA,  32,  NA,  NA,  NA,  49,  NA,  NA,  NA,  NA,  52,  NA,  NA,  NA,  69,  NA,  NA,  NA,  NA,  72,  NA},
-      {   8,  NA,  NA,   1,   2,  NA,  NA,  13,  NA,  28,  NA,  NA,  21,  22,  NA,  NA,  33,  NA,  48,  NA,  NA,  41,  42,  NA,  NA,  53,  NA,  68,  NA,  NA,  61,  62,  NA,  NA,  73},
-      {  NA,  NA,   0,  NA,  NA,   3,  NA,  NA,  NA,  NA,  NA,  20,  NA,  NA,  23,  NA,  NA,  NA,  NA,  NA,  40,  NA,  NA,  43,  NA,  NA,  NA,  NA,  NA,  60,  NA,  NA,  63,  NA,  NA},
-      {  NA,  NA,   7,  NA,  NA,   4,  NA,  NA,  NA,  NA,  NA,  27,  NA,  NA,  24,  NA,  NA,  NA,  NA,  NA,  47,  NA,  NA,  44,  NA,  NA,  NA,  NA,  NA,  67,  NA,  NA,  64,  NA,  NA},
-      {  19,  NA,  NA,   6,   5,  NA,  NA,  14,  NA,  39,  NA,  NA,  26,  25,  NA,  NA,  34,  NA,  59,  NA,  NA,  46,  45,  NA,  NA,  54,  NA,  79,  NA,  NA,  66,  65,  NA,  NA,  74},
-      {  NA,  18,  NA,  NA,  NA,  NA,  15,  NA,  NA,  NA,  38,  NA,  NA,  NA,  NA,  35,  NA,  NA,  NA,  58,  NA,  NA,  NA,  NA,  55,  NA,  NA,  NA,  78,  NA,  NA,  NA,  NA,  75,  NA},
-      {  NA,  NA,  17,  NA,  NA,  16,  NA,  NA,  NA,  NA,  NA,  37,  NA,  NA,  36,  NA,  NA,  NA,  NA,  NA,  57,  NA,  NA,  56,  NA,  NA,  NA,  NA,  NA,  77,  NA,  NA,  76,  NA,  NA}
-    };
-
 /**------------------------------------------------------------------*\
     @name Lian Li Uni Hub AL
     @type USB
@@ -48,7 +34,6 @@ RGBController_LianLiUniHubAL::RGBController_LianLiUniHubAL(LianLiUniHubALControl
     version     = controller->GetFirmwareVersionString();
     location    = controller->GetDeviceLocation();
     serial      = controller->GetSerialString();
-
 
     initializedMode = false;
 
@@ -350,21 +335,12 @@ RGBController_LianLiUniHubAL::RGBController_LianLiUniHubAL(LianLiUniHubALControl
     Contest.colors.resize(3);
     modes.push_back(Contest);
 
-    RGBController_LianLiUniHubAL::SetupZones();
+    SetupZones();
 }
 
 RGBController_LianLiUniHubAL::~RGBController_LianLiUniHubAL()
 {
-    /*---------------------------------------------------------*\
-    | Delete the matrix map                                     |
-    \*---------------------------------------------------------*/
-    for(unsigned int zone_index = 0; zone_index < zones.size(); zone_index++)
-    {
-        if(zones[zone_index].matrix_map != NULL)
-        {
-            delete zones[zone_index].matrix_map;
-        }
-    }
+    Shutdown();
 
     delete controller;
 }
@@ -379,7 +355,6 @@ void RGBController_LianLiUniHubAL::SetupZones()
     if(zones.size() == 0)
     {
         first_run = true;
-        zones.resize(UNIHUB_AL_CHANNEL_COUNT);
     }
 
     /*-------------------------------------------------*\
@@ -387,73 +362,71 @@ void RGBController_LianLiUniHubAL::SetupZones()
     \*-------------------------------------------------*/
     leds.clear();
     colors.clear();
+    zones.resize(UNIHUB_AL_CHANNEL_COUNT);
 
     /*-------------------------------------------------*\
     | Set zones and leds                                |
     \*-------------------------------------------------*/
-    for(unsigned int channel_idx = 0; channel_idx < zones.size(); channel_idx++)
+    for(std::size_t channel_idx = 0; channel_idx < zones.size(); channel_idx++)
     {
-        zones[channel_idx].name                 = "Channel ";
-        zones[channel_idx].name.append(std::to_string(channel_idx + 1));
-
-        // Note:    Matrix types won't get loaded from the sizes.ors as the default zone type in this RGBController is ZONE_TYPE_LINEAR
-        //          This will require augmentation on the ProfileManager.cpp to be able to override zone types but this is probably not wanted in general
-        if (zones[channel_idx].leds_count == 60 || zones[channel_idx].leds_count == 40 || zones[channel_idx].leds_count == 20 || zones[channel_idx].leds_count == 80) // Assume they're AL120 Fans
-        {
-            zones[channel_idx].type                 = ZONE_TYPE_MATRIX;
-            zones[channel_idx].leds_min             = 0;
-            zones[channel_idx].leds_max             = UNIHUB_AL_CHAN_LED_COUNT;
-            zones[channel_idx].matrix_map           = new matrix_map_type;
-            zones[channel_idx].matrix_map->height   = 8;
-            zones[channel_idx].matrix_map->width    = 35;
-            zones[channel_idx].matrix_map->map      = (unsigned int *)&matrix_map;
-        }
-        else   // Treat as regular LED strip
-        {
-            zones[channel_idx].type                 = ZONE_TYPE_LINEAR;
-            zones[channel_idx].leds_min             = 0;
-            zones[channel_idx].leds_max             = UNIHUB_AL_CHAN_LED_COUNT;
-        }
+        zones[channel_idx].leds_min                 = 0;
+        zones[channel_idx].leds_max                 = UNIHUB_AL_CHAN_LED_COUNT;
 
         if(first_run)
         {
-            zones[channel_idx].leds_count = zones[channel_idx].leds_min;
+            zones[channel_idx].flags                = ZONE_FLAG_MANUALLY_CONFIGURABLE_SIZE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_MATRIX_MAP
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_SEGMENTS;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_NAME))
+        {
+            zones[channel_idx].name                 = "Channel ";
+            zones[channel_idx].name.append(std::to_string(channel_idx + 1));
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_SIZE))
+        {
+            zones[channel_idx].leds_count           = 0;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE))
+        {
+            zones[channel_idx].type                 = ZONE_TYPE_LINEAR;
+        }
+
+        if(!(zones[channel_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_MATRIX_MAP))
+        {
+            zones[channel_idx].matrix_map.width     = 0;
+            zones[channel_idx].matrix_map.height    = 0;
+            zones[channel_idx].matrix_map.map.resize(0);
         }
 
         for(unsigned int led_ch_idx = 0; led_ch_idx < zones[channel_idx].leds_count; led_ch_idx++)
         {
             led new_led;
-            new_led.name = zones[channel_idx].name;
-            new_led.name.append(", LED ");
-            new_led.name.append(std::to_string(led_ch_idx + 1));
-            new_led.value = channel_idx;
+            new_led.name    = zones[channel_idx].name + ", LED " + std::to_string(led_ch_idx + 1);
+            new_led.value   = (unsigned int)channel_idx;
 
             leds.push_back(new_led);
         }
-
     }
 
     SetupColors();
 }
 
-void RGBController_LianLiUniHubAL::ResizeZone(int zone, int new_size)
+void RGBController_LianLiUniHubAL::DeviceConfigureZone(int zone_idx)
 {
-    if((size_t) zone >= zones.size())
+    if((size_t)zone_idx < zones.size())
     {
-        return;
-    }
-
-    if(((unsigned int)new_size >= zones[zone].leds_min) && ((unsigned int)new_size <= zones[zone].leds_max))
-    {
-        zones[zone].leds_count = new_size;
-
         SetupZones();
     }
 }
 
 void RGBController_LianLiUniHubAL::DeviceUpdateLEDs()
 {
-
     if(!initializedMode)
     {
         DeviceUpdateMode();
@@ -467,7 +440,7 @@ void RGBController_LianLiUniHubAL::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_LianLiUniHubAL::UpdateZoneLEDs(int zone)
+void RGBController_LianLiUniHubAL::DeviceUpdateZoneLEDs(int zone)
 {
     if(!initializedMode)
     {
@@ -479,10 +452,9 @@ void RGBController_LianLiUniHubAL::UpdateZoneLEDs(int zone)
     controller->SetChannelLEDs(zone, zones[zone].colors, zones[zone].leds_count, brightness_scale);
 }
 
-void RGBController_LianLiUniHubAL::UpdateSingleLED(int /* led */)
+void RGBController_LianLiUniHubAL::DeviceUpdateSingleLED(int /* led */)
 {
     DeviceUpdateMode();
-
 }
 
 void RGBController_LianLiUniHubAL::DeviceUpdateMode()
@@ -500,7 +472,6 @@ void RGBController_LianLiUniHubAL::DeviceUpdateMode()
     /*-----------------------------------------------------*\
     | Check modes that requires updating both arrays        |
     \*-----------------------------------------------------*/
-
     switch(modes[active_mode].value)
     {
         case UNIHUB_AL_LED_MODE_STATIC_COLOR:

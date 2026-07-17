@@ -9,8 +9,8 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#include "RGBController_PhilipsHueEntertainment.h"
 #include "ResourceManager.h"
+#include "RGBController_PhilipsHueEntertainment.h"
 
 using namespace std::chrono_literals;
 
@@ -69,6 +69,13 @@ RGBController_PhilipsHueEntertainment::RGBController_PhilipsHueEntertainment(Phi
     KeepaliveThread = new std::thread(&RGBController_PhilipsHueEntertainment::KeepaliveThreadFunction, this);
 }
 
+RGBController_PhilipsHueEntertainment::~RGBController_PhilipsHueEntertainment()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_PhilipsHueEntertainment::SetupZones()
 {
     zone led_zone;
@@ -77,7 +84,6 @@ void RGBController_PhilipsHueEntertainment::SetupZones()
     led_zone.leds_min   = controller->GetNumLEDs();
     led_zone.leds_max   = controller->GetNumLEDs();
     led_zone.leds_count = controller->GetNumLEDs();
-    led_zone.matrix_map = NULL;
     zones.push_back(led_zone);
 
     for(unsigned int led_idx = 0; led_idx < controller->GetNumLEDs(); led_idx++)
@@ -91,13 +97,6 @@ void RGBController_PhilipsHueEntertainment::SetupZones()
     SetupColors();
 }
 
-void RGBController_PhilipsHueEntertainment::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_PhilipsHueEntertainment::DeviceUpdateLEDs()
 {
     last_update_time = std::chrono::steady_clock::now();
@@ -108,12 +107,12 @@ void RGBController_PhilipsHueEntertainment::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_PhilipsHueEntertainment::UpdateZoneLEDs(int /*zone*/)
+void RGBController_PhilipsHueEntertainment::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_PhilipsHueEntertainment::UpdateSingleLED(int /*led*/)
+void RGBController_PhilipsHueEntertainment::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -126,9 +125,9 @@ void RGBController_PhilipsHueEntertainment::DeviceUpdateMode()
 
         for(unsigned int controller_idx = 0; controller_idx < rgb_controllers.size(); controller_idx++)
         {
-            if(rgb_controllers[controller_idx] != this && rgb_controllers[controller_idx]->GetDescription() == "Philips Hue Entertainment Mode Device" && rgb_controllers[controller_idx]->active_mode == 0)
+            if(rgb_controllers[controller_idx] != this && rgb_controllers[controller_idx]->GetDescription() == "Philips Hue Entertainment Mode Device" && rgb_controllers[controller_idx]->GetActiveMode() == 0)
             {
-                rgb_controllers[controller_idx]->SetMode(1);
+                rgb_controllers[controller_idx]->SetActiveMode(1);
             }
         }
 
@@ -148,7 +147,7 @@ void RGBController_PhilipsHueEntertainment::KeepaliveThreadFunction()
         {
             if((std::chrono::steady_clock::now() - last_update_time) > std::chrono::seconds(5))
             {
-                UpdateLEDs();
+                UpdateLEDsInternal();
             }
         }
         std::this_thread::sleep_for(1s);

@@ -34,15 +34,19 @@
 
 RGBController_Dummy::RGBController_Dummy()
 {
+    /*-----------------------------------------------------*\
+    | Dummy controller doesn't actually use its background  |
+    | thread, so shut it down immediately to save resources |
+    \*-----------------------------------------------------*/
+    Shutdown();
+    AccessMutex.unlock();
+}
 
+RGBController_Dummy::~RGBController_Dummy()
+{
 }
 
 void RGBController_Dummy::SetupZones()
-{
-
-}
-
-void RGBController_Dummy::ResizeZone(int /*zone*/, int /*new_size*/)
 {
 
 }
@@ -52,17 +56,12 @@ void RGBController_Dummy::DeviceUpdateLEDs()
 
 }
 
-void RGBController_Dummy::UpdateZoneLEDs(int /*zone*/)
+void RGBController_Dummy::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 
 }
 
-void RGBController_Dummy::UpdateSingleLED(int /*led*/)
-{
-
-}
-
-void RGBController_Dummy::SetCustomMode()
+void RGBController_Dummy::DeviceUpdateSingleLED(int /*led*/)
 {
 
 }

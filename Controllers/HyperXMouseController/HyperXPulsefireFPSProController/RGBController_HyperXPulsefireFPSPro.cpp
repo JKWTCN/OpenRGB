@@ -56,6 +56,8 @@ RGBController_HyperXPulsefireFPSPro::RGBController_HyperXPulsefireFPSPro(HyperXP
 
 RGBController_HyperXPulsefireFPSPro::~RGBController_HyperXPulsefireFPSPro()
 {
+    Shutdown();
+
     keepalive_thread_run = 0;
     keepalive_thread->join();
     delete keepalive_thread;
@@ -71,7 +73,6 @@ void RGBController_HyperXPulsefireFPSPro::SetupZones()
     logo.leds_min   = 1;
     logo.leds_max   = 1;
     logo.leds_count = 1;
-    logo.matrix_map = NULL;
     zones.push_back(logo);
 
     for(unsigned int zone_idx = 0; zone_idx < zones.size(); zone_idx++)
@@ -95,13 +96,6 @@ void RGBController_HyperXPulsefireFPSPro::SetupZones()
     SetupColors();
 }
 
-void RGBController_HyperXPulsefireFPSPro::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_HyperXPulsefireFPSPro::DeviceUpdateLEDs()
 {
     last_update_time = std::chrono::steady_clock::now();
@@ -116,12 +110,12 @@ void RGBController_HyperXPulsefireFPSPro::DeviceUpdateLEDs()
 
 }
 
-void RGBController_HyperXPulsefireFPSPro::UpdateZoneLEDs(int /*zone*/)
+void RGBController_HyperXPulsefireFPSPro::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_HyperXPulsefireFPSPro::UpdateSingleLED(int /*led*/)
+void RGBController_HyperXPulsefireFPSPro::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -139,7 +133,7 @@ void RGBController_HyperXPulsefireFPSPro::KeepaliveThread()
         {
             if((std::chrono::steady_clock::now() - last_update_time) > std::chrono::milliseconds(50))
             {
-                UpdateLEDs();
+                UpdateLEDsInternal();
             }
         }
         std::this_thread::sleep_for(10ms);

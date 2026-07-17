@@ -105,6 +105,8 @@ RGBController_RobobloqLightStrip::RGBController_RobobloqLightStrip(RobobloqLight
 
 RGBController_RobobloqLightStrip::~RGBController_RobobloqLightStrip()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -142,7 +144,6 @@ void RGBController_RobobloqLightStrip::SetupZones()
         zone.leds_count         = sides[i].count;
         zone.leds_min           = zone.leds_count;
         zone.leds_max           = zone.leds_count;
-        zone.matrix_map         = NULL;
     }
 
     for(int i = 0; i < led_count; i++)
@@ -155,13 +156,6 @@ void RGBController_RobobloqLightStrip::SetupZones()
     SetupColors();
 }
 
-void RGBController_RobobloqLightStrip::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*-----------------------------------------------------*\
-    | This device does not support resizing zones           |
-    \*-----------------------------------------------------*/
-}
-
 void RGBController_RobobloqLightStrip::DeviceUpdateLEDs()
 {
     if(modes[active_mode].value == ROBOBLOQ_MODE_DIRECT)
@@ -170,12 +164,12 @@ void RGBController_RobobloqLightStrip::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_RobobloqLightStrip::UpdateZoneLEDs(int /*zone*/)
+void RGBController_RobobloqLightStrip::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_RobobloqLightStrip::UpdateSingleLED(int led)
+void RGBController_RobobloqLightStrip::DeviceUpdateSingleLED(int led)
 {
     controller->SetLEDColor(led, modes[active_mode].colors[0]);
 }

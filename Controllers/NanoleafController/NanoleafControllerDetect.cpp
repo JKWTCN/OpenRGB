@@ -9,22 +9,18 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#include "Detector.h"
+#include "DetectionManager.h"
+#include "LogManager.h"
+#include "ResourceManager.h"
 #include "RGBController_Nanoleaf.h"
 #include "SettingsManager.h"
-#include "LogManager.h"
 
-/*----------------------------------------------------------------------------------------*\
-|                                                                                          |
-|   DetectNanoleafControllers                                                              |
-|                                                                                          |
-|       Connect to paired Nanoleaf devices                                                 |
-|                                                                                          |
-\*----------------------------------------------------------------------------------------*/
-
-void DetectNanoleafControllers()
+DetectedControllers DetectNanoleafControllers()
 {
-    json nanoleaf_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("NanoleafDevices");
+    DetectedControllers detected_controllers;
+    json                nanoleaf_settings;
+
+    nanoleaf_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("NanoleafDevices");
 
     if(nanoleaf_settings.contains("devices"))
     {
@@ -37,7 +33,8 @@ void DetectNanoleafControllers()
                 try
                 {
                     RGBController_Nanoleaf* rgb_controller = new RGBController_Nanoleaf(device["ip"], device["port"], device["auth_token"]);
-                    ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                    detected_controllers.push_back(rgb_controller);
                 }
                 catch(...)
                 {
@@ -46,6 +43,8 @@ void DetectNanoleafControllers()
             }
         }
     }
-}   /* DetectNanoleafControllers() */
+
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("Nanoleaf", DetectNanoleafControllers);

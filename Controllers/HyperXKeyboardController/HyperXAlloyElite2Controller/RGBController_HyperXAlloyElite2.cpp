@@ -238,20 +238,11 @@ RGBController_HyperXAlloyElite2::RGBController_HyperXAlloyElite2(HyperXAlloyElit
 
 RGBController_HyperXAlloyElite2::~RGBController_HyperXAlloyElite2()
 {
+    Shutdown();
+
     keepalive_thread_run = false;
     keepalive_thread->join();
     delete keepalive_thread;
-
-    /*---------------------------------------------------------*\
-    | Delete the matrix map                                     |
-    \*---------------------------------------------------------*/
-    for(unsigned int zone_index = 0; zone_index < zones.size(); zone_index++)
-    {
-        if(zones[zone_index].matrix_map != nullptr)
-        {
-            delete zones[zone_index].matrix_map;
-        }
-    }
 
     delete controller;
 }
@@ -273,14 +264,7 @@ void RGBController_HyperXAlloyElite2::SetupZones()
 
         if(zone_types[zone_idx] == ZONE_TYPE_MATRIX)
         {
-            new_zone.matrix_map         = new matrix_map_type;
-            new_zone.matrix_map->height = 8;
-            new_zone.matrix_map->width  = 22;
-            new_zone.matrix_map->map    = (unsigned int *)&matrix_map;
-        }
-        else
-        {
-            new_zone.matrix_map         = nullptr;
+            new_zone.matrix_map.Set(8, 22, (unsigned int *)&matrix_map);
         }
 
         zones.push_back(new_zone);
@@ -298,13 +282,6 @@ void RGBController_HyperXAlloyElite2::SetupZones()
     SetupColors();
 }
 
-void RGBController_HyperXAlloyElite2::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_HyperXAlloyElite2::DeviceUpdateLEDs()
 {
     last_update_time = std::chrono::steady_clock::now();
@@ -315,12 +292,12 @@ void RGBController_HyperXAlloyElite2::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_HyperXAlloyElite2::UpdateZoneLEDs(int /*zone*/)
+void RGBController_HyperXAlloyElite2::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_HyperXAlloyElite2::UpdateSingleLED(int /*led*/)
+void RGBController_HyperXAlloyElite2::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -338,7 +315,7 @@ void RGBController_HyperXAlloyElite2::KeepaliveThreadFunction()
         {
             if((std::chrono::steady_clock::now() - last_update_time) > std::chrono::milliseconds(1000))
             {
-                UpdateLEDs();
+                UpdateLEDsInternal();
             }
         }
         std::this_thread::sleep_for(50ms);

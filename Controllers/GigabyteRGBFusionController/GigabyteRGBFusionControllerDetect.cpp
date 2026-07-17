@@ -11,7 +11,7 @@
 \*---------------------------------------------------------*/
 
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "GigabyteRGBFusionController.h"
 #include "LogManager.h"
 #include "RGBController_GigabyteRGBFusion.h"
@@ -21,15 +21,6 @@
 #define DETECTOR_NAME   "Gigabyte RGB Fusion SMBus"
 #define VENDOR_NAME     "Gigabyte Technology Co., Ltd."
 #define SMBUS_ADDRESS   0x28
-
-/******************************************************************************************\
-*                                                                                          *
-*   TestForGigabyteRGBFusionController                                                     *
-*                                                                                          *
-*       Tests the given address to see if an RGB Fusion controller exists there.  First    *
-*       does a quick write to test for a response                                          *
-*                                                                                          *
-\******************************************************************************************/
 
 bool TestForGigabyteRGBFusionController(i2c_smbus_interface* bus, unsigned char address)
 {
@@ -50,37 +41,29 @@ bool TestForGigabyteRGBFusionController(i2c_smbus_interface* bus, unsigned char 
     }
 
     return(pass);
+}
 
-}   /* TestForGigabyteRGBFusionController() */
-
-/******************************************************************************************\
-*                                                                                          *
-*   DetectGigabyteRGBFusionControllers                                                     *
-*                                                                                          *
-*       Detect RGB Fusion controllers on the enumerated I2C busses at address 0x28.        *
-*                                                                                          *
-*           bus - pointer to i2c_smbus_interface where RGB Fusion device is connected      *
-*           dev - I2C address of RGB Fusion device                                         *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectGigabyteRGBFusionControllers(std::vector<i2c_smbus_interface*>& busses)
+DetectedControllers DetectGigabyteRGBFusionControllers(std::vector<i2c_smbus_interface*>& buses)
 {
-    for(unsigned int bus = 0; bus < busses.size(); bus++)
+    DetectedControllers detected_controllers;
+
+    for(unsigned int bus = 0; bus < buses.size(); bus++)
     {
-        IF_MOBO_SMBUS(busses[bus]->pci_vendor, busses[bus]->pci_device)
+        IF_MOBO_SMBUS(buses[bus]->info.pci_vendor, buses[bus]->info.pci_device)
         {
-            if(busses[bus]->pci_subsystem_vendor == GIGABYTE_SUB_VEN)
+            if(buses[bus]->info.pci_subsystem_vendor == GIGABYTE_SUB_VEN)
             {
                 LOG_DEBUG(SMBUS_CHECK_DEVICE_MESSAGE_EN, DETECTOR_NAME, bus, VENDOR_NAME, SMBUS_ADDRESS);
 
-                // Check for RGB Fusion controller at 0x28
-                if(TestForGigabyteRGBFusionController(busses[bus], SMBUS_ADDRESS))
+                /*-----------------------------------------*\
+                | Check for RGB Fusion controller at 0x28   |
+                \*-----------------------------------------*/
+                if(TestForGigabyteRGBFusionController(buses[bus], SMBUS_ADDRESS))
                 {
-                    RGBFusionController*     controller     = new RGBFusionController(busses[bus], SMBUS_ADDRESS);
+                    RGBFusionController*     controller     = new RGBFusionController(buses[bus], SMBUS_ADDRESS);
                     RGBController_RGBFusion* rgb_controller = new RGBController_RGBFusion(controller);
 
-                    ResourceManager::get()->RegisterRGBController(rgb_controller);
+                    detected_controllers.push_back(rgb_controller);
                 }
             }
             else
@@ -89,6 +72,8 @@ void DetectGigabyteRGBFusionControllers(std::vector<i2c_smbus_interface*>& busse
             }
         }
     }
-}   /* DetectGigabyteRGBFusionControllers() */
+
+    return(detected_controllers);
+}
 
 REGISTER_I2C_DETECTOR("Gigabyte RGB Fusion", DetectGigabyteRGBFusionControllers);

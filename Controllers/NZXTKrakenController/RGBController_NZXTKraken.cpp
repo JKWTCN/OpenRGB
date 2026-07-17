@@ -202,6 +202,8 @@ RGBController_NZXTKraken::RGBController_NZXTKraken(NZXTKrakenController* control
 
 RGBController_NZXTKraken::~RGBController_NZXTKraken()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -216,7 +218,6 @@ void RGBController_NZXTKraken::SetupZones()
     logo_zone.leds_min      = 1;
     logo_zone.leds_max      = 1;
     logo_zone.leds_count    = 1;
-    logo_zone.matrix_map    = NULL;
     zones.push_back(logo_zone);
 
     zone ring_zone;
@@ -225,7 +226,6 @@ void RGBController_NZXTKraken::SetupZones()
     ring_zone.leds_min      = 8;
     ring_zone.leds_max      = 8;
     ring_zone.leds_count    = 8;
-    ring_zone.matrix_map    = NULL;
     zones.push_back(ring_zone);
 
     /*---------------------------------------------------------*\
@@ -243,13 +243,6 @@ void RGBController_NZXTKraken::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_NZXTKraken::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 std::vector<std::vector<RGBColor>> RGBController_NZXTKraken::GetColors(int zone, const mode& channel_mode)
@@ -331,7 +324,7 @@ void RGBController_NZXTKraken::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_NZXTKraken::UpdateZoneLEDs(int zone)
+void RGBController_NZXTKraken::DeviceUpdateZoneLEDs(int zone)
 {
     NZXTKrakenChannel_t channel;
     mode channel_mode = modes[active_mode];
@@ -350,10 +343,10 @@ void RGBController_NZXTKraken::UpdateZoneLEDs(int zone)
     UpdateChannel(channel, zone, channel_mode);
 }
 
-void RGBController_NZXTKraken::UpdateSingleLED(int led)
+void RGBController_NZXTKraken::DeviceUpdateSingleLED(int led)
 {
     int zone = (led > 0) ? 1 : 0;
-    UpdateZoneLEDs(zone);
+    DeviceUpdateZoneLEDs(zone);
 }
 
 void RGBController_NZXTKraken::DeviceUpdateMode()

@@ -218,16 +218,7 @@ RGBController_LogitechGProKeyboard::RGBController_LogitechGProKeyboard(LogitechG
 
 RGBController_LogitechGProKeyboard::~RGBController_LogitechGProKeyboard()
 {
-    /*---------------------------------------------------------*\
-    | Delete the matrix map                                     |
-    \*---------------------------------------------------------*/
-    for(unsigned int zone_index = 0; zone_index < zones.size(); zone_index++)
-    {
-        if(zones[zone_index].matrix_map != NULL)
-        {
-            delete zones[zone_index].matrix_map;
-        }
-    }
+    Shutdown();
 
     delete controller;
 }
@@ -249,14 +240,7 @@ void RGBController_LogitechGProKeyboard::SetupZones()
 
         if(zone_types[zone_idx] == ZONE_TYPE_MATRIX)
         {
-            new_zone.matrix_map         = new matrix_map_type;
-            new_zone.matrix_map->height = 7;
-            new_zone.matrix_map->width  = 19;
-            new_zone.matrix_map->map    = (unsigned int *)&matrix_map;
-        }
-        else
-        {
-            new_zone.matrix_map         = NULL;
+            new_zone.matrix_map.Set(7, 19, (unsigned int *)&matrix_map);
         }
 
         zones.push_back(new_zone);
@@ -273,13 +257,6 @@ void RGBController_LogitechGProKeyboard::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_LogitechGProKeyboard::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_LogitechGProKeyboard::DeviceUpdateLEDs()
@@ -329,12 +306,12 @@ void RGBController_LogitechGProKeyboard::DeviceUpdateLEDs()
     controller->Commit();
 }
 
-void RGBController_LogitechGProKeyboard::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LogitechGProKeyboard::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_LogitechGProKeyboard::UpdateSingleLED(int led)
+void RGBController_LogitechGProKeyboard::DeviceUpdateSingleLED(int led)
 {
     unsigned char frame[4];
     unsigned char zone;
@@ -360,7 +337,7 @@ void RGBController_LogitechGProKeyboard::DeviceUpdateMode()
     \*---------------------------------------------------------*/
     if(active_mode == 0xFFFF)
     {
-        UpdateLEDs();
+        UpdateLEDsInternal();
         return;
     }
 

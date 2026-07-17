@@ -55,27 +55,24 @@ RGBController_SteelSeriesApex::RGBController_SteelSeriesApex(SteelSeriesApexBase
 
     mode Direct;
     Direct.name         = "Direct";
-    Direct.value        = 0x00;
+    Direct.value        = APEX_MODE_DIRECT;
     Direct.flags        = MODE_FLAG_HAS_PER_LED_COLOR;
     Direct.color_mode   = MODE_COLORS_PER_LED;
     modes.push_back(Direct);
+
+    mode Onboard;
+    Onboard.name        = "Onboard";
+    Onboard.value       = APEX_MODE_ONBOARD;
+    Onboard.flags       = 0;
+    Onboard.color_mode  = MODE_COLORS_NONE;
+    modes.push_back(Onboard);
 
     SetupZones();
 }
 
 RGBController_SteelSeriesApex::~RGBController_SteelSeriesApex()
 {
-    /*---------------------------------------------------------*\
-    | Delete the matrix map                                     |
-    \*---------------------------------------------------------*/
-    for(unsigned int zone_index = 0; zone_index < zones.size(); zone_index++)
-    {
-        if(zones[zone_index].matrix_map != NULL)
-        {
-            free(zones[zone_index].matrix_map->map);
-            delete zones[zone_index].matrix_map;
-        }
-    }
+    Shutdown();
 
     delete controller;
 }
@@ -103,20 +100,17 @@ void RGBController_SteelSeriesApex::SetupZones()
 
         if(zone_types[zone_idx] == ZONE_TYPE_MATRIX)
         {
-            new_zone.matrix_map         = new matrix_map_type;
-            new_zone.matrix_map->map    = (unsigned int *) malloc(matrix_mapsize*sizeof(unsigned int));
+            new_zone.matrix_map.height      = MATRIX_HEIGHT;
+            new_zone.matrix_map.width       = MATRIX_WIDTH;
+            new_zone.matrix_map.map.resize(MATRIX_HEIGHT * MATRIX_WIDTH);
 
-            if((proto_type == APEX) || (proto_type == APEX_M) || (proto_type == APEX_9_TKL) || (proto_type == APEX_9_MINI))
+            if((proto_type == APEX) || (proto_type == APEX_M))
             {
-                SetSkuRegion(*new_zone.matrix_map, sku);
+                SetSkuRegion(&new_zone.matrix_map, sku);
             }
         }
-        else
-        {
-            new_zone.matrix_map         = NULL;
-        }
 
-        if((proto_type == APEX) || (proto_type == APEX_M) || (proto_type == APEX_9_TKL) || (proto_type == APEX_9_MINI))
+        if((proto_type == APEX) || (proto_type == APEX_M))
         {
             new_zone.leds_min   = zone_sizes[zone_idx];
             new_zone.leds_max   = zone_sizes[zone_idx];
@@ -130,25 +124,18 @@ void RGBController_SteelSeriesApex::SetupZones()
     SetupColors();
 }
 
-void RGBController_SteelSeriesApex::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_SteelSeriesApex::DeviceUpdateLEDs()
 {
     last_update_time = std::chrono::steady_clock::now();
     controller->SetLEDsDirect(colors);
 }
 
-void RGBController_SteelSeriesApex::UpdateZoneLEDs(int /*zone*/)
+void RGBController_SteelSeriesApex::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_SteelSeriesApex::UpdateSingleLED(int /*led*/)
+void RGBController_SteelSeriesApex::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

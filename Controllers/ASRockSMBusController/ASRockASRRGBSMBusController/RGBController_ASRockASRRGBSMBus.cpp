@@ -113,6 +113,8 @@ RGBController_ASRockASRRGBSMBus::RGBController_ASRockASRRGBSMBus(ASRockASRRGBSMB
 
 RGBController_ASRockASRRGBSMBus::~RGBController_ASRockASRRGBSMBus()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -135,7 +137,6 @@ void RGBController_ASRockASRRGBSMBus::SetupZones()
     new_zone->leds_min      = 1;
     new_zone->leds_max      = 1;
     new_zone->leds_count    = 1;
-    new_zone->matrix_map    = NULL;
 
     /*---------------------------------------------------------*\
     | Push new zone to zones vector                             |
@@ -160,27 +161,20 @@ void RGBController_ASRockASRRGBSMBus::SetupZones()
     SetupColors();
 }
 
-void RGBController_ASRockASRRGBSMBus::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_ASRockASRRGBSMBus::DeviceUpdateLEDs()
 {
     for(unsigned int led = 0; led < colors.size(); led++)
     {
-        UpdateSingleLED(led);
+        DeviceUpdateSingleLED(led);
     }
 }
 
-void RGBController_ASRockASRRGBSMBus::UpdateZoneLEDs(int /*zone*/)
+void RGBController_ASRockASRRGBSMBus::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_ASRockASRRGBSMBus::UpdateSingleLED(int led)
+void RGBController_ASRockASRRGBSMBus::DeviceUpdateSingleLED(int led)
 {
     unsigned char red = RGBGetRValue(colors[led]);
     unsigned char grn = RGBGetGValue(colors[led]);

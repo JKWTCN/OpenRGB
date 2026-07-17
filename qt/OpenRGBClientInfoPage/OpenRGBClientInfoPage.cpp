@@ -15,11 +15,16 @@
 #include "SettingsManager.h"
 #include "ui_OpenRGBClientInfoPage.h"
 
-static void UpdateInfoCallback(void * this_ptr)
+static void OpenRGBClientInfoPageResourceManagerCallback(void * this_ptr, unsigned int update_reason)
 {
     OpenRGBClientInfoPage * this_obj = (OpenRGBClientInfoPage *)this_ptr;
 
-    QMetaObject::invokeMethod(this_obj, "UpdateInfo", Qt::QueuedConnection);
+    switch(update_reason)
+    {
+        case RESOURCEMANAGER_UPDATE_REASON_CLIENT_INFO_UPDATED:
+            QMetaObject::invokeMethod(this_obj, "UpdateInfo", Qt::QueuedConnection);
+            break;
+    }
 }
 
 class NetworkClientPointer : public QObject
@@ -43,7 +48,7 @@ OpenRGBClientInfoPage::OpenRGBClientInfoPage(QWidget *parent) :
     /*-----------------------------------------------------*\
     | Register callbacks with resource manager              |
     \*-----------------------------------------------------*/
-    ResourceManager::get()->RegisterClientInfoChangeCallback(UpdateInfoCallback, this);
+    ResourceManager::get()->RegisterResourceManagerCallback(OpenRGBClientInfoPageResourceManagerCallback, this);
 
     /*-----------------------------------------------------*\
     | Update the information view                           |
@@ -53,7 +58,10 @@ OpenRGBClientInfoPage::OpenRGBClientInfoPage(QWidget *parent) :
 
 OpenRGBClientInfoPage::~OpenRGBClientInfoPage()
 {
-
+    /*-----------------------------------------------------*\
+    | Unregister callbacks with resource manager            |
+    \*-----------------------------------------------------*/
+    ResourceManager::get()->UnregisterResourceManagerCallback(OpenRGBClientInfoPageResourceManagerCallback, this);
 }
 
 void OpenRGBClientInfoPage::changeEvent(QEvent *event)
@@ -131,11 +139,29 @@ void OpenRGBClientInfoPage::UpdateInfo()
         }
 
         /*-----------------------------------------------------*\
-        | Create the top level tree widget items and display the|
-        | client IP addresses and protocol versions in them     |
+        | Create the top level tree widget items                |
         \*-----------------------------------------------------*/
         QTreeWidgetItem* new_top_item = new QTreeWidgetItem(ui->ClientTree);
-        new_top_item->setText(0, QString::fromStdString(ResourceManager::get()->GetClients()[client_idx]->GetIP()));
+
+        /*-----------------------------------------------------*\
+        | First column, display the server IP and optionally    |
+        | the server name if it exists                          |
+        \*-----------------------------------------------------*/
+        std::string server_name = ResourceManager::get()->GetClients()[client_idx]->GetServerName();
+        std::string ip          = ResourceManager::get()->GetClients()[client_idx]->GetIP();
+
+        if(server_name == "")
+        {
+            new_top_item->setText(0, QString::fromStdString(ip));
+        }
+        else
+        {
+            new_top_item->setText(0, QString::fromStdString(ip + ": " + server_name));
+        }
+
+        /*-----------------------------------------------------*\
+        | Second column, display the protocol version           |
+        \*-----------------------------------------------------*/
         new_top_item->setText(1, QString::number(ResourceManager::get()->GetClients()[client_idx]->GetProtocolVersion()));
 
         /*-----------------------------------------------------*\
@@ -188,19 +214,19 @@ void OpenRGBClientInfoPage::UpdateInfo()
         /*-----------------------------------------------------*\
         | Add child items for each device in the client         |
         \*-----------------------------------------------------*/
-        for(std::size_t dev_idx = 0; dev_idx < ResourceManager::get()->GetClients()[client_idx]->server_controllers.size(); dev_idx++)
+        for(std::size_t dev_idx = 0; dev_idx < ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers().size(); dev_idx++)
         {
             /*-----------------------------------------------------*\
             | Create child tree widget items and display the device |
             | names in them                                         |
             \*-----------------------------------------------------*/
             QTreeWidgetItem* new_item = new QTreeWidgetItem(new_top_item);
-            new_item->setText(0, QString::fromStdString(ResourceManager::get()->GetClients()[client_idx]->server_controllers[dev_idx]->GetName()));
+            new_item->setText(0, QString::fromStdString(ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers()[dev_idx]->GetDisplayName()));
 
             /*-----------------------------------------------------*\
             | Add child items for each zone in the device           |
             \*-----------------------------------------------------*/
-            for(std::size_t zone_idx = 0; zone_idx < ResourceManager::get()->GetClients()[client_idx]->server_controllers[dev_idx]->zones.size(); zone_idx++)
+            for(unsigned int zone_idx = 0; zone_idx < ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers()[dev_idx]->GetZoneCount(); zone_idx++)
             {
                 /*-----------------------------------------------------*\
                 | Create child tree widget items and display the zone   |
@@ -208,11 +234,11 @@ void OpenRGBClientInfoPage::UpdateInfo()
                 \*-----------------------------------------------------*/
                 QTreeWidgetItem* new_child = new QTreeWidgetItem();
 
-                std::string zone_str = ResourceManager::get()->GetClients()[client_idx]->server_controllers[dev_idx]->zones[zone_idx].name + ", ";
-                zone_str.append(std::to_string(ResourceManager::get()->GetClients()[client_idx]->server_controllers[dev_idx]->zones[zone_idx].leds_count));
+                std::string zone_str = ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers()[dev_idx]->GetZoneDisplayName(zone_idx) + ", ";
+                zone_str.append(std::to_string(ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers()[dev_idx]->GetZoneLEDsCount(zone_idx)));
                 zone_str.append(" LEDs, ");
                 // TODO : translate
-                switch(ResourceManager::get()->GetClients()[client_idx]->server_controllers[dev_idx]->zones[zone_idx].type)
+                switch(ResourceManager::get()->GetClients()[client_idx]->GetRGBControllers()[dev_idx]->GetZoneType(zone_idx))
                 {
                     case ZONE_TYPE_SINGLE:
                         zone_str.append("Single");
@@ -246,7 +272,7 @@ void OpenRGBClientInfoPage::on_ClientConnectButton_clicked()
     /*-----------------------------------------------------*\
     | Create a new client and set name, IP, and port values |
     \*-----------------------------------------------------*/
-    NetworkClient * rgb_client = new NetworkClient(ResourceManager::get()->GetRGBControllers());
+    NetworkClient * rgb_client = new NetworkClient();
 
     std::string titleString = "OpenRGB ";
     titleString.append(VERSION_STRING);
@@ -261,8 +287,6 @@ void OpenRGBClientInfoPage::on_ClientConnectButton_clicked()
     | Add new client to list and register update callback   |
     \*-----------------------------------------------------*/
     ResourceManager::get()->RegisterNetworkClient(rgb_client);
-
-    rgb_client->RegisterClientInfoChangeCallback(UpdateInfoCallback, this);
 }
 
 void OpenRGBClientInfoPage::onClientDisconnectButton_clicked(QObject * arg)

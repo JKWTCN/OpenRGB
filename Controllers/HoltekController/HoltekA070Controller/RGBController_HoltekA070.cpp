@@ -54,6 +54,8 @@ RGBController_HoltekA070::RGBController_HoltekA070(HoltekA070Controller* control
 
 RGBController_HoltekA070::~RGBController_HoltekA070()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -65,7 +67,6 @@ void RGBController_HoltekA070::SetupZones()
     mouse_zone.leds_min     = 1;
     mouse_zone.leds_max     = 1;
     mouse_zone.leds_count   = 1;
-    mouse_zone.matrix_map   = NULL;
     zones.push_back(mouse_zone);
 
     led mouse_led;
@@ -73,13 +74,6 @@ void RGBController_HoltekA070::SetupZones()
     leds.push_back(mouse_led);
 
     SetupColors();
-}
-
-void RGBController_HoltekA070::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_HoltekA070::DeviceUpdateLEDs()
@@ -91,12 +85,12 @@ void RGBController_HoltekA070::DeviceUpdateLEDs()
     controller->SendCustomColor(red, green, blue);
 }
 
-void RGBController_HoltekA070::UpdateZoneLEDs(int /*zone*/)
+void RGBController_HoltekA070::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_HoltekA070::UpdateSingleLED(int /*led*/)
+void RGBController_HoltekA070::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

@@ -12,29 +12,30 @@
 
 #include <string>
 #include <hidapi.h>
-#include "Detector.h"
+#include "DetectionManager.h"
+#include "LogManager.h"
 #include "QMKOpenRGBRev9Controller.h"
 #include "QMKOpenRGBRevBController.h"
 #include "QMKOpenRGBRevDController.h"
+#include "ResourceManager.h"
 #include "RGBController_QMKOpenRGBRev9.h"
 #include "RGBController_QMKOpenRGBRevB.h"
 #include "RGBController_QMKOpenRGBRevD.h"
 #include "RGBController_QMKOpenRGBRevE.h"
-#include "LogManager.h"
 #include "SettingsManager.h"
 
-/*-----------------------------------------------------*\
-| Protocol version                                      |
-\*-----------------------------------------------------*/
+/*---------------------------------------------------------*\
+| Protocol version                                          |
+\*---------------------------------------------------------*/
 #define QMK_OPENRGB_PROTOCOL_VERSION_9          0x09
 #define QMK_OPENRGB_PROTOCOL_VERSION_B          0x0B
 #define QMK_OPENRGB_PROTOCOL_VERSION_C          0x0C
 #define QMK_OPENRGB_PROTOCOL_VERSION_D          0x0D
 #define QMK_OPENRGB_PROTOCOL_VERSION_E          0x0E
 
-/*-----------------------------------------------------*\
-| Usage and Usage Page                                  |
-\*-----------------------------------------------------*/
+/*---------------------------------------------------------*\
+| Usage and Usage Page                                      |
+\*---------------------------------------------------------*/
 #define QMK_USAGE_PAGE                          0xFF60
 #define QMK_USAGE                               0x61
 
@@ -63,17 +64,20 @@ unsigned int GetProtocolVersion(hid_device *dev)
     return usb_buf[1];
 }
 
-void DetectQMKOpenRGBControllers(hid_device_info *info, const std::string&)
+DetectedControllers DetectQMKOpenRGBControllers(hid_device_info *info, const std::string&)
 {
-    hid_device *dev = hid_open_path(info->path);
+    DetectedControllers detected_controllers;
+    hid_device*         dev;
+
+    dev = hid_open_path(info->path);
 
     if(dev)
     {
-        /*-----------------------------------------------------*\
-        | Use Rev9 controller for getting protocol version.     |
-        | Protocol version request may not change across        |
-        | protocol versions                                     |
-        \*-----------------------------------------------------*/
+        /*-------------------------------------------------*\
+        | Use Rev9 controller for getting protocol version. |
+        | Protocol version request may not change across    |
+        | protocol versions                                 |
+        \*-------------------------------------------------*/
         unsigned int version                                = GetProtocolVersion(dev);
 
         switch(version)
@@ -82,35 +86,40 @@ void DetectQMKOpenRGBControllers(hid_device_info *info, const std::string&)
                 {
                 QMKOpenRGBRev9Controller*     controller     = new QMKOpenRGBRev9Controller(dev, info->path);
                 RGBController_QMKOpenRGBRev9* rgb_controller = new RGBController_QMKOpenRGBRev9(controller);
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                detected_controllers.push_back(rgb_controller);
                 }
                 break;
             case QMK_OPENRGB_PROTOCOL_VERSION_B:
                 {
                 QMKOpenRGBRevBController*     controller     = new QMKOpenRGBRevBController(dev, info->path);
                 RGBController_QMKOpenRGBRevB* rgb_controller = new RGBController_QMKOpenRGBRevB(controller, false);
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                detected_controllers.push_back(rgb_controller);
                 }
                 break;
             case QMK_OPENRGB_PROTOCOL_VERSION_C:
                 {
                 QMKOpenRGBRevBController*     controller     = new QMKOpenRGBRevBController(dev, info->path);
                 RGBController_QMKOpenRGBRevB* rgb_controller = new RGBController_QMKOpenRGBRevB(controller, true);
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                detected_controllers.push_back(rgb_controller);
                 }
                 break;
             case QMK_OPENRGB_PROTOCOL_VERSION_D:
                 {
                 QMKOpenRGBRevDController*     controller     = new QMKOpenRGBRevDController(dev, info->path);
                 RGBController_QMKOpenRGBRevD* rgb_controller = new RGBController_QMKOpenRGBRevD(controller, true);
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                detected_controllers.push_back(rgb_controller);
                 }
                 break;
             case QMK_OPENRGB_PROTOCOL_VERSION_E:
                 {
                 QMKOpenRGBRevDController*     controller     = new QMKOpenRGBRevDController(dev, info->path);
                 RGBController_QMKOpenRGBRevE* rgb_controller = new RGBController_QMKOpenRGBRevE(controller, true);
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+                detected_controllers.push_back(rgb_controller);
                 }
                 break;
             default:
@@ -131,13 +140,15 @@ void DetectQMKOpenRGBControllers(hid_device_info *info, const std::string&)
                 }
         }
     }
+
+    return(detected_controllers);
 }
 
 void RegisterQMKDetectors()
 {
-    /*-------------------------------------------------*\
-    | Get QMKOpenRGB settings                           |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Get QMKOpenRGB settings                               |
+    \*-----------------------------------------------------*/
     json qmk_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("QMKOpenRGBDevices");
 
     if(qmk_settings.contains("devices"))
@@ -152,9 +163,9 @@ void RegisterQMKDetectors()
                 std::string usb_vid_str = qmk_settings["devices"][device_idx]["usb_vid"];
                 std::string name        = qmk_settings["devices"][device_idx]["name"];
 
-                /*-------------------------------------*\
-                | Parse hex string to integer           |
-                \*-------------------------------------*/
+                /*-----------------------------------------*\
+                | Parse hex string to integer               |
+                \*-----------------------------------------*/
                 unsigned short usb_pid  = std::stoi(usb_pid_str, 0, 16);
                 unsigned short usb_vid  = std::stoi(usb_vid_str, 0, 16);
 

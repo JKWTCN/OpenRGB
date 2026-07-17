@@ -43,6 +43,8 @@ RGBController_FanBus::RGBController_FanBus(FanBusController* controller_ptr)
 
 RGBController_FanBus::~RGBController_FanBus()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -54,7 +56,6 @@ void RGBController_FanBus::SetupZones()
     led_zone.leds_min   = 4;
     led_zone.leds_max   = 4;
     led_zone.leds_count = 4;
-    led_zone.matrix_map = NULL;
     zones.push_back(led_zone);
 
     for(unsigned int led_idx = 0; led_idx < led_zone.leds_count; led_idx++)
@@ -69,24 +70,17 @@ void RGBController_FanBus::SetupZones()
     SetupColors();
 }
 
-void RGBController_FanBus::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_FanBus::DeviceUpdateLEDs()
 {
     controller->SetLEDs(colors);
 }
 
-void RGBController_FanBus::UpdateZoneLEDs(int /*zone*/)
+void RGBController_FanBus::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     controller->SetLEDs(colors);
 }
 
-void RGBController_FanBus::UpdateSingleLED(int /*led*/)
+void RGBController_FanBus::DeviceUpdateSingleLED(int /*led*/)
 {
     controller->SetLEDs(colors);
 }

@@ -96,6 +96,8 @@ RGBController_SapphireNitroGlowV3::RGBController_SapphireNitroGlowV3(SapphireNit
 
 RGBController_SapphireNitroGlowV3::~RGBController_SapphireNitroGlowV3()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -113,7 +115,6 @@ void RGBController_SapphireNitroGlowV3::SetupZones()
     new_zone->leds_min      = 1;
     new_zone->leds_max      = 1;
     new_zone->leds_count    = 1;
-    new_zone->matrix_map    = NULL;
 
     new_led->name           = "GPU LED";
 
@@ -178,13 +179,6 @@ void RGBController_SapphireNitroGlowV3::ReadConfiguration()
     }
 }
 
-void RGBController_SapphireNitroGlowV3::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_SapphireNitroGlowV3::DeviceUpdateLEDs()
 {
     RGBColor      color = colors[0];
@@ -195,12 +189,12 @@ void RGBController_SapphireNitroGlowV3::DeviceUpdateLEDs()
     controller->SetColor(red, grn, blu);
 }
 
-void RGBController_SapphireNitroGlowV3::UpdateZoneLEDs(int /*zone*/)
+void RGBController_SapphireNitroGlowV3::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_SapphireNitroGlowV3::UpdateSingleLED(int /*led*/)
+void RGBController_SapphireNitroGlowV3::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

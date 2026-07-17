@@ -144,6 +144,8 @@ RGBController_AnnePro2::RGBController_AnnePro2(AnnePro2Controller* controller_pt
 
 RGBController_AnnePro2::~RGBController_AnnePro2()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -164,14 +166,7 @@ void RGBController_AnnePro2::SetupZones()
 
         if(zone_types[zone_idx] == ZONE_TYPE_MATRIX)
         {
-            new_zone.matrix_map         = new matrix_map_type;
-            new_zone.matrix_map->height = 5;
-            new_zone.matrix_map->width  = 14;
-            new_zone.matrix_map->map    = (unsigned int *)&matrix_map;
-        }
-        else
-        {
-            new_zone.matrix_map         = NULL;
+            new_zone.matrix_map.Set(5, 14, (unsigned int *)&matrix_map);
         }
 
         zones.push_back(new_zone);
@@ -188,13 +183,6 @@ void RGBController_AnnePro2::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_AnnePro2::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_AnnePro2::DeviceUpdateLEDs()
@@ -228,12 +216,12 @@ void RGBController_AnnePro2::DeviceUpdateLEDs()
     controller->SendDirect(frame_buf_length, frame_buf);
 }
 
-void RGBController_AnnePro2::UpdateZoneLEDs(int /*zone*/)
+void RGBController_AnnePro2::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_AnnePro2::UpdateSingleLED(int /*led*/)
+void RGBController_AnnePro2::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

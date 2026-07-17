@@ -205,6 +205,8 @@ RGBController_EVGAGPUv3::RGBController_EVGAGPUv3(EVGAGPUv3Controller* controller
 
 RGBController_EVGAGPUv3::~RGBController_EVGAGPUv3()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -242,7 +244,6 @@ void RGBController_EVGAGPUv3::SetupZones()
             new_zone->leds_min      = 1;
             new_zone->leds_max      = 1;
             new_zone->leds_count    = 1;
-            new_zone->matrix_map    = NULL;
 
             new_led->name           = evga_v3_zone_names[zone_idx];
             /*---------------------------------------------------------*\
@@ -256,9 +257,9 @@ void RGBController_EVGAGPUv3::SetupZones()
     SetupColors();
 }
 
-void RGBController_EVGAGPUv3::ResizeZone(int /*zone*/, int newSize)
+void RGBController_EVGAGPUv3::DeviceConfigureZone(int zone_idx)
 {
-    controller->ResizeARGB(newSize);
+    controller->ResizeARGB(zones[zone_idx].leds_count);
 }
 
 void RGBController_EVGAGPUv3::DeviceUpdateLEDs()
@@ -290,13 +291,13 @@ void RGBController_EVGAGPUv3::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_EVGAGPUv3::UpdateZoneLEDs(int /*zone*/)
+void RGBController_EVGAGPUv3::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     //LOG_TRACE("[%s] Updating zone %1d", controller->evgaGPUName, zone);
     DeviceUpdateLEDs();
 }
 
-void RGBController_EVGAGPUv3::UpdateSingleLED(int /*led*/)
+void RGBController_EVGAGPUv3::DeviceUpdateSingleLED(int /*led*/)
 {
     //LOG_TRACE("[%s] Updating single LED %1d", controller->evgaGPUName, led);
     DeviceUpdateLEDs();

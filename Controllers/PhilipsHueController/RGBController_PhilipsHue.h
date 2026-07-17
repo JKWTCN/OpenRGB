@@ -18,13 +18,13 @@ class RGBController_PhilipsHue : public RGBController
 {
 public:
     RGBController_PhilipsHue(PhilipsHueController* controller_ptr);
+    ~RGBController_PhilipsHue();
 
     void        SetupZones();
-    void        ResizeZone(int zone, int new_size);
 
     void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void        DeviceUpdateZoneLEDs(int zone);
+    void        DeviceUpdateSingleLED(int led);
 
     void        DeviceUpdateMode();
 

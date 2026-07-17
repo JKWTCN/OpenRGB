@@ -18,22 +18,71 @@ TabLabel::TabLabel(int icon, char* label, char* context, bool translatable) :
 {
     ui->setupUi(this);
 
+    /*-----------------------------------------------------*\
+    | Store initial widths for icon and name                |
+    \*-----------------------------------------------------*/
+    icon_initial_width = ui->icon->width();
+    name_initial_width = ui->name->width();
+
+    /*-----------------------------------------------------*\
+    | Initialize icon font                                  |
+    \*-----------------------------------------------------*/
     QFont font = OpenRGBFont::GetFont();
     font.setPointSize(18);
 
+    /*-----------------------------------------------------*\
+    | Set icon                                              |
+    \*-----------------------------------------------------*/
     ui->icon->setFont(font);
     ui->icon->setText(OpenRGBFont::icon(icon));
 
+    /*-----------------------------------------------------*\
+    | Store data                                            |
+    \*-----------------------------------------------------*/
     this->translatable  = translatable;
     this->label         = label;
     this->context       = context;
 
+    /*-----------------------------------------------------*\
+    | Update label                                          |
+    \*-----------------------------------------------------*/
     UpdateLabel(true);
+
+    SetTextHidden(false);
 }
 
 TabLabel::~TabLabel()
 {
     delete ui;
+}
+
+void TabLabel::SetText(char* label)
+{
+    /*-----------------------------------------------------*\
+    | Store data                                            |
+    \*-----------------------------------------------------*/
+    this->label         = label;
+
+    /*-----------------------------------------------------*\
+    | Update label                                          |
+    \*-----------------------------------------------------*/
+    UpdateLabel(true);
+}
+
+void TabLabel::SetTextHidden(bool hidden)
+{
+    if(hidden)
+    {
+        ui->name->setFixedWidth(0);
+        setFixedWidth(ui->icon->width());
+    }
+    else
+    {
+        ui->name->setFixedWidth(name_initial_width);
+        setFixedWidth(ui->icon->width() + ui->name->width());
+    }
+
+    ui->name->setHidden(hidden);
 }
 
 void TabLabel::changeEvent(QEvent *event)
@@ -56,6 +105,7 @@ void TabLabel::UpdateLabel(bool in_constructor)
         \*-------------------------------------------------*/
         QApplication* app = static_cast<QApplication *>(QApplication::instance());
         ui->name->setText(app->translate(context, label));
+        setToolTip(app->translate(context, label));
     }
     else if(in_constructor)
     {
@@ -64,5 +114,6 @@ void TabLabel::UpdateLabel(bool in_constructor)
         | translatable as label buffer may not exist        |
         \*-------------------------------------------------*/
         ui->name->setText(label);
+        setToolTip(label);
     }
 }

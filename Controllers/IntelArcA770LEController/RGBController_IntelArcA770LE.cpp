@@ -51,6 +51,8 @@ RGBController_IntelArcA770LE::RGBController_IntelArcA770LE(IntelArcA770LEControl
 
 RGBController_IntelArcA770LE::~RGBController_IntelArcA770LE()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -76,7 +78,6 @@ void RGBController_IntelArcA770LE::SetupZones()
     fan_1_zone.leds_min     = 16;
     fan_1_zone.leds_max     = 16;
     fan_1_zone.leds_count   = 16;
-    fan_1_zone.matrix_map   = NULL;
     zones.push_back(fan_1_zone);
 
     zone fan_2_zone;
@@ -85,7 +86,6 @@ void RGBController_IntelArcA770LE::SetupZones()
     fan_2_zone.leds_min     = 16;
     fan_2_zone.leds_max     = 16;
     fan_2_zone.leds_count   = 16;
-    fan_2_zone.matrix_map   = NULL;
     zones.push_back(fan_2_zone);
 
     zone back;
@@ -94,7 +94,6 @@ void RGBController_IntelArcA770LE::SetupZones()
     back.leds_min           = 8;
     back.leds_max           = 8;
     back.leds_count         = 8;
-    back.matrix_map         = NULL;
     zones.push_back(back);
 
     zone ring;
@@ -103,7 +102,6 @@ void RGBController_IntelArcA770LE::SetupZones()
     ring.leds_min           = 50;
     ring.leds_max           = 50;
     ring.leds_count         = 50;
-    ring.matrix_map         = NULL;
     zones.push_back(ring);
 
     zone logo;
@@ -112,13 +110,12 @@ void RGBController_IntelArcA770LE::SetupZones()
     logo.leds_min           = 1;
     logo.leds_max           = 1;
     logo.leds_count         = 1;
-    logo.matrix_map         = NULL;
     zones.push_back(logo);
 
     for(unsigned int led_idx = 0; led_idx < 16; led_idx++)
     {
         led fan_1_led;
-        fan_1_led.name = "Fan 1 LED";
+        fan_1_led.name = "Fan 1 LED " + std::to_string(led_idx + 1);
         fan_1_led.value = fan_1_leds[led_idx];
         leds.push_back(fan_1_led);
     }
@@ -126,7 +123,7 @@ void RGBController_IntelArcA770LE::SetupZones()
     for(unsigned int led_idx = 0; led_idx < 16; led_idx++)
     {
         led fan_2_led;
-        fan_2_led.name = "Fan 2 LED";
+        fan_2_led.name = "Fan 2 LED " + std::to_string(led_idx + 1);
         fan_2_led.value = fan_2_leds[led_idx];
         leds.push_back(fan_2_led);
     }
@@ -134,7 +131,7 @@ void RGBController_IntelArcA770LE::SetupZones()
     for(unsigned int led_idx = 0; led_idx < 8; led_idx++)
     {
         led back_led;
-        back_led.name = "Back LED";
+        back_led.name = "Back LED " + std::to_string(led_idx + 1);
         back_led.value = back_leds[led_idx];
         leds.push_back(back_led);
     }
@@ -142,7 +139,7 @@ void RGBController_IntelArcA770LE::SetupZones()
     for(unsigned int led_idx = 0; led_idx < 50; led_idx++)
     {
         led ring_led;
-        ring_led.name = "Ring LED";
+        ring_led.name = "Ring LED " + std::to_string(led_idx + 1);
         ring_led.value = ring_leds[led_idx];
         leds.push_back(ring_led);
     }
@@ -150,19 +147,12 @@ void RGBController_IntelArcA770LE::SetupZones()
     for(unsigned int led_idx = 0; led_idx < 1; led_idx++)
     {
         led logo_led;
-        logo_led.name = "Logo LED";
+        logo_led.name = "Logo LED " + std::to_string(led_idx + 1);
         logo_led.value = logo_leds[led_idx];
         leds.push_back(logo_led);
     }
 
     SetupColors();
-}
-
-void RGBController_IntelArcA770LE::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_IntelArcA770LE::DeviceUpdateLEDs()
@@ -191,12 +181,12 @@ void RGBController_IntelArcA770LE::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_IntelArcA770LE::UpdateZoneLEDs(int /*zone*/)
+void RGBController_IntelArcA770LE::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 
 }
 
-void RGBController_IntelArcA770LE::UpdateSingleLED(int /*led*/)
+void RGBController_IntelArcA770LE::DeviceUpdateSingleLED(int /*led*/)
 {
 }
 
