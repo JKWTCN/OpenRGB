@@ -10,7 +10,10 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+#include <algorithm>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 #include "DetectionManager.h"
 #include "JsonUtils.h"
 #include "LogManager.h"
@@ -18,6 +21,7 @@
 #include "ProfileManager.h"
 #include "ResourceManager.h"
 #include "SettingsManager.h"
+#include "SPDCommon.h"
 #include "StringUtils.h"
 
 #ifdef __linux__
@@ -206,6 +210,145 @@ std::vector<i2c_smbus_interface*>& DetectionManager::GetI2CBuses()
 std::vector<RGBController*>& DetectionManager::GetRGBControllers()
 {
     return(rgb_controllers);
+}
+
+std::vector<SupportedDeviceInfo> DetectionManager::GetSupportedDeviceInfo()
+{
+    std::vector<SupportedDeviceInfo> supported_devices;
+
+    auto hex_value = [](unsigned int value, unsigned int width) -> std::string
+    {
+        std::ostringstream stream;
+        stream << "0x" << std::uppercase << std::hex << std::setw(width) << std::setfill('0') << value;
+        return stream.str();
+    };
+
+    auto any_or_decimal = [](int value) -> std::string
+    {
+        return(value < 0 ? "Any" : std::to_string(value));
+    };
+
+    auto any_or_hex = [&](int value, unsigned int width) -> std::string
+    {
+        return(value < 0 ? "Any" : hex_value((unsigned int)value, width));
+    };
+
+    for(const std::string& detector_name : i2c_device_detector_strings)
+    {
+        SupportedDeviceInfo info;
+        info.name           = detector_name;
+        info.detector_type  = "I2C";
+        info.subcategory    = "SMBus/I2C scan";
+        info.transport      = "I2C";
+        supported_devices.push_back(info);
+    }
+
+    for(const I2CDRAMDeviceDetectorBlock& detector : i2c_dram_device_detectors)
+    {
+        SupportedDeviceInfo info;
+        info.name           = detector.name;
+        info.detector_type  = "I2C DRAM";
+        info.subcategory    = "DRAM SPD";
+        info.transport      = "I2C";
+        info.jedec_id       = hex_value(detector.jedec_id, 4);
+        info.dimm_type      = hex_value(detector.dram_type, 2);
+
+        if(detector.dram_type <= SPD_LPDDR5_SDRAM)
+        {
+            info.dimm_type += " ";
+            info.dimm_type += spd_memory_type_name[detector.dram_type];
+        }
+
+        supported_devices.push_back(info);
+    }
+
+    for(const I2CPCIDeviceDetectorBlock& detector : i2c_pci_device_detectors)
+    {
+        SupportedDeviceInfo info;
+        info.name                       = detector.name;
+        info.detector_type              = "I2C PCI";
+        info.subcategory                = "PCI-matched I2C";
+        info.transport                  = "I2C";
+        info.pci_vendor_id              = hex_value(detector.ven_id, 4);
+        info.pci_device_id              = hex_value(detector.dev_id, 4);
+        info.pci_subsystem_vendor_id    = hex_value(detector.subven_id, 4);
+        info.pci_subsystem_device_id    = hex_value(detector.subdev_id, 4);
+        info.i2c_address                = hex_value(detector.i2c_addr, 2);
+        supported_devices.push_back(info);
+    }
+
+    auto append_hid_detectors = [&](const auto& detectors, const std::string& detector_type, const std::string& subcategory)
+    {
+        for(const auto& detector : detectors)
+        {
+            SupportedDeviceInfo info;
+            info.name           = detector.name;
+            info.detector_type  = detector_type;
+            info.subcategory    = subcategory;
+            info.transport      = "HID";
+            info.vendor_id      = any_or_hex(detector.vid, 4);
+            info.product_id     = any_or_hex(detector.pid, 4);
+            info.interface      = any_or_decimal(detector.interface);
+            info.usage_page     = any_or_hex(detector.usage_page, 4);
+            info.usage          = any_or_hex(detector.usage, 4);
+            supported_devices.push_back(info);
+        }
+    };
+
+    append_hid_detectors(hid_specific_detectors,         "HID",         "USB HID");
+    append_hid_detectors(hid_generic_detectors,          "HID",         "USB HID");
+    append_hid_detectors(hid_wrapped_specific_detectors, "HID Wrapped", "USB HID wrapper");
+    append_hid_detectors(hid_wrapped_generic_detectors,  "HID Wrapped", "USB HID wrapper");
+
+    for(const std::string& detector_name : dynamic_detector_strings)
+    {
+        SupportedDeviceInfo info;
+        info.name           = detector_name;
+        info.detector_type  = "Dynamic";
+        info.subcategory    = "Runtime registration";
+        supported_devices.push_back(info);
+    }
+
+    for(const std::string& detector_name : device_detector_strings)
+    {
+        SupportedDeviceInfo info;
+        info.name           = detector_name;
+        info.detector_type  = "Generic";
+        info.subcategory    = "Custom scan";
+        supported_devices.push_back(info);
+    }
+
+    std::sort(supported_devices.begin(), supported_devices.end(), [](const SupportedDeviceInfo& first, const SupportedDeviceInfo& second)
+    {
+        if(first.name != second.name)
+        {
+            return(first.name < second.name);
+        }
+
+        if(first.detector_type != second.detector_type)
+        {
+            return(first.detector_type < second.detector_type);
+        }
+
+        if(first.vendor_id != second.vendor_id)
+        {
+            return(first.vendor_id < second.vendor_id);
+        }
+
+        if(first.product_id != second.product_id)
+        {
+            return(first.product_id < second.product_id);
+        }
+
+        if(first.pci_device_id != second.pci_device_id)
+        {
+            return(first.pci_device_id < second.pci_device_id);
+        }
+
+        return(first.i2c_address < second.i2c_address);
+    });
+
+    return(supported_devices);
 }
 
 /*---------------------------------------------------------*\

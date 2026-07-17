@@ -61,16 +61,17 @@ SteelSeriesApexController::SteelSeriesApexController(hid_device* dev_handle, ste
 
 SteelSeriesApexController::~SteelSeriesApexController()
 {
-    SendDeinitialization();
+    if(initialized)
+    {
+        SendDeinitialization();
+    }
     hid_close(dev);
 }
 
 /*---------------------------------------------------*\
 | OpenRGB must clear initialized keyboards during     |
 | shutdown as hardware lighting profiles won't apply  |
-| otherwise. Keyboards not needing initialization are |
-| also cleared, though selecting a hardware profile   |
-| will override the leds unlike the former.           |
+| otherwise. Uninitialized keyboards are left alone.  |
 \*---------------------------------------------------*/
 void SteelSeriesApexController::SendDeinitialization()
 {
@@ -79,6 +80,7 @@ void SteelSeriesApexController::SendDeinitialization()
     obuf[0x00] = 0;
     obuf[0x01] = reset_cmd;
     hid_write(dev, obuf, STEELSERIES_PACKET_OUT_SIZE);
+    initialized = false;
 }
 
 void SteelSeriesApexController::SetMode(unsigned char mode, std::vector<RGBColor>)
@@ -225,6 +227,8 @@ void SteelSeriesApexController::SendInitialization()
         reset_cmd = APEX_GEN1_PACKET_ID_ONBOARD;
         LOG_DEBUG("[%s] Using Apex Legacy protocol.", name.c_str());
     }
+
+    initialized = true;
 }
 
 std::string SteelSeriesApexController::GetSerial()

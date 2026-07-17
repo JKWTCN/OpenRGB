@@ -294,7 +294,13 @@ bool ProfileManager::LoadAutoProfileSuspend()
 
 bool ProfileManager::LoadControllerActiveProfile(RGBController* load_controller)
 {
-    return(LoadControllerFromListWithOptions(active_rgb_controllers, load_controller, false, true));
+    /*-----------------------------------------------------*\
+    | Restore the active profile into the controller's      |
+    | software state without touching hardware.  This path  |
+    | is called while the controller is being registered by |
+    | device detection.                                     |
+    \*-----------------------------------------------------*/
+    return(LoadControllerFromListWithOptionsInternal(active_rgb_controllers, load_controller, false, true, false));
 }
 
 bool ProfileManager::LoadControllerConfiguration(RGBController* load_controller)
@@ -974,6 +980,18 @@ bool ProfileManager::LoadControllerFromListWithOptions
     bool                            load_state
     )
 {
+    return(LoadControllerFromListWithOptionsInternal(profile_controllers, load_controller, load_configuration, load_state, true));
+}
+
+bool ProfileManager::LoadControllerFromListWithOptionsInternal
+    (
+    std::vector<RGBController*>&    profile_controllers,
+    RGBController*                  load_controller,
+    bool                            load_configuration,
+    bool                            load_state,
+    bool                            apply_state
+    )
+{
     for(std::size_t temp_index = 0; temp_index < profile_controllers.size(); temp_index++)
     {
         RGBController *profile_controller = profile_controllers[temp_index];
@@ -1135,7 +1153,10 @@ bool ProfileManager::LoadControllerFromListWithOptions
                     }
 
                     load_controller->active_mode = profile_controller->active_mode;
-                    load_controller->UpdateMode();
+                    if(apply_state)
+                    {
+                        load_controller->UpdateMode();
+                    }
                 }
 
                 /*-----------------------------------------*\
@@ -1148,7 +1169,10 @@ bool ProfileManager::LoadControllerFromListWithOptions
                         load_controller->colors[color_index] = profile_controller->colors[color_index];
                     }
 
-                    load_controller->UpdateLEDs();
+                    if(apply_state)
+                    {
+                        load_controller->UpdateLEDs();
+                    }
                 }
 
                 /*-----------------------------------------*\
@@ -1190,8 +1214,14 @@ bool ProfileManager::LoadControllerFromListWithOptions
                                 }
                             }
 
-                            load_controller->SetZoneActiveMode(zone_idx, profile_controller->GetZoneActiveMode(zone_idx));
-                            load_controller->UpdateZoneMode(zone_idx);
+                            if(apply_state)
+                            {
+                                load_controller->SetZoneActiveMode(zone_idx, profile_controller->GetZoneActiveMode(zone_idx));
+                            }
+                            else
+                            {
+                                load_controller->zones[zone_idx].active_mode = profile_controller->GetZoneActiveMode(zone_idx);
+                            }
                         }
                     }
                 }
@@ -1208,17 +1238,61 @@ bool ProfileManager::LoadControllerFromListWithOptions
     \*-----------------------------------------------------*/
     if(load_state && active_base_color_enabled)
     {
-        load_controller->SetCustomMode();
+        if(apply_state)
+        {
+            load_controller->SetCustomMode();
+        }
+        else
+        {
+            /*---------------------------------------------*\
+            | Select a software custom mode without queuing |
+            | an update on the device thread.               |
+            \*---------------------------------------------*/
+            static const std::string custom_mode_names[] =
+            {
+                "Direct",
+                "Custom",
+                "Static"
+            };
+
+            bool custom_mode_found = false;
+
+            for(const std::string& custom_mode_name : custom_mode_names)
+            {
+                for(unsigned int mode_idx = 0; mode_idx < load_controller->modes.size(); mode_idx++)
+                {
+                    if((load_controller->modes[mode_idx].name == custom_mode_name)
+                    && ((load_controller->modes[mode_idx].color_mode == MODE_COLORS_PER_LED)
+                     || (load_controller->modes[mode_idx].color_mode == MODE_COLORS_MODE_SPECIFIC)))
+                    {
+                        load_controller->active_mode = mode_idx;
+                        custom_mode_found = true;
+                        break;
+                    }
+                }
+
+                if(custom_mode_found)
+                {
+                    break;
+                }
+            }
+        }
 
         if(load_controller->GetModeColorMode(load_controller->GetActiveMode()) == MODE_COLORS_PER_LED)
         {
             load_controller->SetAllColors(active_base_color);
-            load_controller->UpdateLEDs();
+            if(apply_state)
+            {
+                load_controller->UpdateLEDs();
+            }
         }
         else if(load_controller->GetModeColorMode(load_controller->GetActiveMode()) == MODE_COLORS_MODE_SPECIFIC)
         {
             load_controller->SetModeColor(load_controller->GetActiveMode(), 0, active_base_color);
-            load_controller->UpdateMode();
+            if(apply_state)
+            {
+                load_controller->UpdateMode();
+            }
         }
     }
 

@@ -32,8 +32,8 @@ ThermaltakeRiingQuadController::ThermaltakeRiingQuadController(hid_device* dev_h
     /*-----------------------------------------------------*\
     | The Riing Quad only seems to run in direct mode and   |
     | requires a packet within seconds to remain in the     |
-    | set mode (similar to Corsair Node Pro). Start a thread|
-    | to send a packet every TT_QUAD_KEEPALIVE seconds      |
+    | set mode (similar to Corsair Node Pro). The keepalive  |
+    | thread is started by SendInit() on first control.      |
     \*-----------------------------------------------------*/
     memset(tt_quad_buffer, 0x00, sizeof(tt_quad_buffer));
     unsigned char temp_buffer[3]    = { 0x00, 0x32, 0x52 };
@@ -46,15 +46,19 @@ ThermaltakeRiingQuadController::ThermaltakeRiingQuadController(hid_device* dev_h
         memcpy(&tt_quad_buffer[zone_index][0], temp_buffer, 3);
     }
 
-    keepalive_thread_run = 1;
-    keepalive_thread = new std::thread(&ThermaltakeRiingQuadController::KeepaliveThread, this);
+    keepalive_thread_run = false;
+    keepalive_thread     = nullptr;
 }
 
 ThermaltakeRiingQuadController::~ThermaltakeRiingQuadController()
 {
-    keepalive_thread_run = 0;
-    keepalive_thread->join();
-    delete keepalive_thread;
+    keepalive_thread_run = false;
+
+    if(keepalive_thread != nullptr)
+    {
+        keepalive_thread->join();
+        delete keepalive_thread;
+    }
 
     hid_close(dev);
 }
@@ -146,6 +150,18 @@ void ThermaltakeRiingQuadController::SendInit()
     \*-----------------------------------------------------*/
     hid_write(dev, usb_buf, THERMALTAKE_QUAD_PACKET_SIZE);
     hid_read_timeout(dev, usb_buf, THERMALTAKE_QUAD_PACKET_SIZE, THERMALTAKE_QUAD_INTERRUPT_TIMEOUT);
+
+    /*-----------------------------------------------------*\
+    | Start keepalive only after the first control request. |
+    | Detection constructs the controller but must not send |
+    | any lighting packets.                                 |
+    \*-----------------------------------------------------*/
+    if(keepalive_thread == nullptr)
+    {
+        last_commit_time     = std::chrono::steady_clock::now();
+        keepalive_thread_run = true;
+        keepalive_thread     = new std::thread(&ThermaltakeRiingQuadController::KeepaliveThread, this);
+    }
 }
 
 void ThermaltakeRiingQuadController::SendBuffer()

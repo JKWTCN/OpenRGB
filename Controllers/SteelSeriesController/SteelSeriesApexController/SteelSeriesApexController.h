@@ -32,6 +32,8 @@ public:
     void    SendInitialization() override;
 
 private:
+    bool initialized = false;
+
     void    SelectProfile
                 (
                 unsigned char   profile

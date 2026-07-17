@@ -107,6 +107,12 @@ DEFINES +=                                                                      
 
     GUI_H               = $$files("qt/*.h", true)
     GUI_CPP             = $$files("qt/*.cpp", true)
+
+    for(iter, GUI_H) {
+        GUI_INCLUDES += $$dirname(iter)
+    }
+
+    GUI_INCLUDES        = $$unique(GUI_INCLUDES)
 }
 
 CONTROLLER_H        = $$files("Controllers/*.h", true)

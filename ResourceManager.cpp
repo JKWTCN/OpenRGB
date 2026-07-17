@@ -369,6 +369,11 @@ std::vector<i2c_smbus_interface*> & ResourceManager::GetI2CBuses()
     return DetectionManager::get()->GetI2CBuses();
 }
 
+std::vector<SupportedDeviceInfo> ResourceManager::GetSupportedDeviceInfo()
+{
+    return DetectionManager::get()->GetSupportedDeviceInfo();
+}
+
 std::vector<i2c_smbus_info> ResourceManager::GetI2CBusInfo()
 {
     if(IsLocalClient())

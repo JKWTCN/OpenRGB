@@ -174,6 +174,15 @@ private:
     \*-----------------------------------------------------*/
     bool                        LoadAutoProfile(std::string setting_name);
 
+    bool                        LoadControllerFromListWithOptionsInternal
+                                    (
+                                    std::vector<RGBController*>&    temp_controllers,
+                                    RGBController*                  load_controller,
+                                    bool                            load_configuration,
+                                    bool                            load_state,
+                                    bool                            apply_state
+                                    );
+
     bool                        LoadProfileWithOptions
                                     (
                                     std::string     profile_name,

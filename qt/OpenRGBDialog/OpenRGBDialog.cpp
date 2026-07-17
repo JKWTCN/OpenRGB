@@ -1534,6 +1534,13 @@ void OpenRGBDialog::onDetectionEnded()
         plugin_manager->ScanAndLoadPlugins();
         plugins_loaded = true;
         PluginsPage->RefreshList();
+
+        /*-------------------------------------------------*\
+        | Load the on-open profile only after the initial   |
+        | detection.  A later rescan must not implicitly    |
+        | initialize or control newly detected devices.     |
+        \*-------------------------------------------------*/
+        ResourceManager::get()->GetProfileManager()->LoadAutoProfileOpen();
     }
 
     if(device_view_showing)
@@ -1541,10 +1548,6 @@ void OpenRGBDialog::onDetectionEnded()
         ShowLEDView();
     }
 
-    /*-----------------------------------------------------*\
-    | Load the on open automatic profile                    |
-    \*-----------------------------------------------------*/
-    ResourceManager::get()->GetProfileManager()->LoadAutoProfileOpen();
 }
 
 void OpenRGBDialog::onSettingsUpdated()
