@@ -18,6 +18,9 @@
 #ifndef PAWNIOLIB_LIBRARY_H
 #define PAWNIOLIB_LIBRARY_H
 
+#include <windows.h>
+#include <winternl.h>
+
 #ifdef PawnIOLib_EXPORTS
 #define PAWNIO_EXPORT __declspec(dllexport)
 #else
