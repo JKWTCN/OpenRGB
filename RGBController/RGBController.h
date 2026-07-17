@@ -342,6 +342,7 @@ private:
     friend class            NetworkClient;
     friend class            NetworkServer;
     friend class            OpenRGBPluginAPI;
+    friend class            JSONRPCHandler;
     friend class            ProfileManager;
     friend class            ResourceManager;
 };

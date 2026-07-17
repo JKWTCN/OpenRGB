@@ -486,6 +486,11 @@ PluginManagerInterface* ResourceManager::GetPluginManager()
     return(plugin_manager);
 }
 
+std::mutex& ResourceManager::GetDeviceListChangeMutex()
+{
+    return(DeviceListChangeMutex);
+}
+
 ProfileManager* ResourceManager::GetProfileManager()
 {
     return(profile_manager);

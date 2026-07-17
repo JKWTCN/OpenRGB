@@ -412,7 +412,7 @@ nlohmann::json JSONRPCHandler::SetLEDColor(const nlohmann::json &params)
                            "LED index out of range");
     }
 
-    controller->SetLED(led_idx, color);
+    controller->SetColor(led_idx, color);
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -449,7 +449,7 @@ nlohmann::json JSONRPCHandler::SetZoneColor(const nlohmann::json &params)
                            "Zone index out of range");
     }
 
-    controller->SetAllZoneLEDs(zone_idx, color);
+    controller->SetAllZoneColors(zone_idx, color);
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -519,7 +519,7 @@ nlohmann::json JSONRPCHandler::SetZoneMultipleLed(const nlohmann::json &params)
         if (force)
         {
             target_zone.leds_count = static_cast<unsigned int>(parsed_colors.size());
-            target_zone.flags &= ~ZONE_FLAG_RESIZE_EFFECTS_ONLY;
+            target_zone.flags |= ZONE_FLAG_MANUALLY_CONFIGURED_SIZE;
 
             std::size_t total_led_count = 0;
             for (std::size_t controller_zone_idx = 0;
@@ -681,7 +681,7 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
                 continue;
             }
             controller->zones[zone_idx].leds_count = static_cast<unsigned int>(parsed_zone_colors[zone_idx].size());
-            controller->zones[zone_idx].flags &= ~ZONE_FLAG_RESIZE_EFFECTS_ONLY;
+            controller->zones[zone_idx].flags |= ZONE_FLAG_MANUALLY_CONFIGURED_SIZE;
         }
 
         std::size_t total_led_count = 0;
@@ -753,7 +753,7 @@ nlohmann::json JSONRPCHandler::SetAllColors(const nlohmann::json &params)
 
     RGBController *controller = controllers[device_idx];
 
-    controller->SetAllLEDs(color);
+    controller->SetAllColors(color);
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -800,7 +800,7 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
         if (led_idx < controller->leds.size())
         {
             RGBColor color = ParseColor(color_item["color"]);
-            controller->SetLED(led_idx, color);
+            controller->SetColor(led_idx, color);
         }
     }
 
@@ -849,7 +849,7 @@ nlohmann::json JSONRPCHandler::SetKeyColor(const nlohmann::json &params)
     {
         if (controller->leds[led_idx].name == key_name)
         {
-            controller->SetLED(led_idx, color);
+            controller->SetColor(led_idx, color);
             found = true;
             break;
         }
@@ -899,7 +899,7 @@ nlohmann::json JSONRPCHandler::SetMode(const nlohmann::json &params)
                            "Mode index out of range");
     }
 
-    controller->SetMode(mode_idx);
+    controller->SetActiveMode(mode_idx);
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -996,7 +996,7 @@ nlohmann::json JSONRPCHandler::UpdateMode(const nlohmann::json &params)
         }
     }
 
-    controller->SetMode(mode_idx);
+    controller->SetActiveMode(mode_idx);
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -1171,7 +1171,7 @@ nlohmann::json JSONRPCHandler::GetProfiles(const nlohmann::json &params)
 
     if (profile_manager)
     {
-        for (const auto &name : profile_manager->profile_list)
+        for (const auto &name : profile_manager->GetProfileList())
         {
             profiles_array.push_back(name);
         }
@@ -1190,15 +1190,13 @@ nlohmann::json JSONRPCHandler::SaveProfile(const nlohmann::json &params)
     }
 
     std::string profile_name = params["profileName"];
-    bool include_sizes = params.value("includeSizes", true);
-
     if (!profile_manager)
     {
         return CreateError(JSONRPCProtocol::ERR_PROFILE_SAVE_FAILED,
                            "Profile manager not initialized");
     }
 
-    profile_manager->SaveProfile(profile_name, include_sizes);
+    profile_manager->SaveProfile(profile_name);
 
     /*---------------------------------------------------------*\
     | Notify WebSocket clients that a profile was saved.        |
@@ -1232,7 +1230,7 @@ nlohmann::json JSONRPCHandler::LoadProfile(const nlohmann::json &params)
                            "Profile manager not initialized");
     }
 
-    std::vector<std::string> profile_names = profile_manager->profile_list;
+    std::vector<std::string> profile_names = profile_manager->GetProfileList();
 
     if (std::find(profile_names.begin(), profile_names.end(), profile_name) == profile_names.end())
     {
@@ -1241,7 +1239,6 @@ nlohmann::json JSONRPCHandler::LoadProfile(const nlohmann::json &params)
     }
 
     profile_manager->LoadProfile(profile_name);
-    profile_manager->LoadSizeFromProfile(profile_name);
 
     /*---------------------------------------------------------*\
     | Notify WebSocket clients that a profile was loaded.       |
@@ -1275,7 +1272,7 @@ nlohmann::json JSONRPCHandler::DeleteProfile(const nlohmann::json &params)
                            "Profile manager not initialized");
     }
 
-    std::vector<std::string> profile_names = profile_manager->profile_list;
+    std::vector<std::string> profile_names = profile_manager->GetProfileList();
 
     if (std::find(profile_names.begin(), profile_names.end(), profile_name) == profile_names.end())
     {
@@ -1518,18 +1515,18 @@ nlohmann::json JSONRPCHandler::ZoneToJSON(RGBController *controller, int zone_id
     json_obj["ledsCount"] = z.leds_count;
 
     // Convert matrix_map to JSON if it exists
-    if (z.matrix_map)
+    if (z.matrix_map.width > 0 && z.matrix_map.height > 0 && !z.matrix_map.map.empty())
     {
         nlohmann::json matrix_obj;
-        matrix_obj["height"] = z.matrix_map->height;
-        matrix_obj["width"] = z.matrix_map->width;
+        matrix_obj["height"] = z.matrix_map.height;
+        matrix_obj["width"] = z.matrix_map.width;
 
         nlohmann::json map_array = nlohmann::json::array();
-        if (z.matrix_map->map)
+        if (!z.matrix_map.map.empty())
         {
-            for (unsigned int i = 0; i < (z.matrix_map->height * z.matrix_map->width); i++)
+            for (unsigned int i = 0; i < (z.matrix_map.height * z.matrix_map.width); i++)
             {
-                map_array.push_back(z.matrix_map->map[i]);
+                map_array.push_back(z.matrix_map.map[i]);
             }
         }
         matrix_obj["map"] = map_array;
@@ -1604,7 +1601,7 @@ nlohmann::json JSONRPCHandler::LEDToScanCompleteJSON(RGBController *controller, 
 nlohmann::json JSONRPCHandler::MatrixLEDsToScanCompleteJSON(RGBController *controller, const zone& matrix_zone)
 {
     nlohmann::json leds_array = nlohmann::json::array();
-    const matrix_map_type *matrix_map = matrix_zone.matrix_map;
+    const matrix_map_type *matrix_map = &matrix_zone.matrix_map;
 
     for (unsigned int y = 0; y < matrix_map->height; y++)
     {
@@ -1640,7 +1637,7 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
 
     for(const zone& z : controller->zones)
     {
-        if(z.type != ZONE_TYPE_MATRIX || z.matrix_map == NULL || z.matrix_map->map == NULL)
+        if(z.type != ZONE_TYPE_MATRIX || z.matrix_map.map.empty())
         {
             continue;
         }
@@ -1652,11 +1649,11 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
 
         unsigned int zone_led_idx = led_idx - z.start_idx;
 
-        for(unsigned int y = 0; y < z.matrix_map->height; y++)
+        for(unsigned int y = 0; y < z.matrix_map.height; y++)
         {
-            for(unsigned int x = 0; x < z.matrix_map->width; x++)
+            for(unsigned int x = 0; x < z.matrix_map.width; x++)
             {
-                if(z.matrix_map->map[(y * z.matrix_map->width) + x] == zone_led_idx)
+                if(z.matrix_map.map[(y * z.matrix_map.width) + x] == zone_led_idx)
                 {
                     json_obj["position"] = nlohmann::json::array({x, y});
                     return json_obj;

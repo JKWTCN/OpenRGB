@@ -90,6 +90,7 @@ public:
     ProfileManager*                     GetProfileManager();
     std::vector<RGBController*>&        GetRGBControllers();
     std::vector<RGBControllerInterface*>&   GetRGBControllerInterfaces();
+    std::mutex&                         GetDeviceListChangeMutex();
     NetworkServer*                      GetServer();
     WebSocketServer*                    GetWebSocketServer();
     SettingsManager*                    GetSettingsManager();

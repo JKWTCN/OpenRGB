@@ -407,7 +407,7 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
     // list, so we must not iterate the vector without it.
     nlohmann::json controllers_array = nlohmann::json::array();
     auto controller_to_scan_complete_json = [this](RGBController *controller) {
-        if (controller->type == DEVICE_TYPE_KEYBOARD)
+        if (controller->GetDeviceType() == DEVICE_TYPE_KEYBOARD)
         {
             return rpc_handler->ControllerToScanCompleteJSON(controller);
         }

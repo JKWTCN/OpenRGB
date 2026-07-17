@@ -275,8 +275,6 @@ SOURCES +=                                                                      
     WebSocketServer.cpp                                                                         \
     JSONRPCHandler.cpp                                                                          \
     JSONRPCProtocol.cpp                                                                         \
-    OpenRGBPluginAPI.cpp                                                                        \
-    PluginManager.cpp                                                                           \
     ProfileManager.cpp                                                                          \
     ResourceManager.cpp                                                                         \
     SPDAccessor/DDR4DirectAccessor.cpp                                                          \
@@ -306,6 +304,7 @@ SOURCES +=                                                                      
 !CONFIG(headless):SOURCES +=                                                                    \
     $$GUI_CPP                                                                                   \
     dependencies/ColorWheel/ColorWheel.cpp                                                      \
+    OpenRGBPluginAPI.cpp                                                                        \
     PluginManager.cpp                                                                           \
 
 !CONFIG(headless):RESOURCES +=                                                                  \
