@@ -181,13 +181,7 @@ RGBController_EVisionV98ProKeyboard::RGBController_EVisionV98ProKeyboard(EVision
 
 RGBController_EVisionV98ProKeyboard::~RGBController_EVisionV98ProKeyboard()
 {
-    for(unsigned int zone_idx = 0; zone_idx < zones.size(); zone_idx++)
-    {
-        if(zones[zone_idx].matrix_map != NULL)
-        {
-            delete zones[zone_idx].matrix_map;
-        }
-    }
+    Shutdown();
 
     delete controller;
 }
@@ -201,10 +195,7 @@ void RGBController_EVisionV98ProKeyboard::SetupZones()
     new_zone.leds_min           = led_count;
     new_zone.leds_max           = led_count;
     new_zone.leds_count         = led_count;
-    new_zone.matrix_map         = new matrix_map_type;
-    new_zone.matrix_map->height = 6;
-    new_zone.matrix_map->width  = 22;
-    new_zone.matrix_map->map    = (unsigned int *)&matrix_map;
+    new_zone.matrix_map.Set(6, 22, (unsigned int *)&matrix_map);
 
     zones.push_back(new_zone);
 
@@ -220,10 +211,6 @@ void RGBController_EVisionV98ProKeyboard::SetupZones()
     SetupColors();
 }
 
-void RGBController_EVisionV98ProKeyboard::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-}
-
 void RGBController_EVisionV98ProKeyboard::DeviceUpdateLEDs()
 {
     LOG_TRACE("[EVision V98PRO] DeviceUpdateLEDs");
@@ -234,12 +221,12 @@ void RGBController_EVisionV98ProKeyboard::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_EVisionV98ProKeyboard::UpdateZoneLEDs(int /*zone*/)
+void RGBController_EVisionV98ProKeyboard::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_EVisionV98ProKeyboard::UpdateSingleLED(int /*led*/)
+void RGBController_EVisionV98ProKeyboard::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
