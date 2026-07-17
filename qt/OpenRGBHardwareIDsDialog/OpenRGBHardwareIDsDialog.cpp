@@ -34,105 +34,82 @@ OpenRGBHardwareIDsDialog::~OpenRGBHardwareIDsDialog()
 
 int OpenRGBHardwareIDsDialog::show()
 {
-    /*---------------------------------------------------------*\
-    | Add i2c busses infos                                      |
-    \*---------------------------------------------------------*/
-    std::vector<i2c_smbus_interface*> i2CBusses = ResourceManager::get()->GetI2CBusses();
+    /*-----------------------------------------------------*\
+    | Add I2C Buses                                         |
+    \*-----------------------------------------------------*/
+    std::vector<i2c_smbus_info> i2c_bus_info    = ResourceManager::get()->GetI2CBusInfo();
+    QTreeWidgetItem*            i2c_top         = new QTreeWidgetItem(ui->HardwareIdsList, {"I2C Buses"});
 
-    // The widget takes control over items after creation
-    QTreeWidgetItem* i2c_top = new QTreeWidgetItem(ui->HardwareIdsList, {"i2c busses"});
-    strings.push_back("[ i2c busses ]");
+    strings.push_back("[ I2C Buses ]");
 
-    for(i2c_smbus_interface* bus : i2CBusses)
+    for(i2c_smbus_info bus_info : i2c_bus_info)
     {
         char line[550];
-        snprintf(line, 550, "%04X:%04X %04X:%04X", bus->pci_vendor, bus->pci_device, bus->pci_subsystem_vendor, bus->pci_subsystem_device);
-        new QTreeWidgetItem(i2c_top, {line, bus->device_name});
+        snprintf(line, 550, "%04X:%04X %04X:%04X", bus_info.pci_vendor, bus_info.pci_device, bus_info.pci_subsystem_vendor, bus_info.pci_subsystem_device);
+        new QTreeWidgetItem(i2c_top, {line, bus_info.device_name});
 
-        snprintf(line, 550, "%04X:%04X %04X:%04X - %s", bus->pci_vendor, bus->pci_device, bus->pci_subsystem_vendor, bus->pci_subsystem_device, bus->device_name);
+        snprintf(line, 550, "%04X:%04X %04X:%04X - %s", bus_info.pci_vendor, bus_info.pci_device, bus_info.pci_subsystem_vendor, bus_info.pci_subsystem_device, bus_info.device_name);
         strings.push_back(line);
     }
 
-    /*---------------------------------------------------------*\
-    | Add HID devices infos                                     |
-    \*---------------------------------------------------------*/
-    hid_device_info*    hid_devices         = NULL;
-    hid_devices = hid_enumerate(0,0);
+    /*-----------------------------------------------------*\
+    | Add HID Devices                                       |
+    \*-----------------------------------------------------*/
+    std::vector<HIDDeviceInfo>  hid_device_info = ResourceManager::get()->GetHIDDeviceInfo();
+    QTreeWidgetItem*            hid_top         = new QTreeWidgetItem(ui->HardwareIdsList, {"HID Devices"});
 
-    hid_device_info*    current_hid_device;
-    current_hid_device  = hid_devices;
+    strings.push_back("\n[ HID Devices ]");
 
-    QTreeWidgetItem* hid_top = new QTreeWidgetItem(ui->HardwareIdsList, {"HID devices"});
-    strings.push_back("\n[ HID devices ]");
-
-    while(current_hid_device)
+    for(HIDDeviceInfo device_info : hid_device_info)
     {
-        const char* manu_name = StringUtils::wchar_to_char(current_hid_device->manufacturer_string);
-        const char* prod_name = StringUtils::wchar_to_char(current_hid_device->product_string);
-
         char line[550];
 
-        snprintf(line, 550, "[%04X:%04X U=%04X P=0x%04X I=%d]", current_hid_device->vendor_id, current_hid_device->product_id, current_hid_device->usage, current_hid_device->usage_page, current_hid_device->interface_number);
-        new QTreeWidgetItem(hid_top, {line, prod_name, manu_name});
+        snprintf(line, 550, "[%04X:%04X U=%04X P=0x%04X I=%d]", device_info.vendor_id, device_info.product_id, device_info.usage, device_info.usage_page, device_info.interface_number);
+        new QTreeWidgetItem(hid_top, {line, QString::fromStdString(device_info.product_string), QString::fromStdString(device_info.manufacturer_string)});
 
-        snprintf(line, 550, "[%04X:%04X U=%04X P=0x%04X I=%d] %s - %s", current_hid_device->vendor_id, current_hid_device->product_id, current_hid_device->usage, current_hid_device->usage_page, current_hid_device->interface_number, manu_name, prod_name);
-        strings.push_back(line);
-
-        current_hid_device = current_hid_device->next;
-    }
-
-    /*---------------------------------------------------------*\
-    | Add LibUSB devices infos                                  |
-    \*---------------------------------------------------------*/
-    libusb_device** devices = nullptr;
-
-    QTreeWidgetItem* libusb_top = new QTreeWidgetItem(ui->HardwareIdsList, {"LibUSB devices"});
-    strings.push_back("\n[ LibUSB devices ]");
-
-    int ret;
-
-    ret = libusb_init(NULL);
-
-    if(ret < 0)
-    {
-        return 0;
-    }
-
-    ret = libusb_get_device_list(NULL, &devices);
-
-    if(ret < 0)
-    {
-        return 0;
-    }
-
-    int deviceCount = ret;
-
-    for(int i = 0; i < deviceCount; i++)
-    {
-        libusb_device* device = devices[i];
-        libusb_device_descriptor descriptor;
-
-        ret = libusb_get_device_descriptor(device, &descriptor);
-
-        if(ret < 0)
-        {
-            continue;
-        }
-
-        char line[512];
-        snprintf(line, 512, "%04X:%04X", descriptor.idVendor, descriptor.idProduct);
-        new QTreeWidgetItem(libusb_top, {line});
+        snprintf(line, 550, "[%04X:%04X U=%04X P=0x%04X I=%d] %s - %s", device_info.vendor_id, device_info.product_id, device_info.usage, device_info.usage_page, device_info.interface_number, device_info.manufacturer_string.c_str(), device_info.product_string.c_str());
         strings.push_back(line);
     }
 
-    if(devices != nullptr)
+    /*-----------------------------------------------------*\
+    | Add USB Devices                                       |
+    \*-----------------------------------------------------*/
+    std::vector<USBDeviceInfo>  usb_device_info = ResourceManager::get()->GetUSBDeviceInfo();
+    QTreeWidgetItem*            usb_top         = new QTreeWidgetItem(ui->HardwareIdsList, {"USB devices"});
+
+    strings.push_back("\n[ USB devices ]");
+
+    for(USBDeviceInfo device_info : usb_device_info)
     {
-        libusb_free_device_list(devices, 1);
+        char line[550];
+
+        snprintf(line, 550, "[%04X:%04X]", device_info.vendor_id, device_info.product_id);
+        new QTreeWidgetItem(usb_top, {line, QString::fromStdString(device_info.product_string), QString::fromStdString(device_info.manufacturer_string)});
+
+        snprintf(line, 550, "[%04X:%04X] %s - %s", device_info.vendor_id, device_info.product_id, device_info.manufacturer_string.c_str(), device_info.product_string.c_str());
+        strings.push_back(line);
+    }
+
+    std::vector<SerialDeviceInfo>   serial_device_info = ResourceManager::get()->GetUSBSerialPorts();
+    QTreeWidgetItem*                serial_top         = new QTreeWidgetItem(ui->HardwareIdsList, {"USB Serial devices"});
+
+    strings.push_back("\n[ USB Serial devices ]");
+
+    for(SerialDeviceInfo device_info : serial_device_info)
+    {
+        char line[550];
+
+        snprintf(line, 550, "[%04X:%04X]", device_info.vendor_id, device_info.product_id);
+        new QTreeWidgetItem(serial_top, {line, QString::fromStdString(device_info.port_path), QString::fromStdString(device_info.usb_path)});
+
+        snprintf(line, 550, "[%04X:%04X] %s (%s)", device_info.vendor_id, device_info.product_id, device_info.port_path.c_str(), device_info.usb_path.c_str());
+        strings.push_back(line);
     }
 
     i2c_top->setExpanded(true);
     hid_top->setExpanded(true);
-    libusb_top->setExpanded(true);
+    usb_top->setExpanded(true);
+    serial_top->setExpanded(true);
 
     return this->exec();
 }

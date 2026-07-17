@@ -3,6 +3,8 @@
 |                                                           |
 |   OpenRGB profile manager                                 |
 |                                                           |
+|   Adam Honse <calcprogrammer1@gmail.com>      09 Nov 2025 |
+|                                                           |
 |   This file is part of the OpenRGB project                |
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
@@ -10,21 +12,117 @@
 #include <fstream>
 #include <iostream>
 #include <cstring>
+#include "filesystem.h"
+#include "JsonUtils.h"
+#include "LogManager.h"
+#include "NetworkClient.h"
+#include "NetworkProtocol.h"
+#include "NetworkServer.h"
+#include "PluginManagerInterface.h"
 #include "ProfileManager.h"
 #include "ResourceManager.h"
 #include "RGBController_Dummy.h"
-#include "LogManager.h"
-#include "NetworkProtocol.h"
-#include "filesystem.h"
+#include "SettingsManager.h"
 #include "StringUtils.h"
 
 #define OPENRGB_PROFILE_HEADER  "RGBSRV_PROFILE1"
 #define OPENRGB_PROFILE_VERSION OPENRGB_SDK_PROTOCOL_VERSION
 
+/*---------------------------------------------------------*\
+| ProfileManager name for log entries                       |
+\*---------------------------------------------------------*/
+const char* PROFILEMANAGER = "ProfileManager";
+
 ProfileManager::ProfileManager(const filesystem::path& config_dir)
 {
-    configuration_directory = config_dir;
+    /*-----------------------------------------------------*\
+    | Initialize configuration directory and update profile |
+    | list                                                  |
+    \*-----------------------------------------------------*/
+    SetConfigurationDirectory(config_dir);
     UpdateProfileList();
+
+    /*-----------------------------------------------------*\
+    | Create ProfileManager settings schema                 |
+    \*-----------------------------------------------------*/
+    SettingsManager*    settings_manager                                = ResourceManager::get()->GetSettingsManager();
+    json                profilemanager_settings_schema;
+
+    profilemanager_settings_schema["exit_profile"]["title"]             = QT_TRANSLATE_NOOP("Settings", "Load Profile on Exit");
+    profilemanager_settings_schema["exit_profile"]["type"]              = "profile";
+    profilemanager_settings_schema["exit_profile"]["description"]       = QT_TRANSLATE_NOOP("Settings", "Profile to load when OpenRGB exits");
+
+    profilemanager_settings_schema["open_profile"]["title"]             = QT_TRANSLATE_NOOP("Settings", "Load Profile on Open");
+    profilemanager_settings_schema["open_profile"]["type"]              = "profile";
+    profilemanager_settings_schema["open_profile"]["description"]       = QT_TRANSLATE_NOOP("Settings", "Profile to load when OpenRGB opens");
+
+    profilemanager_settings_schema["resume_profile"]["title"]           = QT_TRANSLATE_NOOP("Settings", "Load Profile on Resume");
+    profilemanager_settings_schema["resume_profile"]["type"]            = "profile";
+    profilemanager_settings_schema["resume_profile"]["description"]     = QT_TRANSLATE_NOOP("Settings", "Profile to load after system resumes from sleep");
+
+    profilemanager_settings_schema["suspend_profile"]["title"]          = QT_TRANSLATE_NOOP("Settings", "Load Profile on Suspend");
+    profilemanager_settings_schema["suspend_profile"]["type"]           = "profile";
+    profilemanager_settings_schema["suspend_profile"]["description"]    = QT_TRANSLATE_NOOP("Settings", "Profile to load before system enters sleep mode");
+
+    settings_manager->RegisterSettingsSchema("ProfileManager", QT_TRANSLATE_NOOP("Settings", "Profile Manager"), profilemanager_settings_schema, 1);
+
+    /*-----------------------------------------------------*\
+    | Read in profile manager settings and initialize any   |
+    | missing settings to defaults                          |
+    \*-----------------------------------------------------*/
+    json                profilemanager_settings     = settings_manager->GetSettings("ProfileManager");
+    bool                new_settings_keys           = false;
+
+    if(!profilemanager_settings.contains("open_profile"))
+    {
+        json profile;;
+        profile["enabled"]                          = false;
+        profile["name"]                             = "";
+        profilemanager_settings["open_profile"]     = profile;
+        new_settings_keys                           = true;
+    }
+
+    if(!profilemanager_settings.contains("exit_profile"))
+    {
+        json profile;
+        profile["enabled"]                          = false;
+        profile["name"]                             = "";
+        profilemanager_settings["exit_profile"]     = profile;
+        new_settings_keys                           = true;
+    }
+
+    if(!profilemanager_settings.contains("resume_profile"))
+    {
+        json profile;
+        profile["enabled"]                          = false;
+        profile["name"]                             = "";
+        profilemanager_settings["resume_profile"]   = profile;
+        new_settings_keys                           = true;
+    }
+
+    if(!profilemanager_settings.contains("suspend_profile"))
+    {
+        json profile;
+        profile["enabled"]                          = false;
+        profile["name"]                             = "";
+        profilemanager_settings["suspend_profile"]  = profile;
+        new_settings_keys                           = true;
+    }
+
+    /*-----------------------------------------------------*\
+    | Save the settings if new default values have been     |
+    | inserted                                              |
+    \*-----------------------------------------------------*/
+    if(new_settings_keys)
+    {
+        settings_manager->SetSettings("ProfileManager", profilemanager_settings);
+        settings_manager->SaveSettings();
+    }
+
+    /*-----------------------------------------------------*\
+    | Initialize manually configured controllers list       |
+    \*-----------------------------------------------------*/
+    manually_configured_rgb_controllers = GetControllerListFromSavedConfiguration();
 }
 
 ProfileManager::~ProfileManager()
@@ -32,86 +130,447 @@ ProfileManager::~ProfileManager()
 
 }
 
-bool ProfileManager::SaveProfile(std::string profile_name, bool sizes)
+void ProfileManager::ClearActiveProfile()
 {
-    profile_name = StringUtils::remove_null_terminating_chars(profile_name);
+    /*-------------------------------------------------*\
+    | Clear stored active profile data                  |
+    \*-------------------------------------------------*/
+    std::vector active_rgb_controllers_copy = active_rgb_controllers;
 
-    /*---------------------------------------------------------*\
-    | Get the list of controllers from the resource manager     |
-    \*---------------------------------------------------------*/
-    std::vector<RGBController *> controllers = ResourceManager::get()->GetRGBControllers();
+    active_base_color_enabled               = false;
+    active_base_color                       = 0;
+    active_rgb_controllers.clear();
 
-    /*---------------------------------------------------------*\
-    | If a name was entered, save the profile file              |
-    \*---------------------------------------------------------*/
+    for(unsigned int controller_idx = 0; controller_idx < active_rgb_controllers_copy.size(); controller_idx++)
+    {
+        delete active_rgb_controllers_copy[controller_idx];
+    }
+
+    if(ResourceManager::get()->IsLocalClient() && ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI())
+    {
+        ResourceManager::get()->GetLocalClient()->ProfileManager_ClearActiveProfile();
+    }
+
+    SetActiveProfile("");
+}
+
+void ProfileManager::DeleteProfile(std::string profile_name)
+{
+    if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+    {
+        ResourceManager::get()->GetLocalClient()->ProfileManager_DeleteProfile(profile_name);
+    }
+    else
+    {
+        filesystem::path filename = profile_directory / StringUtils::make_filename(profile_name);
+        filename.concat(".json");
+
+        filesystem::remove(filename);
+    }
+
+    UpdateProfileList();
+}
+
+std::string ProfileManager::GetActiveProfile()
+{
+    return(active_profile);
+}
+
+std::vector<RGBController*> ProfileManager::GetControllerListFromProfileJson(nlohmann::json profile_json)
+{
+    std::vector<RGBController*> profile_controllers;
+
+    /*-----------------------------------------------------*\
+    | Read list of controllers from profile                 |
+    \*-----------------------------------------------------*/
+    if(profile_json.contains("controllers"))
+    {
+        for(std::size_t controller_idx = 0; controller_idx < profile_json["controllers"].size(); controller_idx++)
+        {
+            RGBController_Dummy * profile_controller = new RGBController_Dummy();
+
+            RGBController::SetDeviceDescriptionJSON(profile_json["controllers"][controller_idx], profile_controller);
+
+            profile_controllers.push_back(profile_controller);
+        }
+    }
+
+    return(profile_controllers);
+}
+
+std::vector<RGBController*> ProfileManager::GetControllerListFromProfileName(std::string profile_name)
+{
+    return(GetControllerListFromProfileJson(ReadProfileJSON(profile_name)));
+}
+
+std::vector<RGBController*> ProfileManager::GetControllerListFromSavedConfiguration()
+{
+    /*-----------------------------------------------------*\
+    | Read the configuration JSON from the file             |
+    \*-----------------------------------------------------*/
+    filesystem::path    filename    = configuration_directory / "Configuration.json";
+    nlohmann::json      config_json = ReadProfileFileJSON(filename);
+
+    return(GetControllerListFromProfileJson(config_json));
+}
+
+std::vector<std::string> ProfileManager::GetProfileList()
+{
+    return(profile_list);
+}
+
+unsigned char * ProfileManager::GetProfileListDescription()
+{
+    unsigned int data_ptr = 0;
+    unsigned int data_size = 0;
+
+    /*-----------------------------------------------------*\
+    | Calculate data size                                   |
+    \*-----------------------------------------------------*/
+     unsigned short num_profiles = (unsigned short)profile_list.size();
+
+     data_size += sizeof(data_size);
+     data_size += sizeof(num_profiles);
+
+    for(unsigned int i = 0; i < num_profiles; i++)
+    {
+        data_size += sizeof (unsigned short);
+        data_size += (unsigned int)strlen(profile_list[i].c_str()) + 1;
+    }
+
+    /*-----------------------------------------------------*\
+    | Create data buffer                                    |
+    \*-----------------------------------------------------*/
+    unsigned char *data_buf = new unsigned char[data_size];
+
+    /*-----------------------------------------------------*\
+    | Copy in data size                                     |
+    \*-----------------------------------------------------*/
+    memcpy(&data_buf[data_ptr], &data_size, sizeof(data_size));
+    data_ptr += sizeof(data_size);
+
+    /*-----------------------------------------------------*\
+    | Copy in num_profiles                                  |
+    \*-----------------------------------------------------*/
+    memcpy(&data_buf[data_ptr], &num_profiles, sizeof(num_profiles));
+    data_ptr += sizeof(num_profiles);
+
+    /*-----------------------------------------------------*\
+    | Copy in profile names (size+data)                     |
+    \*-----------------------------------------------------*/
+    for(unsigned int i = 0; i < num_profiles; i++)
+    {
+        unsigned short name_len = (unsigned short)strlen(profile_list[i].c_str()) + 1;
+
+        memcpy(&data_buf[data_ptr], &name_len, sizeof(name_len));
+        data_ptr += sizeof(name_len);
+
+        strcpy((char *)&data_buf[data_ptr], profile_list[i].c_str());
+        data_ptr += name_len;
+    }
+
+    return(data_buf);
+}
+
+bool ProfileManager::LoadAutoProfileExit()
+{
+    return(LoadAutoProfile("exit_profile"));
+}
+
+bool ProfileManager::LoadAutoProfileOpen()
+{
+    return(LoadAutoProfile("open_profile"));
+}
+
+bool ProfileManager::LoadAutoProfileResume()
+{
+    return(LoadAutoProfile("resume_profile"));
+}
+
+bool ProfileManager::LoadAutoProfileSuspend()
+{
+    return(LoadAutoProfile("suspend_profile"));
+}
+
+bool ProfileManager::LoadControllerActiveProfile(RGBController* load_controller)
+{
+    return(LoadControllerFromListWithOptions(active_rgb_controllers, load_controller, false, true));
+}
+
+bool ProfileManager::LoadControllerConfiguration(RGBController* load_controller)
+{
+    return(LoadControllerFromListWithOptions(manually_configured_rgb_controllers, load_controller, true, false));
+}
+
+bool ProfileManager::LoadProfile(std::string profile_name)
+{
+    if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+    {
+        ResourceManager::get()->GetLocalClient()->ProfileManager_LoadProfile(profile_name);
+
+        return(true);
+    }
+    else
+    {
+        bool success = false;
+
+        success = LoadProfileWithOptions(profile_name, false, true);
+
+        return(success);
+    }
+}
+
+void ProfileManager::OnProfileAboutToLoad()
+{
+    /*-------------------------------------------------*\
+    | Signal to plugins that a profile is about to load |
+    \*-------------------------------------------------*/
+    PluginManagerInterface* plugin_manager = ResourceManager::get()->GetPluginManager();
+
+    if(plugin_manager != NULL)
+    {
+        plugin_manager->OnProfileAboutToLoad();
+    }
+
+    SignalProfileManagerUpdate(PROFILEMANAGER_UPDATE_REASON_PROFILE_ABOUT_TO_LOAD);
+}
+
+void ProfileManager::OnProfileLoaded(std::string profile_json_string)
+{
+    nlohmann::json profile_json;
+    JsonUtils::JsonParse(profile_json_string, profile_json);
+
+    /*-------------------------------------------------*\
+    | Get plugin profile data                           |
+    \*-------------------------------------------------*/
+    PluginManagerInterface* plugin_manager = ResourceManager::get()->GetPluginManager();
+
+    if(plugin_manager != NULL && profile_json.contains("plugins"))
+    {
+        plugin_manager->OnProfileLoad(profile_json["plugins"]);
+    }
+}
+
+void ProfileManager::RegisterProfileManagerCallback(ProfileManagerCallback new_callback, void * new_callback_arg)
+{
+    ProfileManagerCallbackMutex.lock();
+
+    for(size_t idx = 0; idx < ProfileManagerCallbacks.size(); idx++)
+    {
+        if(ProfileManagerCallbacks[idx] == new_callback && ProfileManagerCallbackArgs[idx] == new_callback_arg)
+        {
+            ProfileManagerCallbackMutex.unlock();
+
+            LOG_TRACE("[%s] Tried to register an already registered ProfileManager callback, skipping.  Total callbacks registered: %d", PROFILEMANAGER, ProfileManagerCallbacks.size());
+
+            return;
+        }
+    }
+
+    ProfileManagerCallbacks.push_back(new_callback);
+    ProfileManagerCallbackArgs.push_back(new_callback_arg);
+
+    ProfileManagerCallbackMutex.unlock();
+
+    LOG_TRACE("[%s] Registered ProfileManager callback.  Total callbacks registered: %d", PROFILEMANAGER, ProfileManagerCallbacks.size());
+}
+
+void ProfileManager::UnregisterProfileManagerCallback(ProfileManagerCallback callback, void * callback_arg)
+{
+    ProfileManagerCallbackMutex.lock();
+
+    for(size_t idx = 0; idx < ProfileManagerCallbacks.size(); idx++)
+    {
+        if(ProfileManagerCallbacks[idx] == callback && ProfileManagerCallbackArgs[idx] == callback_arg)
+        {
+            ProfileManagerCallbacks.erase(ProfileManagerCallbacks.begin() + idx);
+            ProfileManagerCallbackArgs.erase(ProfileManagerCallbackArgs.begin() + idx);
+        }
+    }
+
+    ProfileManagerCallbackMutex.unlock();
+
+    LOG_TRACE("[%s] Unregistered ProfileManager callback.  Total callbacks registered: %d", PROFILEMANAGER, ProfileManagerCallbackArgs.size());
+}
+
+nlohmann::json ProfileManager::ReadProfileJSON(std::string profile_name)
+{
+    nlohmann::json profile_json;
+
+    if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+    {
+        JsonUtils::JsonParse(ResourceManager::get()->GetLocalClient()->ProfileManager_DownloadProfile(profile_name), profile_json);
+    }
+    else
+    {
+        /*-------------------------------------------------*\
+        | File extension for v6+ profiles is .json          |
+        \*-------------------------------------------------*/
+        profile_name = StringUtils::make_filename(profile_name) + ".json";
+
+        /*-------------------------------------------------*\
+        | Read the profile JSON from the file               |
+        \*-------------------------------------------------*/
+        filesystem::path profile_path = profile_directory / filesystem::u8path(profile_name);
+
+        profile_json = ReadProfileFileJSON(profile_path);
+    }
+
+    return(profile_json);
+}
+
+bool ProfileManager::SaveProfile(std::string profile_name)
+{
+    /*-----------------------------------------------------*\
+    | If a name was entered, save the profile file          |
+    \*-----------------------------------------------------*/
     if(profile_name != "")
     {
-        /*---------------------------------------------------------*\
-        | Extension .orp - OpenRgb Profile                          |
-        \*---------------------------------------------------------*/
-        std::string filename = profile_name;
+        /*-------------------------------------------------*\
+        | Get the existing profile JSON data                |
+        \*-------------------------------------------------*/
+        nlohmann::json existing_profile_json = ReadProfileJSON(profile_name);
 
-        /*---------------------------------------------------------*\
-        | Determine file extension                                  |
-        \*---------------------------------------------------------*/
-        if(sizes)
+        /*-------------------------------------------------*\
+        | Read the existing profile's base color settings   |
+        \*-------------------------------------------------*/
+        RGBColor    base_color          = 0;
+        bool        base_color_enabled  = false;
+
+        if(existing_profile_json.contains("base_color"))
         {
-            filename += ".ors";
+            base_color          = existing_profile_json["base_color"];
+            base_color_enabled  = true;
+        }
+
+        /*-------------------------------------------------*\
+        | Read the existing profile's controller states     |
+        \*-------------------------------------------------*/
+        std::vector<RGBController*> existing_controllers = GetControllerListFromProfileJson(existing_profile_json);
+
+        /*-------------------------------------------------*\
+        | If updating an existing profile, only save        |
+        | controller states if the existing profile had one |
+        | or more saved controller states already.          |
+        | If creating a new profile, always save controller |
+        | states.                                           |
+        \*-------------------------------------------------*/
+        bool save_controllers = (existing_profile_json.empty()) || (!existing_profile_json.empty() && !existing_controllers.empty());
+
+        /*-------------------------------------------------*\
+        | Get the list of controllers from the resource     |
+        | manager                                           |
+        \*-------------------------------------------------*/
+        std::vector<RGBController *> controllers = ResourceManager::get()->GetRGBControllers();
+
+        /*-------------------------------------------------*\
+        | Start filling in profile json data                |
+        \*-------------------------------------------------*/
+        nlohmann::json profile_json;
+
+        profile_json["profile_version"] = OPENRGB_PROFILE_VERSION;
+        profile_json["profile_name"]    = profile_name;
+
+        /*-------------------------------------------------*\
+        | Write base color data if enabled                  |
+        \*-------------------------------------------------*/
+        if(base_color_enabled)
+        {
+            profile_json["base_color"] = base_color;
+        }
+
+        /*-------------------------------------------------*\
+        | Write controller data for each controller if      |
+        | enabled                                           |
+        \*-------------------------------------------------*/
+        if(save_controllers)
+        {
+            std::size_t new_profile_controller_index = 0;
+
+            for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
+            {
+                /*-----------------------------------------*\
+                | Read the controller data for this         |
+                | controller into the profile json          |
+                \*-----------------------------------------*/
+                profile_json["controllers"][new_profile_controller_index] = RGBController::GetDeviceDescriptionJSON(controllers[controller_index]);
+                new_profile_controller_index++;
+            }
+
+            /*---------------------------------------------*\
+            | Loop through the previously saved controllers |
+            | and add any controllers that were previously  |
+            | saved but not in the current controllers list |
+            \*---------------------------------------------*/
+            for(std::size_t existing_controller_index = 0; existing_controller_index < existing_controllers.size(); existing_controller_index++)
+            {
+                bool found = false;
+
+                for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
+                {
+                    if(RGBController::CompareControllers(existing_controllers[existing_controller_index], controllers[controller_index]))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found)
+                {
+                /*-----------------------------------------*\
+                | Read the controller data for this         |
+                | controller into the profile json          |
+                \*-----------------------------------------*/
+                    profile_json["controllers"][new_profile_controller_index] = RGBController::GetDeviceDescriptionJSON(manually_configured_rgb_controllers[existing_controller_index]);
+                    new_profile_controller_index++;
+                }
+            }
+        }
+
+        /*-------------------------------------------------*\
+        | Get plugin profile data if the plugin manager is  |
+        | available.  If updating existing profile, only    |
+        | update the plugins saved in that profile.         |
+        | Otherwise, save all plugins.                      |
+        \*-------------------------------------------------*/
+        PluginManagerInterface* plugin_manager = ResourceManager::get()->GetPluginManager();
+
+        if(plugin_manager != NULL)
+        {
+            if(existing_profile_json.empty())
+            {
+                profile_json["plugins"] = plugin_manager->OnProfileSave();
+            }
+            else if(existing_profile_json.contains("plugins"))
+            {
+                std::vector<std::string> plugins_to_save;
+
+                for(unsigned int plugin_idx = 0; plugin_idx < plugin_manager->GetPluginCount(); plugin_idx++)
+                {
+                    if(profile_json["plugins"].contains(plugin_manager->GetPluginName(plugin_idx)))
+                    {
+                        plugins_to_save.push_back(plugin_manager->GetPluginName(plugin_idx));
+                    }
+                }
+
+                profile_json["plugins"] = plugin_manager->OnProfileSave(plugins_to_save);
+            }
+        }
+
+        if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+        {
+            /*---------------------------------------------*\
+            | Upload the profile to the server              |
+            \*---------------------------------------------*/
+            ResourceManager::get()->GetLocalClient()->ProfileManager_UploadProfile(profile_json.dump());
         }
         else
         {
-            filename += ".orp";
+            /*---------------------------------------------*\
+            | Save the profile to file from the JSON        |
+            \*---------------------------------------------*/
+            SaveProfileFromJSON(profile_json);
         }
-
-        /*---------------------------------------------------------*\
-        | Open an output file in binary mode                        |
-        \*---------------------------------------------------------*/
-        filesystem::path profile_path = configuration_directory / filesystem::u8path(filename);
-        std::ofstream controller_file(profile_path, std::ios::out | std::ios::binary | std::ios::trunc);
-
-        /*---------------------------------------------------------*\
-        | Write header                                              |
-        | 16 bytes - "OPENRGB_PROFILE"                              |
-        | 4 bytes - Version, unsigned int                           |
-        \*---------------------------------------------------------*/
-        unsigned int profile_version = OPENRGB_PROFILE_VERSION;
-        controller_file.write(OPENRGB_PROFILE_HEADER, 16);
-        controller_file.write((char *)&profile_version, sizeof(unsigned int));
-
-        /*---------------------------------------------------------*\
-        | Write controller data for each controller                 |
-        \*---------------------------------------------------------*/
-        for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
-        {
-            /*-----------------------------------------------------*\
-            | Ignore remote and virtual controllers when saving     |
-            | sizes                                                 |
-            \*-----------------------------------------------------*/
-            if(sizes && (controllers[controller_index]->flags & CONTROLLER_FLAG_REMOTE
-                      || controllers[controller_index]->flags & CONTROLLER_FLAG_VIRTUAL))
-            {
-                break;
-            }
-
-            unsigned char *controller_data = controllers[controller_index]->GetDeviceDescription(profile_version);
-            unsigned int controller_size;
-
-            memcpy(&controller_size, controller_data, sizeof(controller_size));
-
-            controller_file.write((const char *)controller_data, controller_size);
-
-            delete[] controller_data;
-        }
-
-        /*---------------------------------------------------------*\
-        | Close the file when done                                  |
-        \*---------------------------------------------------------*/
-        controller_file.close();
-
-        /*---------------------------------------------------------*\
-        | Update the profile list                                   |
-        \*---------------------------------------------------------*/
-        UpdateProfileList();
 
         return(true);
     }
@@ -121,124 +580,403 @@ bool ProfileManager::SaveProfile(std::string profile_name, bool sizes)
     }
 }
 
-void ProfileManager::SetConfigurationDirectory(const filesystem::path& directory)
+bool ProfileManager::SaveProfileCustom(std::string profile_name, std::vector<RGBController*> controllers, RGBColor base_color, bool base_color_enabled, std::vector<std::string> enabled_plugins)
 {
-    configuration_directory = directory;
-    UpdateProfileList();
-}
-
-bool ProfileManager::LoadProfile(std::string profile_name)
-{
-    profile_name = StringUtils::remove_null_terminating_chars(profile_name);
-    return(LoadProfileWithOptions(profile_name, false, true));
-}
-
-bool ProfileManager::LoadSizeFromProfile(std::string profile_name)
-{
-    profile_name = StringUtils::remove_null_terminating_chars(profile_name);
-    return(LoadProfileWithOptions(profile_name, true, false));
-}
-
-std::vector<RGBController*> ProfileManager::LoadProfileToList
-    (
-    std::string     profile_name,
-    bool            sizes
-    )
-{
-    std::vector<RGBController*> temp_controllers;
-    unsigned int                controller_size;
-    unsigned int                controller_offset = 0;
-
-    filesystem::path filename = configuration_directory / filesystem::u8path(profile_name);
-
-    /*---------------------------------------------------------*\
-    | Determine file extension                                  |
-    \*---------------------------------------------------------*/
-    if(sizes)
+    /*-----------------------------------------------------*\
+    | If a name was entered, save the profile file          |
+    \*-----------------------------------------------------*/
+    if(profile_name != "")
     {
-        filename.concat(".ors");
+        /*-------------------------------------------------*\
+        | Start filling in profile json data                |
+        \*-------------------------------------------------*/
+        nlohmann::json profile_json;
+
+        profile_json["profile_version"] = OPENRGB_PROFILE_VERSION;
+        profile_json["profile_name"]    = profile_name;
+
+        /*-------------------------------------------------*\
+        | Write base color data if enabled                  |
+        \*-------------------------------------------------*/
+        if(base_color_enabled)
+        {
+            profile_json["base_color"] = base_color;
+        }
+
+        /*-------------------------------------------------*\
+        | Write controller data for each controller         |
+        \*-------------------------------------------------*/
+        for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
+        {
+            /*---------------------------------------------*\
+            | Read the controller data for this controller  |
+            | into the profile json                         |
+            \*---------------------------------------------*/
+            profile_json["controllers"][controller_index] = RGBController::GetDeviceDescriptionJSON(controllers[controller_index]);
+        }
+
+        /*-------------------------------------------------*\
+        | Get plugin profile data if the plugin manager is  |
+        | available                                         |
+        \*-------------------------------------------------*/
+        if(enabled_plugins.size() > 0)
+        {
+            PluginManagerInterface* plugin_manager = ResourceManager::get()->GetPluginManager();
+
+            if(plugin_manager != NULL)
+            {
+                profile_json["plugins"] = plugin_manager->OnProfileSave(enabled_plugins);
+            }
+        }
+
+        if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+        {
+            /*---------------------------------------------*\
+            | Upload the profile to the server              |
+            \*---------------------------------------------*/
+            ResourceManager::get()->GetLocalClient()->ProfileManager_UploadProfile(profile_json.dump());
+        }
+        else
+        {
+            /*---------------------------------------------*\
+            | Save the profile to file from the JSON        |
+            \*---------------------------------------------*/
+            SaveProfileFromJSON(profile_json);
+        }
+
+        return(true);
     }
     else
     {
-        if(filename.extension() != ".orp")
-        {
-            filename.concat(".orp");
-        }
+        return(false);
     }
-
-    /*---------------------------------------------------------*\
-    | Open input file in binary mode                            |
-    \*---------------------------------------------------------*/
-    std::ifstream controller_file(filename, std::ios::in | std::ios::binary);
-
-    /*---------------------------------------------------------*\
-    | Read and verify file header                               |
-    \*---------------------------------------------------------*/
-    char            profile_string[16]  = "";
-    unsigned int    profile_version     = 0;
-
-    controller_file.read(profile_string, 16);
-    controller_file.read((char *)&profile_version, sizeof(unsigned int));
-
-    /*---------------------------------------------------------*\
-    | Profile version started at 1 and protocol version started |
-    | at 0.  Version 1 profiles should use protocol 0, but 2 or |
-    | greater should be synchronized                            |
-    \*---------------------------------------------------------*/
-    if(profile_version == 1)
-    {
-        profile_version = 0;
-    }
-
-    controller_offset += 16 + sizeof(unsigned int);
-    controller_file.seekg(controller_offset);
-
-    if(strcmp(profile_string, OPENRGB_PROFILE_HEADER) == 0)
-    {
-        if(profile_version <= OPENRGB_PROFILE_VERSION)
-        {
-            /*---------------------------------------------------------*\
-            | Read controller data from file until EOF                  |
-            \*---------------------------------------------------------*/
-            while(!(controller_file.peek() == EOF))
-            {
-                controller_file.read((char *)&controller_size, sizeof(controller_size));
-
-                unsigned char *controller_data = new unsigned char[controller_size];
-
-                controller_file.seekg(controller_offset);
-
-                controller_file.read((char *)controller_data, controller_size);
-
-                RGBController_Dummy *temp_controller = new RGBController_Dummy();
-
-                temp_controller->ReadDeviceDescription(controller_data, profile_version);
-
-                temp_controllers.push_back(temp_controller);
-
-                delete[] controller_data;
-
-                controller_offset += controller_size;
-                controller_file.seekg(controller_offset);
-            }
-        }
-    }
-
-    return(temp_controllers);
 }
 
-bool ProfileManager::LoadDeviceFromListWithOptions
+bool ProfileManager::SaveProfileFromJSON(nlohmann::json profile_json)
+{
+    if(profile_json.contains("profile_name"))
+    {
+        std::string profile_filename = StringUtils::make_filename(profile_json["profile_name"]);
+
+        profile_filename.append(".json");
+
+        /*-------------------------------------------------*\
+        | Open an output file in the profile directory      |
+        \*-------------------------------------------------*/
+        filesystem::path profile_path = profile_directory / profile_filename;
+        std::ofstream profile_file(profile_path, std::ios::out );
+
+        /*-------------------------------------------------*\
+        | Write the JSON data to the file                   |
+        \*-------------------------------------------------*/
+        profile_file << std::setw(4) << profile_json << std::endl;
+
+        /*-------------------------------------------------*\
+        | Close the file when done                          |
+        \*-------------------------------------------------*/
+        profile_file.close();
+
+        /*-------------------------------------------------*\
+        | Update the profile list                           |
+        \*-------------------------------------------------*/
+        UpdateProfileList();
+
+        SetActiveProfile(profile_json["profile_name"]);
+
+        return(true);
+    }
+    else
+    {
+        return(false);
+    }
+}
+
+bool ProfileManager::SaveConfiguration()
+{
+    /*-----------------------------------------------------*\
+    | Get the list of controllers from the resource manager |
+    \*-----------------------------------------------------*/
+    std::vector<RGBController *> controllers = ResourceManager::get()->GetRGBControllers();
+
+    /*-----------------------------------------------------*\
+    | Open an output file in the profile directory          |
+    \*-----------------------------------------------------*/
+    filesystem::path profile_path = configuration_directory / "Configuration.json";
+    std::ofstream controller_file(profile_path, std::ios::out );
+
+    /*-----------------------------------------------------*\
+    | Start filling in profile json data                    |
+    \*-----------------------------------------------------*/
+    nlohmann::json profile_json;
+
+    profile_json["profile_version"] = OPENRGB_PROFILE_VERSION;
+    profile_json["profile_name"]    = "Controller Configuration";
+
+    /*-----------------------------------------------------*\
+    | Write controller data for each controller             |
+    \*-----------------------------------------------------*/
+    std::size_t new_saved_controller_index = 0;
+
+    for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
+    {
+        bool save_controller = false;
+
+        /*-------------------------------------------------*\
+        | Ignore remote and virtual controllers when saving |
+        | configuration                                     |
+        \*-------------------------------------------------*/
+        if(controllers[controller_index]->GetFlags() & CONTROLLER_FLAG_REMOTE
+        || controllers[controller_index]->GetFlags() & CONTROLLER_FLAG_VIRTUAL)
+        {
+            break;
+        }
+
+        if(controllers[controller_index]->GetFlags() & CONTROLLER_FLAGS_MANUALLY_CONFIGURED)
+        {
+            save_controller = true;
+        }
+
+        for(unsigned int zone_index = 0; zone_index < controllers[controller_index]->GetZoneCount(); zone_index++)
+        {
+            if(controllers[controller_index]->GetZoneFlags(zone_index) & ZONE_FLAGS_MANUALLY_CONFIGURED)
+            {
+                save_controller = true;
+                break;
+            }
+        }
+
+        if(save_controller)
+        {
+            /*---------------------------------------------*\
+            | Read the controller data for this controller  |
+            | into the profile json if manually configured  |
+            \*---------------------------------------------*/
+            profile_json["controllers"][new_saved_controller_index] = RGBController::GetDeviceDescriptionJSON(controllers[controller_index]);
+            new_saved_controller_index++;
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Loop through the previously saved configuration and   |
+    | add any controllers that were previously saved but    |
+    | not in the current controllers list                   |
+    \*-----------------------------------------------------*/
+    for(std::size_t old_saved_controller_index = 0; old_saved_controller_index < manually_configured_rgb_controllers.size(); old_saved_controller_index++)
+    {
+        bool found = false;
+
+        for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
+        {
+            if(RGBController::CompareControllers(manually_configured_rgb_controllers[old_saved_controller_index], controllers[controller_index]))
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            /*---------------------------------------------*\
+            | Read the controller data for this controller  |
+            | into the profile json                         |
+            \*---------------------------------------------*/
+            profile_json["controllers"][new_saved_controller_index] = RGBController::GetDeviceDescriptionJSON(manually_configured_rgb_controllers[old_saved_controller_index]);
+            new_saved_controller_index++;
+        }
+    }
+
+    controller_file << std::setw(4) << profile_json << std::endl;
+
+    /*-----------------------------------------------------*\
+    | Close the file when done                              |
+    \*-----------------------------------------------------*/
+    controller_file.close();
+
+    /*-----------------------------------------------------*\
+    | Reinitialize manually configured controllers list     |
+    \*-----------------------------------------------------*/
+    manually_configured_rgb_controllers = GetControllerListFromSavedConfiguration();
+
+    return(true);
+}
+
+void ProfileManager::SetActiveProfile(std::string profile_name)
+{
+    active_profile = profile_name;
+
+    NetworkServer* server = ResourceManager::get()->GetServer();
+
+    if(server)
+    {
+        server->SendRequest_ProfileManager_ActiveProfileChanged(active_profile);
+    }
+
+    SignalProfileManagerUpdate(PROFILEMANAGER_UPDATE_REASON_ACTIVE_PROFILE_CHANGED);
+}
+
+void ProfileManager::SetConfigurationDirectory(const filesystem::path& directory)
+{
+    configuration_directory = directory;
+    profile_directory       = configuration_directory / filesystem::u8path("profiles");
+
+    filesystem::create_directories(profile_directory);
+
+    /*-----------------------------------------------------*\
+    | Reload profile list                                   |
+    \*-----------------------------------------------------*/
+    UpdateProfileList();
+
+    /*-----------------------------------------------------*\
+    | Reinitialize manually configured controllers list     |
+    \*-----------------------------------------------------*/
+    manually_configured_rgb_controllers = GetControllerListFromSavedConfiguration();
+}
+
+void ProfileManager::SetProfileListFromDescription(unsigned int /*data_size*/, char * data_buf)
+{
+    unsigned int   data_ptr     = sizeof(unsigned int);
+    unsigned short num_profiles = 0;
+
+    /*-----------------------------------------------------*\
+    | Clear the profile list                                |
+    \*-----------------------------------------------------*/
+    profile_list.clear();
+
+    /*-----------------------------------------------------*\
+    | Copy in num_profiles                                  |
+    \*-----------------------------------------------------*/
+    memcpy(&num_profiles, &data_buf[data_ptr], sizeof(num_profiles));
+    data_ptr += sizeof(num_profiles);
+
+    /*-----------------------------------------------------*\
+    | Copy in profile names (size+data)                     |
+    \*-----------------------------------------------------*/
+    for(unsigned int i = 0; i < num_profiles; i++)
+    {
+        unsigned short name_len = 0;
+
+        memcpy(&name_len, &data_buf[data_ptr], sizeof(name_len));
+        data_ptr += sizeof(name_len);
+
+        profile_list.push_back((char *)&data_buf[data_ptr]);
+        data_ptr += name_len;
+    }
+
+    SignalProfileManagerUpdate(PROFILEMANAGER_UPDATE_REASON_PROFILE_LIST_UPDATED);
+}
+
+void ProfileManager::SignalProfileManagerUpdate(unsigned int update_reason)
+{
+    NetworkServer* server = ResourceManager::get()->GetServer();
+
+    if(server)
+    {
+        server->SignalProfileManagerUpdate(update_reason);
+    }
+
+    ProfileManagerCallbackMutex.lock();
+
+    for(std::size_t callback_idx = 0; callback_idx < ProfileManagerCallbacks.size(); callback_idx++)
+    {
+        ProfileManagerCallbacks[callback_idx](ProfileManagerCallbackArgs[callback_idx], update_reason);
+    }
+
+    ProfileManagerCallbackMutex.unlock();
+
+    LOG_TRACE("[%s] ProfileManager update signalled: %d", PROFILEMANAGER, update_reason);
+}
+
+void ProfileManager::UpdateProfileList()
+{
+    if(ResourceManager::get()->IsLocalClient() && (ResourceManager::get()->GetLocalClient()->GetSupportsProfileManagerAPI()))
+    {
+        ResourceManager::get()->GetLocalClient()->ProfileManager_GetProfileList();
+        ResourceManager::get()->GetLocalClient()->ProfileManager_GetActiveProfile();
+    }
+    else
+    {
+        profile_list.clear();
+
+        /*-------------------------------------------------*\
+        | Load profiles by looking for .json files in       |
+        | profile directory                                 |
+        \*-------------------------------------------------*/
+        for(const filesystem::directory_entry &entry : filesystem::directory_iterator(profile_directory))
+        {
+            std::string filename = entry.path().filename().string();
+
+            if(filename.find(".json") != std::string::npos)
+            {
+                LOG_INFO("[ProfileManager] Found file: %s attempting to validate header", filename.c_str());
+
+                /*-----------------------------------------*\
+                | Open input file in binary mode            |
+                \*-----------------------------------------*/
+                filesystem::path file_path = profile_directory;
+                file_path.append(filename);
+
+                nlohmann::json profile_json = ReadProfileFileJSON(file_path);
+
+                if(!profile_json.empty() && profile_json.contains("profile_name"))
+                {
+                    profile_list.push_back(profile_json["profile_name"]);
+                }
+            }
+        }
+
+        /*---------------------------------------------------------*\
+        | Sort the profiles list                                    |
+        \*---------------------------------------------------------*/
+        std::sort(profile_list.begin(), profile_list.end());
+
+        SignalProfileManagerUpdate(PROFILEMANAGER_UPDATE_REASON_PROFILE_LIST_UPDATED);
+    }
+}
+
+/*---------------------------------------------------------*\
+| Private functions                                         |
+\*---------------------------------------------------------*/
+bool ProfileManager::LoadAutoProfile(std::string setting_name)
+{
+    /*-----------------------------------------------------*\
+    | Read in profile manager settings and check for the    |
+    | given setting name                                    |
+    \*-----------------------------------------------------*/
+    json        profilemanager_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("ProfileManager");
+    std::string profile_name;
+
+    if(profilemanager_settings.contains(setting_name))
+    {
+        if(profilemanager_settings[setting_name].contains("name") && profilemanager_settings[setting_name].contains("enabled") && profilemanager_settings[setting_name]["enabled"] == true)
+        {
+            profile_name                = profilemanager_settings[setting_name]["name"];
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Load the profile if it is valid                       |
+    \*-----------------------------------------------------*/
+    if(!profile_name.empty())
+    {
+        return(LoadProfile(profile_name));
+    }
+    else
+    {
+        return(false);
+    }
+}
+
+bool ProfileManager::LoadControllerFromListWithOptions
     (
-    std::vector<RGBController*>&    temp_controllers,
-    std::vector<bool>&              temp_controller_used,
+    std::vector<RGBController*>&    profile_controllers,
     RGBController*                  load_controller,
-    bool                            load_size,
-    bool                            load_settings
+    bool                            load_configuration,
+    bool                            load_state
     )
 {
-    for(std::size_t temp_index = 0; temp_index < temp_controllers.size(); temp_index++)
+    for(std::size_t temp_index = 0; temp_index < profile_controllers.size(); temp_index++)
     {
-        RGBController *temp_controller = temp_controllers[temp_index];
+        RGBController *profile_controller = profile_controllers[temp_index];
 
         /*---------------------------------------------------------*\
         | Do not compare location string for HID devices, as the    |
@@ -263,116 +1001,224 @@ bool ProfileManager::LoadDeviceFromListWithOptions
             else
             {
                 std::string i2c_address = load_controller->GetLocation().substr(loc + 2);
-                location_check = temp_controller->GetLocation().find(i2c_address) != std::string::npos;
+                location_check = profile_controller->GetLocation().find(i2c_address) != std::string::npos;
             }
         }
         else
         {
-            location_check = temp_controller->GetLocation() == load_controller->GetLocation();
+            location_check = profile_controller->GetLocation() == load_controller->GetLocation();
         }
 
-        /*---------------------------------------------------------*\
-        | Test if saved controller data matches this controller     |
-        \*---------------------------------------------------------*/
-        if((temp_controller_used[temp_index]    == false                            )
-         &&(temp_controller->type               == load_controller->type            )
-         &&(temp_controller->GetName()          == load_controller->GetName()       )
-         &&(temp_controller->GetDescription()   == load_controller->GetDescription())
-         &&(temp_controller->GetVersion()       == load_controller->GetVersion()    )
-         &&(temp_controller->GetSerial()        == load_controller->GetSerial()     )
-         &&(location_check                      == true                             ))
+        /*-------------------------------------------------*\
+        | Do not check zonedevice name if manually          |
+        | configured                                        |
+        \*-------------------------------------------------*/
+        bool    check_device_name   = true;
+
+        if((load_controller->GetFlags()    & CONTROLLER_FLAG_MANUALLY_CONFIGURED_NAME)
+        || (profile_controller->GetFlags() & CONTROLLER_FLAG_MANUALLY_CONFIGURED_NAME))
         {
-            /*---------------------------------------------------------*\
-            | Set used flag for this temp device                        |
-            \*---------------------------------------------------------*/
-            temp_controller_used[temp_index] = true;
+            check_device_name = false;
+        }
 
-            /*---------------------------------------------------------*\
-            | Update zone sizes if requested                            |
-            \*---------------------------------------------------------*/
-            if(load_size)
+        /*-------------------------------------------------*\
+        | Test if saved controller data matches this        |
+        | controller                                        |
+        \*-------------------------------------------------*/
+        if(                       (profile_controller->GetDeviceType()    == load_controller->GetDeviceType() )
+         &&(!check_device_name || (profile_controller->GetName()          == load_controller->GetName()       ))
+         &&                       (profile_controller->GetDescription()   == load_controller->GetDescription())
+         &&                       (profile_controller->GetVersion()       == load_controller->GetVersion()    )
+         &&                       (profile_controller->GetSerial()        == load_controller->GetSerial()     )
+         &&                       (location_check                         == true                             ))
+        {
+            /*---------------------------------------------*\
+            | Update device configuration if requested      |
+            \*---------------------------------------------*/
+            if(load_configuration)
             {
-                if(temp_controller->zones.size() == load_controller->zones.size())
-                {
-                    for(std::size_t zone_idx = 0; zone_idx < temp_controller->zones.size(); zone_idx++)
-                    {
-                        if((temp_controller->zones[zone_idx].name       == load_controller->zones[zone_idx].name      )
-                         &&(temp_controller->zones[zone_idx].type       == load_controller->zones[zone_idx].type      )
-                         &&(temp_controller->zones[zone_idx].leds_min   == load_controller->zones[zone_idx].leds_min  )
-                         &&(temp_controller->zones[zone_idx].leds_max   == load_controller->zones[zone_idx].leds_max  ))
-                        {
-                            if(temp_controller->zones[zone_idx].leds_count != load_controller->zones[zone_idx].leds_count)
-                            {
-                                load_controller->ResizeZone((int)zone_idx, temp_controller->zones[zone_idx].leds_count);
-                            }
+                /*-----------------------------------------*\
+                | Load device-specific configuration        |
+                \*-----------------------------------------*/
+                nlohmann::json configuration_json;
+                JsonUtils::JsonParse(profile_controller->configuration, configuration_json);
 
-                            if(temp_controller->zones[zone_idx].segments.size() != load_controller->zones[zone_idx].segments.size())
+                load_controller->ConfigureDevice(profile_controller->flags, profile_controller->display_name);
+                load_controller->SetDeviceSpecificConfiguration(configuration_json["configuration"]);
+
+                /*-----------------------------------------*\
+                | Load zone configuration                   |
+                \*-----------------------------------------*/
+                if(profile_controller->zones.size() == load_controller->zones.size())
+                {
+                    for(unsigned int zone_idx = 0; zone_idx < (unsigned int)profile_controller->zones.size(); zone_idx++)
+                    {
+                        bool    check_zone_name = true;
+                        bool    check_zone_type = true;
+
+                        /*---------------------------------*\
+                        | Do not check zone name if         |
+                        | manually configured               |
+                        \*---------------------------------*/
+                        if((profile_controller->GetZoneFlags(zone_idx) & ZONE_FLAG_MANUALLY_CONFIGURED_NAME)
+                        || (load_controller->GetZoneFlags(zone_idx) & ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME))
+                        {
+                            check_zone_name = false;
+                        }
+
+                        /*---------------------------------*\
+                        | Do not check zone type if         |
+                        | manually configured               |
+                        \*---------------------------------*/
+                        if((profile_controller->GetZoneFlags(zone_idx) & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE)
+                        || (load_controller->GetZoneFlags(zone_idx) & ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE))
+                        {
+                            check_zone_type = false;
+                        }
+
+                        if((!check_zone_name || (profile_controller->GetZoneName(zone_idx)      == load_controller->GetZoneName(zone_idx)     ))
+                        && (!check_zone_type || (profile_controller->GetZoneType(zone_idx)      == load_controller->GetZoneType(zone_idx)     ))
+                        &&                      (profile_controller->GetZoneLEDsMin(zone_idx)   == load_controller->GetZoneLEDsMin(zone_idx)  )
+                        &&                      (profile_controller->GetZoneLEDsMax(zone_idx)   == load_controller->GetZoneLEDsMax(zone_idx)  ))
+                        {
+                            load_controller->ConfigureZone(zone_idx, profile_controller->zones[zone_idx]);
+
+                            if(profile_controller->GetZoneFlags(zone_idx) & ZONE_FLAG_MANUALLY_CONFIGURED_SEGMENTS)
                             {
                                 load_controller->zones[zone_idx].segments.clear();
 
-                                for(std::size_t segment_idx = 0; segment_idx < temp_controller->zones[zone_idx].segments.size(); segment_idx++)
+                                for(unsigned int segment_idx = 0; segment_idx < (unsigned int)profile_controller->zones[zone_idx].segments.size(); segment_idx++)
                                 {
-                                    load_controller->zones[zone_idx].segments.push_back(temp_controller->zones[zone_idx].segments[segment_idx]);
+                                    load_controller->zones[zone_idx].segments.push_back(profile_controller->zones[zone_idx].segments[segment_idx]);
                                 }
                             }
                         }
+
+                        load_controller->SetDeviceSpecificZoneConfiguration(zone_idx, configuration_json["zones"][zone_idx]["configuration"]);
                     }
                 }
             }
 
-            /*---------------------------------------------------------*\
-            | Update settings if requested                              |
-            \*---------------------------------------------------------*/
-            if(load_settings)
+            /*---------------------------------------------*\
+            | Update settings if requested                  |
+            \*---------------------------------------------*/
+            if(load_state)
             {
-                /*---------------------------------------------------------*\
-                | Update all modes                                          |
-                \*---------------------------------------------------------*/
-                if(temp_controller->modes.size() == load_controller->modes.size())
+                /*-----------------------------------------*\
+                | If mode list matches, load all modes      |
+                \*-----------------------------------------*/
+                if(profile_controller->modes.size() == load_controller->modes.size())
                 {
-                    for(std::size_t mode_index = 0; mode_index < temp_controller->modes.size(); mode_index++)
+                    for(unsigned int mode_index = 0; mode_index < (unsigned int)profile_controller->modes.size(); mode_index++)
                     {
-                        if((temp_controller->modes[mode_index].name             == load_controller->modes[mode_index].name          )
-                         &&(temp_controller->modes[mode_index].value            == load_controller->modes[mode_index].value         )
-                         &&(temp_controller->modes[mode_index].flags            == load_controller->modes[mode_index].flags         )
-                         &&(temp_controller->modes[mode_index].speed_min        == load_controller->modes[mode_index].speed_min     )
-                         &&(temp_controller->modes[mode_index].speed_max        == load_controller->modes[mode_index].speed_max     )
-                       //&&(temp_controller->modes[mode_index].brightness_min   == load_controller->modes[mode_index].brightness_min)
-                       //&&(temp_controller->modes[mode_index].brightness_max   == load_controller->modes[mode_index].brightness_max)
-                         &&(temp_controller->modes[mode_index].colors_min       == load_controller->modes[mode_index].colors_min    )
-                         &&(temp_controller->modes[mode_index].colors_max       == load_controller->modes[mode_index].colors_max   ))
+                        if((profile_controller->GetModeName(mode_index)            == load_controller->GetModeName(mode_index)         )
+                         &&(profile_controller->GetModeFlags(mode_index)           == load_controller->GetModeFlags(mode_index)        )
+                         &&(profile_controller->GetModeSpeedMin(mode_index)        == load_controller->GetModeSpeedMin(mode_index)     )
+                         &&(profile_controller->GetModeSpeedMax(mode_index)        == load_controller->GetModeSpeedMax(mode_index)     )
+                         &&(profile_controller->GetModeBrightnessMin(mode_index)   == load_controller->GetModeBrightnessMin(mode_index))
+                         &&(profile_controller->GetModeBrightnessMax(mode_index)   == load_controller->GetModeBrightnessMax(mode_index))
+                         &&(profile_controller->GetModeColorsMin(mode_index)       == load_controller->GetModeColorsMin(mode_index)    )
+                         &&(profile_controller->GetModeColorsMax(mode_index)       == load_controller->GetModeColorsMax(mode_index)    ))
                         {
-                            load_controller->modes[mode_index].speed            = temp_controller->modes[mode_index].speed;
-                            load_controller->modes[mode_index].brightness       = temp_controller->modes[mode_index].brightness;
-                            load_controller->modes[mode_index].direction        = temp_controller->modes[mode_index].direction;
-                            load_controller->modes[mode_index].color_mode       = temp_controller->modes[mode_index].color_mode;
+                            load_controller->modes[mode_index].speed            = profile_controller->modes[mode_index].speed;
+                            load_controller->modes[mode_index].brightness       = profile_controller->modes[mode_index].brightness;
+                            load_controller->modes[mode_index].direction        = profile_controller->modes[mode_index].direction;
+                            load_controller->modes[mode_index].color_mode       = profile_controller->modes[mode_index].color_mode;
 
-                            load_controller->modes[mode_index].colors.resize(temp_controller->modes[mode_index].colors.size());
+                            load_controller->modes[mode_index].colors.resize(profile_controller->modes[mode_index].colors.size());
 
-                            for(std::size_t mode_color_index = 0; mode_color_index < temp_controller->modes[mode_index].colors.size(); mode_color_index++)
+                            for(unsigned int mode_color_index = 0; mode_color_index < profile_controller->GetModeColorsCount(mode_index); mode_color_index++)
                             {
-                                load_controller->modes[mode_index].colors[mode_color_index] = temp_controller->modes[mode_index].colors[mode_color_index];
+                                load_controller->modes[mode_index].colors[mode_color_index] = profile_controller->modes[mode_index].colors[mode_color_index];
                             }
                         }
-
                     }
 
-                    load_controller->active_mode = temp_controller->active_mode;
+                    load_controller->active_mode = profile_controller->active_mode;
+                    load_controller->UpdateMode();
                 }
 
-                /*---------------------------------------------------------*\
-                | Update all colors                                         |
-                \*---------------------------------------------------------*/
-                if(temp_controller->colors.size() == load_controller->colors.size())
+                /*-----------------------------------------*\
+                | If color list matches, load all colors    |
+                \*-----------------------------------------*/
+                if(profile_controller->colors.size() == load_controller->colors.size())
                 {
-                    for(std::size_t color_index = 0; color_index < temp_controller->colors.size(); color_index++)
+                    for(unsigned int color_index = 0; color_index < (unsigned int)profile_controller->colors.size(); color_index++)
                     {
-                        load_controller->colors[color_index] = temp_controller->colors[color_index];
+                        load_controller->colors[color_index] = profile_controller->colors[color_index];
+                    }
+
+                    load_controller->UpdateLEDs();
+                }
+
+                /*-----------------------------------------*\
+                | If zone mode list matches, load all zone  |
+                | modes                                     |
+                \*-----------------------------------------*/
+                if(profile_controller->GetZoneCount() == load_controller->GetZoneCount())
+                {
+                    for(unsigned int zone_idx = 0; zone_idx < profile_controller->GetZoneCount(); zone_idx++)
+                    {
+                        if((profile_controller->GetZoneName(zone_idx)      == load_controller->GetZoneName(zone_idx)     )
+                         &&(profile_controller->GetZoneType(zone_idx)      == load_controller->GetZoneType(zone_idx)     )
+                         &&(profile_controller->GetZoneLEDsMin(zone_idx)   == load_controller->GetZoneLEDsMin(zone_idx)  )
+                         &&(profile_controller->GetZoneLEDsMax(zone_idx)   == load_controller->GetZoneLEDsMax(zone_idx)  )
+                         &&(profile_controller->GetZoneModeCount(zone_idx) == load_controller->GetZoneModeCount(zone_idx)))
+                        {
+                            for(unsigned int mode_index = 0; mode_index < profile_controller->GetZoneModeCount(zone_idx); mode_index++)
+                            {
+                                if((profile_controller->GetZoneModeName(zone_idx, mode_index)          == load_controller->GetZoneModeName(zone_idx, mode_index)         )
+                                 &&(profile_controller->GetZoneModeFlags(zone_idx, mode_index)         == load_controller->GetZoneModeFlags(zone_idx, mode_index)        )
+                                 &&(profile_controller->GetZoneModeSpeedMin(zone_idx, mode_index)      == load_controller->GetZoneModeSpeedMin(zone_idx, mode_index)     )
+                                 &&(profile_controller->GetZoneModeSpeedMax(zone_idx, mode_index)      == load_controller->GetZoneModeSpeedMax(zone_idx, mode_index)     )
+                                 &&(profile_controller->GetZoneModeBrightnessMin(zone_idx, mode_index) == load_controller->GetZoneModeBrightnessMin(zone_idx, mode_index))
+                                 &&(profile_controller->GetZoneModeBrightnessMax(zone_idx, mode_index) == load_controller->GetZoneModeBrightnessMax(zone_idx, mode_index))
+                                 &&(profile_controller->GetZoneModeColorsMin(zone_idx, mode_index)     == load_controller->GetZoneModeColorsMin(zone_idx, mode_index)    )
+                                 &&(profile_controller->GetZoneModeColorsMax(zone_idx, mode_index)     == load_controller->GetZoneModeColorsMax(zone_idx, mode_index)    ))
+                                {
+                                    load_controller->zones[zone_idx].modes[mode_index].speed        = profile_controller->zones[zone_idx].modes[mode_index].speed;
+                                    load_controller->zones[zone_idx].modes[mode_index].brightness   = profile_controller->zones[zone_idx].modes[mode_index].brightness;
+                                    load_controller->zones[zone_idx].modes[mode_index].direction    = profile_controller->zones[zone_idx].modes[mode_index].direction;
+                                    load_controller->zones[zone_idx].modes[mode_index].color_mode   = profile_controller->zones[zone_idx].modes[mode_index].color_mode;
+
+                                    load_controller->zones[zone_idx].modes[mode_index].colors.resize(profile_controller->zones[zone_idx].modes[mode_index].colors.size());
+
+                                    for(unsigned int mode_color_index = 0; mode_color_index < profile_controller->GetZoneModeColorsCount(zone_idx, mode_index); mode_color_index++)
+                                    {
+                                        load_controller->zones[zone_idx].modes[mode_index].colors[mode_color_index] = profile_controller->zones[zone_idx].modes[mode_index].colors[mode_color_index];
+                                    }
+                                }
+                            }
+
+                            load_controller->SetZoneActiveMode(zone_idx, profile_controller->GetZoneActiveMode(zone_idx));
+                            load_controller->UpdateZoneMode(zone_idx);
+                        }
                     }
                 }
             }
 
             return(true);
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | If no saved controller state in the profile matched   |
+    | this controller, apply the base color if it is        |
+    | enabled                                               |
+    \*-----------------------------------------------------*/
+    if(load_state && active_base_color_enabled)
+    {
+        load_controller->SetCustomMode();
+
+        if(load_controller->GetModeColorMode(load_controller->GetActiveMode()) == MODE_COLORS_PER_LED)
+        {
+            load_controller->SetAllColors(active_base_color);
+            load_controller->UpdateLEDs();
+        }
+        else if(load_controller->GetModeColorMode(load_controller->GetActiveMode()) == MODE_COLORS_MODE_SPECIFIC)
+        {
+            load_controller->SetModeColor(load_controller->GetActiveMode(), 0, active_base_color);
+            load_controller->UpdateMode();
         }
     }
 
@@ -382,176 +1228,142 @@ bool ProfileManager::LoadDeviceFromListWithOptions
 bool ProfileManager::LoadProfileWithOptions
     (
     std::string     profile_name,
-    bool            load_size,
-    bool            load_settings
+    bool            load_configuration,
+    bool            load_state
     )
 {
-    std::vector<RGBController*> temp_controllers;
-    std::vector<bool>           temp_controller_used;
-    bool                        ret_val = false;
+    /*-------------------------------------------------*\
+    | Clear stored active profile data                  |
+    \*-------------------------------------------------*/
+    std::vector active_rgb_controllers_copy = active_rgb_controllers;
 
-    /*---------------------------------------------------------*\
-    | Get the list of controllers from the resource manager     |
-    \*---------------------------------------------------------*/
+    active_base_color_enabled               = false;
+    active_base_color                       = 0;
+    active_rgb_controllers.clear();
+
+    for(unsigned int controller_idx = 0; controller_idx < active_rgb_controllers_copy.size(); controller_idx++)
+    {
+        delete active_rgb_controllers_copy[controller_idx];
+    }
+
+    /*-------------------------------------------------*\
+    | Get JSON data for given profile name              |
+    \*-------------------------------------------------*/
+    nlohmann::json profile_json = ReadProfileJSON(profile_name);
+
+    /*-------------------------------------------------*\
+    | Load the controller state data for this profile   |
+    | into the active profile data                      |
+    \*-------------------------------------------------*/
+    active_rgb_controllers = GetControllerListFromProfileJson(profile_json);
+
+    /*-------------------------------------------------*\
+    | Load the base color data for this profile into    |
+    | the active profile data                           |
+    \*-------------------------------------------------*/
+    if(profile_json.contains("base_color"))
+    {
+        active_base_color           = profile_json["base_color"];
+        active_base_color_enabled   = true;
+    }
+    else
+    {
+        active_base_color           = 0;
+        active_base_color_enabled   = false;
+    }
+
+    /*-------------------------------------------------*\
+    | Signal that a profile is about to load            |
+    \*-------------------------------------------------*/
+    PluginManagerInterface* plugin_manager = ResourceManager::get()->GetPluginManager();
+
+    if(plugin_manager != NULL)
+    {
+        plugin_manager->OnProfileAboutToLoad();
+    }
+
+    NetworkServer* server = ResourceManager::get()->GetServer();
+
+    if(server)
+    {
+        server->ProfileManager_ProfileAboutToLoad();
+    }
+
+    /*-------------------------------------------------*\
+    | Get the list of controllers from the resource     |
+    | manager                                           |
+    \*-------------------------------------------------*/
     std::vector<RGBController *> controllers = ResourceManager::get()->GetRGBControllers();
 
-    /*---------------------------------------------------------*\
-    | Open input file in binary mode                            |
-    \*---------------------------------------------------------*/
-    temp_controllers = LoadProfileToList(profile_name);
-
-    /*---------------------------------------------------------*\
-    | Set up used flag vector                                   |
-    \*---------------------------------------------------------*/
-    temp_controller_used.resize(temp_controllers.size());
-
-    for(unsigned int controller_idx = 0; controller_idx < temp_controller_used.size(); controller_idx++)
-    {
-        temp_controller_used[controller_idx] = false;
-    }
-
-    /*---------------------------------------------------------*\
-    | Loop through all controllers.  For each controller, search|
-    | all saved controllers until a match is found              |
-    \*---------------------------------------------------------*/
+    /*-------------------------------------------------*\
+    | Loop through all controllers.  For each           |
+    | controller, search all saved controllers until a  |
+    | match is found                                    |
+    \*-------------------------------------------------*/
     for(std::size_t controller_index = 0; controller_index < controllers.size(); controller_index++)
     {
-        bool temp_ret_val = LoadDeviceFromListWithOptions(temp_controllers, temp_controller_used, controllers[controller_index], load_size, load_settings);
-        std::string current_name = controllers[controller_index]->GetName() + " @ " + controllers[controller_index]->GetLocation();
-        LOG_INFO("[ProfileManager] Profile loading: %s for %s", ( temp_ret_val ? "Succeeded" : "FAILED!" ), current_name.c_str());
-        ret_val |= temp_ret_val;
+        LoadControllerFromListWithOptions(active_rgb_controllers, controllers[controller_index], load_configuration, load_state);
     }
 
-    /*---------------------------------------------------------*\
-    | Delete all temporary controllers                          |
-    \*---------------------------------------------------------*/
-    for(unsigned int controller_idx = 0; controller_idx < temp_controllers.size(); controller_idx++)
+    /*-------------------------------------------------*\
+    | Get plugin profile data                           |
+    \*-------------------------------------------------*/
+    if(plugin_manager != NULL && profile_json.contains("plugins"))
     {
-        delete temp_controllers[controller_idx];
+        plugin_manager->OnProfileLoad(profile_json["plugins"]);
     }
 
-    return(ret_val);
-}
-
-void ProfileManager::DeleteProfile(std::string profile_name)
-{
-    profile_name = StringUtils::remove_null_terminating_chars(profile_name);
-
-    filesystem::path filename = configuration_directory / profile_name;
-    filename.concat(".orp");
-
-    filesystem::remove(filename);
-
-    UpdateProfileList();
-}
-
-void ProfileManager::UpdateProfileList()
-{
-    profile_list.clear();
-
-    /*---------------------------------------------------------*\
-    | Load profiles by looking for .orp files in current dir    |
-    \*---------------------------------------------------------*/
-    for(const auto & entry : filesystem::directory_iterator(configuration_directory))
+    /*-------------------------------------------------*\
+    | Notify local client                               |
+    \*-------------------------------------------------*/
+    if(server)
     {
-        std::string filename = entry.path().filename().string();
+        server->SendRequest_ProfileManager_ProfileLoaded(profile_json.dump());
+    }
 
-        if(filename.find(".orp") != std::string::npos)
+    /*-------------------------------------------------*\
+    | Update active profile                             |
+    \*-------------------------------------------------*/
+    SetActiveProfile(profile_name);
+
+    if(server)
+    {
+        server->SendRequest_ProfileManager_ActiveProfileChanged(active_profile);
+    }
+
+    return(true);
+}
+
+nlohmann::json ProfileManager::ReadProfileFileJSON(filesystem::path profile_filepath)
+{
+    std::ifstream   profile_file(profile_filepath, std::ios::in);
+    nlohmann::json  profile_json;
+
+    /*-------------------------------------------------*\
+    | Read settings into JSON store                     |
+    \*-------------------------------------------------*/
+    if(profile_file)
+    {
+        try
         {
-            LOG_INFO("[ProfileManager] Found file: %s attempting to validate header", filename.c_str());
+            profile_file >> profile_json;
+        }
+        catch(const std::exception& e)
+        {
+            /*-----------------------------------------*\
+            | If an exception was caught, that means    |
+            | the JSON parsing failed.  Clear out any   |
+            | data in the store as it is corrupt.  We   |
+            | could attempt a reload for backup         |
+            | location                                  |
+            \*-----------------------------------------*/
+            LOG_ERROR("[ProfileManager] JSON parsing failed: %s", e.what());
 
-            /*---------------------------------------------------------*\
-            | Open input file in binary mode                            |
-            \*---------------------------------------------------------*/
-            filesystem::path file_path = configuration_directory;
-            file_path.append(filename);
-            std::ifstream profile_file(file_path, std::ios::in | std::ios::binary);
-
-            /*---------------------------------------------------------*\
-            | Read and verify file header                               |
-            \*---------------------------------------------------------*/
-            char            profile_string[16];
-            unsigned int    profile_version;
-
-            profile_file.read(profile_string, 16);
-            profile_file.read((char *)&profile_version, sizeof(unsigned int));
-
-            if(strcmp(profile_string, OPENRGB_PROFILE_HEADER) == 0)
-            {
-                if(profile_version <= OPENRGB_PROFILE_VERSION)
-                {
-                    /*---------------------------------------------------------*\
-                    | Add this profile to the list                              |
-                    \*---------------------------------------------------------*/
-                    filename.erase(filename.length() - 4);
-                    profile_list.push_back(filename);
-
-                    LOG_INFO("[ProfileManager] Valid v%i profile found for %s", profile_version, filename.c_str());
-                }
-                else
-                {
-                    LOG_WARNING("[ProfileManager] Profile %s isn't valid for current version (v%i, expected v%i at most)", filename.c_str(), profile_version, OPENRGB_PROFILE_VERSION);
-                }
-            }
-            else
-            {
-                LOG_WARNING("[ProfileManager] Profile %s isn't valid: header is missing", filename.c_str());
-            }
-
-            profile_file.close();
+            profile_json.clear();
         }
     }
-}
 
-unsigned char * ProfileManager::GetProfileListDescription()
-{
-    unsigned int data_ptr = 0;
-    unsigned int data_size = 0;
+    profile_file.close();
 
-    /*---------------------------------------------------------*\
-    | Calculate data size                                       |
-    \*---------------------------------------------------------*/
-     unsigned short num_profiles = (unsigned short)profile_list.size();
-
-     data_size += sizeof(data_size);
-     data_size += sizeof(num_profiles);
-
-    for(unsigned int i = 0; i < num_profiles; i++)
-    {
-        data_size += sizeof (unsigned short);
-        data_size += (unsigned int)strlen(profile_list[i].c_str()) + 1;
-    }
-
-    /*---------------------------------------------------------*\
-    | Create data buffer                                        |
-    \*---------------------------------------------------------*/
-    unsigned char *data_buf = new unsigned char[data_size];
-
-    /*---------------------------------------------------------*\
-    | Copy in data size                                         |
-    \*---------------------------------------------------------*/
-    memcpy(&data_buf[data_ptr], &data_size, sizeof(data_size));
-    data_ptr += sizeof(data_size);
-
-    /*---------------------------------------------------------*\
-    | Copy in num_profiles                                      |
-    \*---------------------------------------------------------*/
-    memcpy(&data_buf[data_ptr], &num_profiles, sizeof(num_profiles));
-    data_ptr += sizeof(num_profiles);
-
-    /*---------------------------------------------------------*\
-    | Copy in profile names (size+data)                         |
-    \*---------------------------------------------------------*/
-    for(unsigned int i = 0; i < num_profiles; i++)
-    {
-        unsigned short name_len = (unsigned short)strlen(profile_list[i].c_str()) + 1;
-
-        memcpy(&data_buf[data_ptr], &name_len, sizeof(name_len));
-        data_ptr += sizeof(name_len);
-
-        strcpy((char *)&data_buf[data_ptr], profile_list[i].c_str());
-        data_ptr += name_len;
-    }
-
-    return(data_buf);
+    return(profile_json);
 }

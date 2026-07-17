@@ -15,8 +15,10 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QSlider>
+#include <QTranslator>
 
 #include "OpenRGBClientInfoPage.h"
+#include "OpenRGBDevicePage.h"
 #include "OpenRGBPluginsPage/OpenRGBPluginsPage.h"
 #include "OpenRGBSoftwareInfoPage.h"
 #include "OpenRGBSystemInfoPage.h"
@@ -30,7 +32,6 @@
 #include "i2c_smbus.h"
 #include "LogManager.h"
 #include "RGBController.h"
-#include "ProfileManager.h"
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 
@@ -60,6 +61,7 @@ public:
     static bool IsMinimizeOnClose();
 
     void SetDialogMessage(PLogMessage msg);
+    void SetLanguage(std::string locale);
 
     bool DontShowAgain;
 
@@ -68,6 +70,7 @@ signals:
 
 public slots:
     void changeEvent(QEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
     void SetTrayIcon(bool tray_icon);
     void handleAboutToQuit();
 
@@ -95,34 +98,57 @@ private:
     PluginManager *                 plugin_manager      = nullptr;
 
     bool                            device_view_showing = false;
+    bool                            force_compact_tabs  = false;
     bool                            ShowI2CTools        = false;
     bool                            plugins_loaded      = false;
+
+    /*-----------------------------------------------------*\
+    | Hidden pages                                          |
+    \*-----------------------------------------------------*/
+    std::vector<OpenRGBDevicePage *>
+                                    hidden_pages;
 
     /*-----------------------------------------------------*\
     | System tray icon and menu                             |
     \*-----------------------------------------------------*/
     QSystemTrayIcon *               trayIcon;
-    QMenu *                         trayIconMenu;
-    QMenu *                         profileMenu;
+    QMenu *                         trayMenu;
+    QMenu *                         trayProfileMenu;
+    QMenu *                         trayQuickColorsMenu;
+    QAction *                       trayQuickColorsActionRed;
+    QAction *                       trayQuickColorsActionYellow;
+    QAction *                       trayQuickColorsActionGreen;
+    QAction *                       trayQuickColorsActionCyan;
+    QAction *                       trayQuickColorsActionBlue;
+    QAction *                       trayQuickColorsActionMagenta;
+    QAction *                       trayQuickColorsActionWhite;
+    QAction *                       trayActionShowHide;
+    QAction *                       trayActionLightsOff;
+    QAction *                       trayActionRescan;
+    QAction *                       trayActionExit;
 
-    QAction *                       actionExit;
     QString                         dialog_message;
 
     /*-----------------------------------------------------*\
     | User interface                                        |
     \*-----------------------------------------------------*/
-    Ui::OpenRGBDialog *ui;
+    Ui::OpenRGBDialog*              ui;
+
+    /*-----------------------------------------------------*\
+    | Translator                                            |
+    \*-----------------------------------------------------*/
+    QTranslator                     translator;
 
     void AddSoftwareInfoPage();
     void AddSupportedDevicesPage();
     void AddSettingsPage();
     void AddPluginsPage();
     void AddConsolePage();
+    void RemoveConsolePage();
     void AddManualDevicesSettingsPage();
 
     void ClearDevicesList();
     void UpdateDevicesList();
-    void UpdateProfileList();
     void closeEvent(QCloseEvent *event) override;
     bool SelectConfigProfile(const std::string name);
 
@@ -138,6 +164,9 @@ private:
     void OnSuspend() override;
     void OnResume() override;
 
+    void UpdateTabs();
+    bool isCompactTabMode();
+
 private slots:
     void on_Exit();
     void on_LightsOff();
@@ -152,13 +181,13 @@ private slots:
     void onDetectionProgressUpdated();
     void onDetectionStarted();
     void onDetectionEnded();
+    void onSettingsUpdated();
     void on_SetAllDevices(unsigned char red, unsigned char green, unsigned char blue);
-    void on_SaveSizeProfile();
     void on_ShowHide();
     void onShowDialogMessage();
     void on_ReShow(QSystemTrayIcon::ActivationReason reason);
     void on_ProfileSelected();
-    void on_ButtonLoadProfile_clicked();
+    void on_ProfileBox_currentIndexChanged(int index);
     void on_ButtonDeleteProfile_clicked();
     void on_ButtonToggleDeviceView_clicked();
     void on_ButtonStopDetection_clicked();
@@ -169,4 +198,7 @@ private slots:
     void on_InformationTabBar_currentChanged(int);
     void on_DevicesTabBar_currentChanged(int);
     void on_SettingsTabBar_currentChanged(int);
+
+    void UpdateActiveProfile();
+    void UpdateProfileList();
 };

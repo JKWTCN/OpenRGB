@@ -140,6 +140,8 @@ RGBController_CMGD160Controller::RGBController_CMGD160Controller(CMGD160Controll
 
 RGBController_CMGD160Controller::~RGBController_CMGD160Controller()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -151,7 +153,6 @@ void RGBController_CMGD160Controller::SetupZones()
     front.leds_min      = CM_GD160_LEDS_PER_SIDE;
     front.leds_max      = CM_GD160_LEDS_PER_SIDE;
     front.leds_count    = CM_GD160_LEDS_PER_SIDE;
-    front.matrix_map    = NULL;
     zones.push_back(front);
 
     for(unsigned int i = 0; i < CM_GD160_LEDS_PER_SIDE; i++)
@@ -168,7 +169,6 @@ void RGBController_CMGD160Controller::SetupZones()
     back.leds_min      = CM_GD160_LEDS_PER_SIDE;
     back.leds_max      = CM_GD160_LEDS_PER_SIDE;
     back.leds_count    = CM_GD160_LEDS_PER_SIDE;
-    back.matrix_map    = NULL;
     zones.push_back(back);
 
     for(unsigned int i = 0; i < CM_GD160_LEDS_PER_SIDE; i++)
@@ -180,13 +180,6 @@ void RGBController_CMGD160Controller::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_CMGD160Controller::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_CMGD160Controller::DeviceUpdateLEDs()
@@ -206,12 +199,12 @@ void RGBController_CMGD160Controller::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_CMGD160Controller::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CMGD160Controller::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_CMGD160Controller::UpdateSingleLED(int /*led*/)
+void RGBController_CMGD160Controller::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

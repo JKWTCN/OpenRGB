@@ -82,6 +82,8 @@ RGBController_SteelSeriesRival::RGBController_SteelSeriesRival(SteelSeriesRivalC
 
 RGBController_SteelSeriesRival::~RGBController_SteelSeriesRival()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -94,7 +96,6 @@ void RGBController_SteelSeriesRival::SetupZones()
     logo_zone.leds_min      = 1;
     logo_zone.leds_max      = 1;
     logo_zone.leds_count    = 1;
-    logo_zone.matrix_map    = NULL;
     zones.push_back(logo_zone);
 
     led logo_led;
@@ -112,7 +113,6 @@ void RGBController_SteelSeriesRival::SetupZones()
         wheel_zone.leds_min     = 1;
         wheel_zone.leds_max     = 1;
         wheel_zone.leds_count   = 1;
-        wheel_zone.matrix_map   = NULL;
         zones.push_back(wheel_zone);
 
         led wheel_led;
@@ -131,7 +131,6 @@ void RGBController_SteelSeriesRival::SetupZones()
         wheel_zone.leds_min     = 1;
         wheel_zone.leds_max     = 1;
         wheel_zone.leds_count   = 1;
-        wheel_zone.matrix_map   = NULL;
         zones.push_back(wheel_zone);
 
         led wheel_led;
@@ -145,7 +144,6 @@ void RGBController_SteelSeriesRival::SetupZones()
         mouse_zone.leds_min     = 6;
         mouse_zone.leds_max     = 6;
         mouse_zone.leds_count   = 6;
-        mouse_zone.matrix_map   = NULL;
         zones.push_back(mouse_zone);
 
         for(const steelseries_rival_led_info led_info: rival_650_leds)
@@ -167,7 +165,6 @@ void RGBController_SteelSeriesRival::SetupZones()
         wheel_zone.leds_min     = 1;
         wheel_zone.leds_max     = 1;
         wheel_zone.leds_count   = 1;
-        wheel_zone.matrix_map   = NULL;
         zones.push_back(wheel_zone);
 
         led wheel_led;
@@ -181,7 +178,6 @@ void RGBController_SteelSeriesRival::SetupZones()
         mouse_zone.leds_min     = 6;
         mouse_zone.leds_max     = 6;
         mouse_zone.leds_count   = 6;
-        mouse_zone.matrix_map   = NULL;
         zones.push_back(mouse_zone);
 
         for(const steelseries_rival_led_info led_info: rival_600_leds)
@@ -196,13 +192,6 @@ void RGBController_SteelSeriesRival::SetupZones()
     SetupColors();
 }
 
-void RGBController_SteelSeriesRival::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_SteelSeriesRival::DeviceUpdateLEDs()
 {
     for(unsigned int i = 0; i < leds.size(); i++)
@@ -214,7 +203,7 @@ void RGBController_SteelSeriesRival::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_SteelSeriesRival::UpdateZoneLEDs(int zone)
+void RGBController_SteelSeriesRival::DeviceUpdateZoneLEDs(int zone)
 {
     for(unsigned int i = 0; i < zones[zone].leds_count; i++)
     {
@@ -225,7 +214,7 @@ void RGBController_SteelSeriesRival::UpdateZoneLEDs(int zone)
     }
 }
 
-void RGBController_SteelSeriesRival::UpdateSingleLED(int led)
+void RGBController_SteelSeriesRival::DeviceUpdateSingleLED(int led)
 {
     unsigned char red = RGBGetRValue(colors[led]);
     unsigned char grn = RGBGetGValue(colors[led]);

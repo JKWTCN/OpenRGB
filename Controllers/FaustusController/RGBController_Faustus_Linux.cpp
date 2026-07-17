@@ -10,7 +10,7 @@
 #include <dirent.h>
 #include <string.h>
 #include "RGBController_Faustus_Linux.h"
-#include "Detector.h"
+#include "DetectionManager.h"
 
 /**------------------------------------------------------------------*\
     @name ASUS TUF Keyboard (Faustus)
@@ -75,6 +75,11 @@ RGBController_Faustus::RGBController_Faustus(const std::string& dev_path)
     set_path.append("/kbbl_set");
 }
 
+RGBController_Faustus::~RGBController_Faustus()
+{
+    Shutdown();
+}
+
 void RGBController_Faustus::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -86,7 +91,6 @@ void RGBController_Faustus::SetupZones()
     zones[0].leds_min       = 1;
     zones[0].leds_max       = 1;
     zones[0].leds_count     = 1;
-    zones[0].matrix_map     = NULL;
 
     /*---------------------------------------------------------*\
     | Set up LED                                                |
@@ -95,13 +99,6 @@ void RGBController_Faustus::SetupZones()
     leds[0].name = "Keyboard Backlight LED";
 
     SetupColors();
-}
-
-void RGBController_Faustus::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_Faustus::DeviceUpdateLEDs()
@@ -147,12 +144,12 @@ void RGBController_Faustus::DeviceUpdateLEDs()
     str_set.close();
 }
 
-void RGBController_Faustus::UpdateZoneLEDs(int /*zone*/)
+void RGBController_Faustus::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_Faustus::UpdateSingleLED(int /*led*/)
+void RGBController_Faustus::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -162,43 +159,41 @@ void RGBController_Faustus::DeviceUpdateMode()
     DeviceUpdateLEDs();
 }
 
-void DetectFaustusControllers()
+DetectedControllers DetectFaustusControllers()
 {
-    const char* base_path = "/sys/devices/platform/faustus/kbbl";
-    DIR* dir = opendir(base_path);
+    DetectedControllers detected_controllers;
+    const char*         base_path   = "/sys/devices/platform/faustus/kbbl";
+    DIR*                dir         = opendir(base_path);
 
-    if(!dir)
+    if(dir)
     {
-        return;
-    }
+        // Directory is present - we pretty much have a driver confirmation already, but double check for all files required just in case
+        struct dirent* dent = readdir(dir);
 
-    // Directory is present - we pretty much have a driver confirmation already, but double check for all files required just in case
-    struct dirent* dent = readdir(dir);
-
-    if(!dent)
-    {
-        return;
-    }
-
-    int found = 0;
-    while(dent)
-    {
-        const char* fname = dent->d_name;
-        if(!strcmp(fname, "kbbl_red") || !strcmp(fname, "kbbl_green") || !strcmp(fname, "kbbl_blue") || !strcmp(fname, "kbbl_mode") || !strcmp(fname, "kbbl_flags") || !strcmp(fname, "kbbl_set"))
+        if(dent)
         {
-            ++found;
+            int found = 0;
+            while(dent)
+            {
+                const char* fname = dent->d_name;
+                if(!strcmp(fname, "kbbl_red") || !strcmp(fname, "kbbl_green") || !strcmp(fname, "kbbl_blue") || !strcmp(fname, "kbbl_mode") || !strcmp(fname, "kbbl_flags") || !strcmp(fname, "kbbl_set"))
+                {
+                    ++found;
+                }
+                dent = readdir(dir);
+            }
+
+            closedir(dir);
+
+            if(found == 6)
+            {
+                RGBController_Faustus * rgb_controller = new RGBController_Faustus(base_path);
+                detected_controllers.push_back(rgb_controller);
+            }
         }
-        dent = readdir(dir);
     }
 
-    closedir(dir);
-
-    if(found != 6)
-    {
-        return;
-    }
-
-    ResourceManager::get()->RegisterRGBController(new RGBController_Faustus(base_path));
-}   /* DetectFaustusControllers() */
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("Faustus", DetectFaustusControllers);

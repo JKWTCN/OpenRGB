@@ -122,6 +122,8 @@ RGBController_AsusROGAlly::RGBController_AsusROGAlly(ROGAllyController* controll
 
 RGBController_AsusROGAlly::~RGBController_AsusROGAlly()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -134,7 +136,6 @@ void RGBController_AsusROGAlly::SetupZones()
     left_stick_zone.leds_min     = 2;
     left_stick_zone.leds_max     = 2;
     left_stick_zone.leds_count   = 2;
-    left_stick_zone.matrix_map   = NULL;
 
     zones.push_back(left_stick_zone);
 
@@ -154,7 +155,6 @@ void RGBController_AsusROGAlly::SetupZones()
     right_stick_zone.leds_min     = 2;
     right_stick_zone.leds_max     = 2;
     right_stick_zone.leds_count   = 2;
-    right_stick_zone.matrix_map   = NULL;
 
     zones.push_back(right_stick_zone);
 
@@ -170,13 +170,6 @@ void RGBController_AsusROGAlly::SetupZones()
     SetupColors();
 }
 
-void RGBController_AsusROGAlly::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_AsusROGAlly::DeviceUpdateLEDs()
 {
     if(modes[active_mode].value == ROG_ALLY_MODE_DIRECT)
@@ -185,12 +178,12 @@ void RGBController_AsusROGAlly::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_AsusROGAlly::UpdateZoneLEDs(int /*zone*/)
+void RGBController_AsusROGAlly::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_AsusROGAlly::UpdateSingleLED(int /*led*/)
+void RGBController_AsusROGAlly::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

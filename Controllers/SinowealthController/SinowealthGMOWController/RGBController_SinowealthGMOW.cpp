@@ -158,15 +158,12 @@ RGBController_GMOW::RGBController_GMOW(SinowealthGMOWController* controller_ptr)
 
 RGBController_GMOW::~RGBController_GMOW()
 {
+    Shutdown();
+
     delete controller;
 }
 
 void RGBController_GMOW::SetupZones()
-{
-
-}
-
-void RGBController_GMOW::ResizeZone(int /*zone*/, int /*new_size*/)
 {
 
 }
@@ -176,12 +173,12 @@ void RGBController_GMOW::DeviceUpdateLEDs()
 
 }
 
-void RGBController_GMOW::UpdateZoneLEDs(int /*zone*/)
+void RGBController_GMOW::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 
 }
 
-void RGBController_GMOW::UpdateSingleLED(int /*led*/)
+void RGBController_GMOW::DeviceUpdateSingleLED(int /*led*/)
 {
 
 }

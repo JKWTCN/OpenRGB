@@ -168,6 +168,8 @@ RGBController_CMMMController::RGBController_CMMMController(CMMMController* contr
 
 RGBController_CMMMController::~RGBController_CMMMController()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -179,7 +181,6 @@ void RGBController_CMMMController::Init_Controller()
     mouse_zone.leds_min     = leds_count;
     mouse_zone.leds_max     = leds_count;
     mouse_zone.leds_count   = leds_count;
-    mouse_zone.matrix_map   = NULL;
     zones.push_back(mouse_zone);
 
     int value               = 0;
@@ -212,13 +213,6 @@ void RGBController_CMMMController::SetupZones()
     SetupColors();
 }
 
-void RGBController_CMMMController::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_CMMMController::DeviceUpdateLEDs()
 {
     int value            = 0;
@@ -239,12 +233,12 @@ void RGBController_CMMMController::DeviceUpdateLEDs()
     controller->SetLedsDirect(wheel, buttons, logo);
 }
 
-void RGBController_CMMMController::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CMMMController::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_CMMMController::UpdateSingleLED(int /*led*/)
+void RGBController_CMMMController::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

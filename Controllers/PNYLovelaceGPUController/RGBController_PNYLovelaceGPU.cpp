@@ -107,6 +107,13 @@ RGBController_PNYLovelaceGPU::RGBController_PNYLovelaceGPU(PNYLovelaceGPUControl
     active_mode = 0;
 }
 
+RGBController_PNYLovelaceGPU::~RGBController_PNYLovelaceGPU()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_PNYLovelaceGPU::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -119,7 +126,6 @@ void RGBController_PNYLovelaceGPU::SetupZones()
     new_zone->leds_min      = 3;
     new_zone->leds_max      = 3;
     new_zone->leds_count    = 3;
-    new_zone->matrix_map    = NULL;
 
     led*  new_led  = new led();
     new_led->name           = "Fan LED";
@@ -137,24 +143,17 @@ void RGBController_PNYLovelaceGPU::SetupZones()
     SetupColors();
 }
 
-void RGBController_PNYLovelaceGPU::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_PNYLovelaceGPU::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_PNYLovelaceGPU::UpdateZoneLEDs(int /*zone*/)
+void RGBController_PNYLovelaceGPU::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateMode();
 }
 
-void RGBController_PNYLovelaceGPU::UpdateSingleLED(int /*led*/)
+void RGBController_PNYLovelaceGPU::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateMode();
 }
@@ -168,9 +167,9 @@ void RGBController_PNYLovelaceGPU::DeviceUpdateMode()
             break;
 
         case PNY_GPU_MODE_STATIC:
-            for (int i = 0; i < 3; i++)
+            for(int i = 0; i < 3; i++)
             {
-                RGBColor color = GetLED(i);
+                RGBColor color = colors[i];
                 controller->SetDirect(i, RGBGetRValue(color), RGBGetGValue(color), RGBGetBValue(color));
             }
             break;

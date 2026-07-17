@@ -19,14 +19,13 @@ class RGBController_LogitechG560 : public RGBController
 {
 public:
     RGBController_LogitechG560(LogitechG560Controller* controller_ptr);
+    ~RGBController_LogitechG560();
 
     void        SetupZones();
 
-    void        ResizeZone(int zone, int new_size);
-
     void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void        DeviceUpdateZoneLEDs(int zone);
+    void        DeviceUpdateSingleLED(int led);
 
     void        DeviceUpdateMode();
 

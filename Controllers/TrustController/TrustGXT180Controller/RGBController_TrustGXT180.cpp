@@ -83,6 +83,8 @@ RGBController_TrustGXT180::RGBController_TrustGXT180(TrustGXT180Controller* cont
 
 RGBController_TrustGXT180::~RGBController_TrustGXT180()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -95,7 +97,6 @@ void RGBController_TrustGXT180::SetupZones()
     new_zone.leds_min   = TRUST_GXT_180_NUMBER_OF_LEDS;
     new_zone.leds_max   = TRUST_GXT_180_NUMBER_OF_LEDS;
     new_zone.leds_count = TRUST_GXT_180_NUMBER_OF_LEDS;
-    new_zone.matrix_map = nullptr;
 
     zones.emplace_back(new_zone);
 
@@ -109,24 +110,17 @@ void RGBController_TrustGXT180::SetupZones()
     SetupColors();
 }
 
-void RGBController_TrustGXT180::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_TrustGXT180::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_TrustGXT180::UpdateZoneLEDs(int /*zone*/)
+void RGBController_TrustGXT180::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateMode();
 }
 
-void RGBController_TrustGXT180::UpdateSingleLED(int /*led*/)
+void RGBController_TrustGXT180::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateMode();
 }

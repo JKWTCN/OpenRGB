@@ -51,59 +51,101 @@ RGBController_CorsairHydroPlatinum::RGBController_CorsairHydroPlatinum(CorsairHy
     Direct.color_mode = MODE_COLORS_PER_LED;
     modes.push_back(Direct);
 
-    Init_Controller();
     SetupZones();
 }
 
 RGBController_CorsairHydroPlatinum::~RGBController_CorsairHydroPlatinum()
 {
+    Shutdown();
+
     delete controller;
-}
-
-void RGBController_CorsairHydroPlatinum::Init_Controller()
-{
-    zone cpu_block_zone;
-    cpu_block_zone.name               = "CPU Block";
-    cpu_block_zone.type               = ZONE_TYPE_MATRIX;
-    cpu_block_zone.leds_min           = 16;
-    cpu_block_zone.leds_max           = 16;
-    cpu_block_zone.leds_count         = 16;
-    cpu_block_zone.matrix_map         = new matrix_map_type;
-    cpu_block_zone.matrix_map->height = 5;
-    cpu_block_zone.matrix_map->width  = 5;
-    cpu_block_zone.matrix_map->map    = (unsigned int *)&matrix_map;
-    zones.push_back(cpu_block_zone);
-
-    /*-----------------------------------------------------*\
-    | If the device is RGB fan-capable, set up fan zones.   |
-    \*-----------------------------------------------------*/
-    if(controller->HaveRgbFan())
-    {
-        zone fans_zone;
-        fans_zone.name       = "Fans";
-        fans_zone.type       = ZONE_TYPE_LINEAR;
-        fans_zone.leds_min   = 0;
-        fans_zone.leds_max   = 32;
-        fans_zone.leds_count = 0;
-        fans_zone.matrix_map = NULL;
-        zones.push_back(fans_zone);
-    }
 }
 
 void RGBController_CorsairHydroPlatinum::SetupZones()
 {
-    /*-------------------------------------------------*\
-    | Clear any existing color/LED configuration        |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Only set LED count on the first run                   |
+    \*-----------------------------------------------------*/
+    bool first_run = false;
+
+    if(zones.size() == 0)
+    {
+        first_run = true;
+    }
+
+    /*-----------------------------------------------------*\
+    | Clear any existing color/LED configuration            |
+    \*-----------------------------------------------------*/
     leds.clear();
     colors.clear();
+    if(controller->HaveRgbFan())
+    {
+        zones.resize(2);
+    }
+    else
+    {
+        zones.resize(1);
+    }
 
+    /*-----------------------------------------------------*\
+    | Set up zones                                          |
+    \*-----------------------------------------------------*/
+    zones[0].name                           = "CPU Block";
+    zones[0].type                           = ZONE_TYPE_MATRIX;
+    zones[0].leds_min                       = 16;
+    zones[0].leds_max                       = 16;
+    zones[0].leds_count                     = 16;
+    zones[0].matrix_map.Set(5, 5, (unsigned int *)&matrix_map);
+
+    /*-----------------------------------------------------*\
+    | If the device is RGB fan-capable, set up fan zone.    |
+    \*-----------------------------------------------------*/
+    if(controller->HaveRgbFan())
+    {
+        zones[1].leds_min                   = 0;
+        zones[1].leds_max                   = 32;
+
+        if(first_run)
+        {
+            zones[1].flags                  = ZONE_FLAG_MANUALLY_CONFIGURABLE_SIZE
+                                            | ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME
+                                            | ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE
+                                            | ZONE_FLAG_MANUALLY_CONFIGURABLE_MATRIX_MAP
+                                            | ZONE_FLAG_MANUALLY_CONFIGURABLE_SEGMENTS;
+        }
+
+        if(!(zones[1].flags & ZONE_FLAG_MANUALLY_CONFIGURED_NAME))
+        {
+            zones[1].name                   = "Corsair Fan Header";
+        }
+
+        if(!(zones[1].flags & ZONE_FLAG_MANUALLY_CONFIGURED_SIZE))
+        {
+            zones[1].leds_count             = 0;
+        }
+
+        if(!(zones[1].flags & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE))
+        {
+            zones[1].type                   = ZONE_TYPE_LINEAR;
+        }
+
+        if(!(zones[1].flags & ZONE_FLAG_MANUALLY_CONFIGURED_MATRIX_MAP))
+        {
+            zones[1].matrix_map.width       = 0;
+            zones[1].matrix_map.height      = 0;
+            zones[1].matrix_map.map.resize(0);
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Set up LEDs                                           |
+    \*-----------------------------------------------------*/
     for(unsigned int zone_idx = 0; zone_idx < zones.size(); zone_idx++)
     {
         for(unsigned int led_idx = 0; led_idx < zones[zone_idx].leds_count; led_idx++)
         {
             led new_led;
-            new_led.name = zones[zone_idx].name + " " + std::to_string(led_idx);;
+            new_led.name = zones[zone_idx].name + ", LED " + std::to_string(led_idx);;
             leds.push_back(new_led);
         }
     }
@@ -111,17 +153,10 @@ void RGBController_CorsairHydroPlatinum::SetupZones()
     SetupColors();
 }
 
-void RGBController_CorsairHydroPlatinum::ResizeZone(int zone, int new_size)
+void RGBController_CorsairHydroPlatinum::DeviceConfigureZone(int zone_idx)
 {
-    if((size_t) zone >= zones.size())
+    if((size_t)zone_idx < zones.size())
     {
-        return;
-    }
-
-    if(((unsigned int)new_size >= zones[zone].leds_min) && ((unsigned int)new_size <= zones[zone].leds_max))
-    {
-        zones[zone].leds_count = new_size;
-
         SetupZones();
     }
 }
@@ -131,12 +166,12 @@ void RGBController_CorsairHydroPlatinum::DeviceUpdateLEDs()
     controller->SetupColors(colors);
 }
 
-void RGBController_CorsairHydroPlatinum::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CorsairHydroPlatinum::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_CorsairHydroPlatinum::UpdateSingleLED(int /*led*/)
+void RGBController_CorsairHydroPlatinum::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

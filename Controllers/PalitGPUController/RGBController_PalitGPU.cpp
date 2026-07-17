@@ -46,6 +46,13 @@ RGBController_PalitGPU::RGBController_PalitGPU(PalitGPUController* controller_pt
     active_mode = 0;
 }
 
+RGBController_PalitGPU::~RGBController_PalitGPU()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_PalitGPU::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -60,7 +67,6 @@ void RGBController_PalitGPU::SetupZones()
     new_zone->leds_min      = 1;
     new_zone->leds_max      = 1;
     new_zone->leds_count    = 1;
-    new_zone->matrix_map    = NULL;
 
     new_led->name           = "GPU LED";
 
@@ -72,24 +78,17 @@ void RGBController_PalitGPU::SetupZones()
     SetupColors();
 }
 
-void RGBController_PalitGPU::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_PalitGPU::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_PalitGPU::UpdateZoneLEDs(int /*zone*/)
+void RGBController_PalitGPU::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_PalitGPU::UpdateSingleLED(int /*led*/)
+void RGBController_PalitGPU::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

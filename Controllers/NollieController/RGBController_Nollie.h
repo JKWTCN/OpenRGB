@@ -21,22 +21,15 @@ public:
     ~RGBController_Nollie();
 
     void        SetupZones();
-    void        ResizeZone(int zone, int new_size);
+    void        DeviceConfigureZone(int zone_idx);
 
     void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void        DeviceUpdateZoneLEDs(int zone);
+    void        DeviceUpdateSingleLED(int led);
 
     void        DeviceUpdateMode();
 
 private:
     NollieController*           controller;
     std::vector<unsigned int>   leds_channel;
-    std::vector<unsigned int>   zones_channel;
-
-    int* channel_index;
-
-    int ch32[32] = {5, 4, 3, 2, 1, 0, 15, 14, 26, 27, 28, 29, 30, 31, 8, 9, 19, 18, 17, 16, 7, 6, 25, 24, 23, 22, 21, 20, 13, 12, 11, 10};
-    int ch16[32] = {19, 18, 17, 16, 24, 25, 26, 27, 20, 21, 22, 23, 31, 30, 29, 28, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    int n16[16] = {3, 2, 1, 0, 8, 9, 10, 11, 4, 5, 6, 7, 15, 14, 13, 12};
 };

@@ -123,6 +123,8 @@ RGBController_AOCMouse::RGBController_AOCMouse(AOCMouseController* controller_pt
 
 RGBController_AOCMouse::~RGBController_AOCMouse()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -134,7 +136,6 @@ void RGBController_AOCMouse::SetupZones()
     logo_zone.leds_min              = 1;
     logo_zone.leds_max              = 1;
     logo_zone.leds_count            = 1;
-    logo_zone.matrix_map            = NULL;
     zones.push_back(logo_zone);
 
     led logo_led;
@@ -147,7 +148,6 @@ void RGBController_AOCMouse::SetupZones()
     scroll_wheel_zone.leds_min      = 1;
     scroll_wheel_zone.leds_max      = 1;
     scroll_wheel_zone.leds_count    = 1;
-    scroll_wheel_zone.matrix_map    = NULL;
     zones.push_back(scroll_wheel_zone);
 
     led scroll_wheel_led;
@@ -157,24 +157,17 @@ void RGBController_AOCMouse::SetupZones()
     SetupColors();
 }
 
-void RGBController_AOCMouse::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_AOCMouse::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_AOCMouse::UpdateZoneLEDs(int /*zone*/)
+void RGBController_AOCMouse::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_AOCMouse::UpdateSingleLED(int /*led*/)
+void RGBController_AOCMouse::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

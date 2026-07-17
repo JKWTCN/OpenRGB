@@ -49,6 +49,8 @@ RGBController_CorsairHydro2::RGBController_CorsairHydro2(CorsairHydro2Controller
 
 RGBController_CorsairHydro2::~RGBController_CorsairHydro2()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -61,7 +63,7 @@ void RGBController_CorsairHydro2::SetupZones()
     new_zone.leds_min   = 1;
     new_zone.leds_max   = 1;
     new_zone.leds_count = 1;
-    new_zone.matrix_map = NULL;
+
     zones.push_back(new_zone);
 
     led new_led;
@@ -72,24 +74,17 @@ void RGBController_CorsairHydro2::SetupZones()
     SetupColors();
 }
 
-void RGBController_CorsairHydro2::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_CorsairHydro2::DeviceUpdateLEDs()
 {
     controller->SetLED(colors);
 }
 
-void RGBController_CorsairHydro2::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CorsairHydro2::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     controller->SetLED(colors);
 }
 
-void RGBController_CorsairHydro2::UpdateSingleLED(int /*led*/)
+void RGBController_CorsairHydro2::DeviceUpdateSingleLED(int /*led*/)
 {
     controller->SetLED(colors);
 }

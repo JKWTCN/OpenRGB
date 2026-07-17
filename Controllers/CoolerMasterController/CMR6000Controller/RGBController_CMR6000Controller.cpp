@@ -152,6 +152,8 @@ RGBController_CMR6000Controller::RGBController_CMR6000Controller(CMR6000Controll
 
 RGBController_CMR6000Controller::~RGBController_CMR6000Controller()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -163,7 +165,6 @@ void RGBController_CMR6000Controller::SetupZones()
     GP_zone.leds_min    = 1;
     GP_zone.leds_max    = 1;
     GP_zone.leds_count  = 1;
-    GP_zone.matrix_map  = NULL;
     zones.push_back(GP_zone);
 
     led GP_led;
@@ -173,13 +174,6 @@ void RGBController_CMR6000Controller::SetupZones()
 
     SetupColors();
 
-}
-
-void RGBController_CMR6000Controller::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_CMR6000Controller::DeviceUpdateLEDs()
@@ -212,12 +206,12 @@ void RGBController_CMR6000Controller::DeviceUpdateLEDs()
     controller->SetMode(new_mode.value, new_mode.speed, color1, color2, rnd, bri);
 }
 
-void RGBController_CMR6000Controller::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CMR6000Controller::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_CMR6000Controller::UpdateSingleLED(int /*led*/)
+void RGBController_CMR6000Controller::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

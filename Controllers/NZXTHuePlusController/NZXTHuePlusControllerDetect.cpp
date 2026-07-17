@@ -10,38 +10,38 @@
 \*---------------------------------------------------------*/
 
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
+#include "find_usb_serial_port.h"
 #include "NZXTHuePlusController.h"
 #include "RGBController_NZXTHuePlus.h"
-#include "find_usb_serial_port.h"
 
+/*---------------------------------------------------------*\
+| NZXT USB IDs                                              |
+\*---------------------------------------------------------*/
 #define NZXT_HUE_PLUS_VID 0x04D8
 #define NZXT_HUE_PLUS_PID 0x00DF
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectNZXTHuePlusControllers                                                           *
-*                                                                                          *
-*       Detect devices supported by the NZXTHuePlus driver                                 *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectNZXTHuePlusControllers()
+DetectedControllers DetectNZXTHuePlusControllers()
 {
-    std::vector<std::string *> ports = find_usb_serial_port(NZXT_HUE_PLUS_VID, NZXT_HUE_PLUS_PID);
+    DetectedControllers         detected_controllers;
+    std::vector<std::string>    ports;
 
-    for(unsigned int i = 0; i < ports.size(); i++)
+    ports = find_usb_serial_port(NZXT_HUE_PLUS_VID, NZXT_HUE_PLUS_PID);
+
+    for(std::size_t i = 0; i < ports.size(); i++)
     {
-        if(*ports[i] != "")
+        if(ports[i] != "")
         {
             HuePlusController*     controller     = new HuePlusController();
-            controller->Initialize((char *)ports[i]->c_str());
+            controller->Initialize((char *)ports[i].c_str());
             RGBController_HuePlus* rgb_controller = new RGBController_HuePlus(controller);
 
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+            detected_controllers.push_back(rgb_controller);
         }
     }
-}   /* DetectHuePlusControllers() */
+
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("NZXT Hue+", DetectNZXTHuePlusControllers);
 /*---------------------------------------------------------------------------------------------------------*\

@@ -9,17 +9,18 @@
 
 #include <string>
 #include <unistd.h>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "RGBController_AsusTUFLaptop_Linux.h"
 
-static void DetectAsusTUFLaptopLinuxControllers()
+DetectedControllers DetectAsusTUFLaptopLinuxControllers()
 {
     /*-------------------------------------------------------------------------------------*\
     | If /sys/devices/platform/asus-nb-wmi/leds/asus::kbd_backlight/kbd_rgb_mode exists,    |
     |   the kernel support TUF Laptop keyboard LED controlling.                             |
     \*-------------------------------------------------------------------------------------*/
+    DetectedControllers detected_controllers;
+    std::string         s = "";
 
-    std::string s = "";
     s.append(ASUS_KBD_BACKLIGHT_BASE_PATH);
     s.append(ASUS_KBD_BACKLIGHT_MODE_PATH);
 
@@ -27,9 +28,11 @@ static void DetectAsusTUFLaptopLinuxControllers()
     {
         AsusTUFLaptopLinuxController*       controller     = new AsusTUFLaptopLinuxController();
         RGBController_AsusTUFLaptopLinux*   rgb_controller = new RGBController_AsusTUFLaptopLinux(controller);
-        ResourceManager::get()->RegisterRGBController(rgb_controller);
+
+        detected_controllers.push_back(rgb_controller);
     }
-    return;
+
+    return(detected_controllers);
 }
 
 REGISTER_DETECTOR("ASUS TUF Laptop", DetectAsusTUFLaptopLinuxControllers);

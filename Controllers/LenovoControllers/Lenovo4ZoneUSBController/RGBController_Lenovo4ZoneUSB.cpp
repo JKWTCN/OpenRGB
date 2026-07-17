@@ -87,6 +87,8 @@ RGBController_Lenovo4ZoneUSB::RGBController_Lenovo4ZoneUSB(Lenovo4ZoneUSBControl
 
 RGBController_Lenovo4ZoneUSB::~RGBController_Lenovo4ZoneUSB()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -98,9 +100,6 @@ void RGBController_Lenovo4ZoneUSB::SetupZones()
     new_zone.leds_count = LENOVO_4_ZONE_NUM_LEDS;
     new_zone.leds_max   = new_zone.leds_count;
     new_zone.leds_min   = new_zone.leds_count;
-
-    new_zone.matrix_map = NULL;
-
 
     zones.push_back(new_zone);
 
@@ -115,18 +114,11 @@ void RGBController_Lenovo4ZoneUSB::SetupZones()
     SetupColors();
 }
 
-void RGBController_Lenovo4ZoneUSB::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
-void RGBController_Lenovo4ZoneUSB::UpdateSingleLED(int /*led*/)
+void RGBController_Lenovo4ZoneUSB::DeviceUpdateSingleLED(int /*led*/)
 {
 }
 
-void RGBController_Lenovo4ZoneUSB::UpdateZoneLEDs(int /*zone*/)
+void RGBController_Lenovo4ZoneUSB::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 }
 

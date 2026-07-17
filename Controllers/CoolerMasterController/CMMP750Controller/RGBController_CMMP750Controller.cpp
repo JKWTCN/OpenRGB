@@ -93,6 +93,8 @@ RGBController_CMMP750Controller::RGBController_CMMP750Controller(CMMP750Controll
 
 RGBController_CMMP750Controller::~RGBController_CMMP750Controller()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -122,7 +124,6 @@ void RGBController_CMMP750Controller::SetupZones()
     MP_zone.leds_min    = 1;
     MP_zone.leds_max    = 1;
     MP_zone.leds_count  = 1;
-    MP_zone.matrix_map  = NULL;
     zones.push_back(MP_zone);
 
     led MP_led;
@@ -144,13 +145,6 @@ void RGBController_CMMP750Controller::SetupZones()
     }
 }
 
-void RGBController_CMMP750Controller::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_CMMP750Controller::DeviceUpdateLEDs()
 {
     unsigned char red = RGBGetRValue(colors[0]);
@@ -160,7 +154,7 @@ void RGBController_CMMP750Controller::DeviceUpdateLEDs()
     controller->SetColor(red, grn, blu);
 }
 
-void RGBController_CMMP750Controller::UpdateZoneLEDs(int zone)
+void RGBController_CMMP750Controller::DeviceUpdateZoneLEDs(int zone)
 {
     RGBColor      color = colors[zone];
     unsigned char red   = RGBGetRValue(color);
@@ -170,9 +164,9 @@ void RGBController_CMMP750Controller::UpdateZoneLEDs(int zone)
     controller->SetColor(red, grn, blu);
 }
 
-void RGBController_CMMP750Controller::UpdateSingleLED(int led)
+void RGBController_CMMP750Controller::DeviceUpdateSingleLED(int led)
 {
-    UpdateZoneLEDs(led);
+    DeviceUpdateZoneLEDs(led);
 }
 
 void RGBController_CMMP750Controller::DeviceUpdateMode()

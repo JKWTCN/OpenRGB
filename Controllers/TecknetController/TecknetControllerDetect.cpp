@@ -10,7 +10,7 @@
 \*---------------------------------------------------------*/
 
 #include <hidapi.h>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "TecknetController.h"
 #include "RGBController_Tecknet.h"
 
@@ -20,28 +20,22 @@
 #define TECKNET_M0008_U         0x01        //Usage 01
 #define TECKNET_M0008_UPG       0xFFA0      //Vendor Defined Usage Page
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectTecknetControllers                                                               *
-*                                                                                          *
-*       Tests the USB address to see if any Tecknet Controllers.                           *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectTecknetControllers(hid_device_info* info, const std::string&)
+DetectedControllers DetectTecknetControllers(hid_device_info* info, const std::string&)
 {
-    hid_device* dev = hid_open_path(info->path);
+    DetectedControllers detected_controllers;
+    hid_device*         dev;
+
+    dev = hid_open_path(info->path);
+
     if(dev)
     {
-        TecknetController* controller = new TecknetController(dev, info->path);
+        TecknetController*     controller     = new TecknetController(dev, info->path);
         RGBController_Tecknet* rgb_controller = new RGBController_Tecknet(controller);
-        // Constructor sets the name
-        ResourceManager::get()->RegisterRGBController(rgb_controller);
-    }
-}   /* DetectTecknetControllers) */
 
-#ifdef USE_HID_USAGE
+        detected_controllers.push_back(rgb_controller);
+    }
+
+    return(detected_controllers);
+}
+
 REGISTER_HID_DETECTOR_PU("Tecknet M008", DetectTecknetControllers, TECKNET_VID, TECKNET_M0008_PID, TECKNET_M0008_UPG, TECKNET_M0008_U);
-#else
-REGISTER_HID_DETECTOR_I("Tecknet M008", DetectTecknetControllers, TECKNET_VID, TECKNET_M0008_PID, 0);
-#endif

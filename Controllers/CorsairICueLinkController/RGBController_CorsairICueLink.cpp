@@ -54,6 +54,8 @@ RGBController_CorsairICueLink::RGBController_CorsairICueLink(CorsairICueLinkCont
 
 RGBController_CorsairICueLink::~RGBController_CorsairICueLink()
 {
+    Shutdown();
+
     keepalive_thread_run = 0;
     keepalive_thread->join();
     delete keepalive_thread;
@@ -96,7 +98,16 @@ void RGBController_CorsairICueLink::SetupZones()
                     lcd_zone.leds_min   = controller->GetEndpoints()[lcd_idx]->led_channels;
                     lcd_zone.leds_max   = lcd_zone.leds_min;
                     lcd_zone.leds_count = lcd_zone.leds_min;
+
                     zones.push_back(lcd_zone);
+
+                    for(unsigned int led_idx = 0; led_idx < lcd_zone.leds_count; led_idx++)
+                    {
+                        led new_led;
+                        new_led.name = "LED " + std::to_string(led_idx + 1);
+
+                        leds.push_back(new_led);
+                    }
                 }
             }
         }
@@ -113,24 +124,17 @@ void RGBController_CorsairICueLink::SetupZones()
     SetupColors();
 }
 
-void RGBController_CorsairICueLink::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*-----------------------------------------------------*\
-    | Device does not support resizing zones                |
-    \*-----------------------------------------------------*/
-}
-
 void RGBController_CorsairICueLink::DeviceUpdateLEDs()
 {
     controller->UpdateLights(&colors[0], colors.size());
 }
 
-void RGBController_CorsairICueLink::UpdateZoneLEDs(int /*zone*/)
+void RGBController_CorsairICueLink::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_CorsairICueLink::UpdateSingleLED(int /*led*/)
+void RGBController_CorsairICueLink::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

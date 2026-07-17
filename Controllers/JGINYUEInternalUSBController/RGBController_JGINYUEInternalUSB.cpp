@@ -178,14 +178,16 @@ RGBController_JGINYUEInternalUSB::RGBController_JGINYUEInternalUSB(JGINYUEIntern
 
 RGBController_JGINYUEInternalUSB::~RGBController_JGINYUEInternalUSB()
 {
+    Shutdown();
+
     delete controller;
 }
 
 void RGBController_JGINYUEInternalUSB::SetupZones()
 {
-    /*-------------------------------------------------*\
-    | Only set LED count on the first run               |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Only set LED count on the first run                   |
+    \*-----------------------------------------------------*/
     bool first_run = false;
 
     if(zones.size() == 0)
@@ -193,41 +195,58 @@ void RGBController_JGINYUEInternalUSB::SetupZones()
         first_run = true;
     }
 
-    /*-------------------------------------------------*\
-    | Clear any existing color/LED configuration        |
-    \*-------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Clear any existing color/LED configuration            |
+    \*-----------------------------------------------------*/
     leds.clear();
     colors.clear();
     zones.resize(JGINYUE_MAX_ZONES);
 
-    /*-------------------------------------------------*\
-    | Set zones and leds                                |
-    \*-------------------------------------------------*/
-    zones[0].name       = "ARGB Header 1";
-    zones[0].type       = ZONE_TYPE_LINEAR;
-    zones[0].leds_min   = 0;
-    zones[0].leds_max   = 100;
-    zones[0].matrix_map = NULL;
-
-    zones[1].name       = "ARGB Header 2";
-    zones[1].type       = ZONE_TYPE_LINEAR;
-    zones[1].leds_min   = 0;
-    zones[1].leds_max   = 100;
-    zones[1].matrix_map = NULL;
-
-    if(first_run)
+    /*-----------------------------------------------------*\
+    | Set zones and leds                                    |
+    \*-----------------------------------------------------*/
+    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
     {
-        zones[0].leds_count = 0;
-        zones[1].leds_count = 0;
-    }
+        zones[zone_idx].leds_min                    = 0;
+        zones[zone_idx].leds_max                    = 100;
 
-    for(unsigned int zone_idx = 0; zone_idx < JGINYUE_MAX_ZONES; zone_idx++)
-    {
+        if(first_run)
+        {
+            zones[zone_idx].flags                   = ZONE_FLAG_MANUALLY_CONFIGURABLE_SIZE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_MATRIX_MAP
+                                                    | ZONE_FLAG_MANUALLY_CONFIGURABLE_SEGMENTS;
+        }
+
+        if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_NAME))
+        {
+            zones[zone_idx].name                    = "Addressable RGB Header ";
+            zones[zone_idx].name.append(std::to_string(zone_idx + 1));
+        }
+
+        if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_SIZE))
+        {
+            zones[zone_idx].leds_count              = 0;
+        }
+
+        if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE))
+        {
+            zones[zone_idx].type                    = ZONE_TYPE_LINEAR;
+        }
+
+        if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_MATRIX_MAP))
+        {
+            zones[zone_idx].matrix_map.width        = 0;
+            zones[zone_idx].matrix_map.height       = 0;
+            zones[zone_idx].matrix_map.map.resize(0);
+        }
+
         for(unsigned int led_idx = 0; led_idx < zones[zone_idx].leds_count; led_idx++)
         {
             led new_led;
-            new_led.name    = "ARGB Header " + std::to_string(zone_idx + 1) + " LED " + std::to_string(led_idx + 1);
-            new_led.value   = led_idx;
+            new_led.name                            = zones[zone_idx].name + ", LED " + std::to_string(led_idx + 1);
+            new_led.value                           = led_idx;
             leds.push_back(new_led);
         }
     }
@@ -235,39 +254,40 @@ void RGBController_JGINYUEInternalUSB::SetupZones()
     SetupColors();
 }
 
-void RGBController_JGINYUEInternalUSB::ResizeZone(int zone, int new_size)
+void RGBController_JGINYUEInternalUSB::DeviceConfigureZone(int zone_idx)
 {
-    unsigned char area;
-
-    switch(zone)
+    if((size_t)zone_idx < zones.size())
     {
-    case 0:
-        area = 0x01;
-        break;
-    case 1:
-        area = 0x02;
-        break;
-    default:
-        area = 0x01;
-        break;
+        unsigned char area;
+
+        switch(zone_idx)
+        {
+        case 0:
+            area = 0x01;
+            break;
+        case 1:
+            area = 0x02;
+            break;
+        default:
+            area = 0x01;
+            break;
+        }
+
+        controller->Area_resize(zones[zone_idx].leds_count, area);
+
+        SetupZones();
     }
-
-    zones[zone].leds_count = new_size;
-
-    SetupZones();
-
-    controller->Area_resize(new_size, area);
 }
 
 void RGBController_JGINYUEInternalUSB::DeviceUpdateLEDs()
 {
     for(int i = 0; i < JGINYUE_MAX_ZONES; i++)
     {
-        UpdateZoneLEDs(i);
+        DeviceUpdateZoneLEDs(i);
     }
 }
 
-void RGBController_JGINYUEInternalUSB::UpdateZoneLEDs(int zone)
+void RGBController_JGINYUEInternalUSB::DeviceUpdateZoneLEDs(int zone)
 {
     unsigned char area;
 
@@ -287,11 +307,11 @@ void RGBController_JGINYUEInternalUSB::UpdateZoneLEDs(int zone)
     controller->DirectLEDControl(zones[zone].colors,area);
 }
 
-void RGBController_JGINYUEInternalUSB::UpdateSingleLED(int led)
+void RGBController_JGINYUEInternalUSB::DeviceUpdateSingleLED(int led)
 {
     int zone;
     zone = leds[led].value;
-    UpdateZoneLEDs(zone);
+    DeviceUpdateZoneLEDs(zone);
 }
 
 void RGBController_JGINYUEInternalUSB::DeviceUpdateMode()

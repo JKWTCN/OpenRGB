@@ -1307,43 +1307,50 @@ static void ServiceStarted()
 }
 
 /*---------------------------------------------------------*\
-| ServiceStartupProgress                                    |
+| ServiceResourceManagerCallback                            |
 |                                                           |
 |   Report detection progress when running as a service     |
 \*---------------------------------------------------------*/
-static void ServiceStartupProgress(void*)
+static void ServiceResourceManagerCallback(void *, unsigned int update_reason)
 {
-    unsigned int percent = ResourceManager::get()->GetDetectionPercent();
-    unsigned int estimate;
-
-    percent = std::clamp(percent, 0u, 100u);
-
-    if(lastpercent > percent)
+    switch(update_reason)
     {
-        detection_pass += 1;
+        case RESOURCEMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED:
+            {
+                unsigned int percent = ResourceManager::get()->GetDetectionPercent();
+                unsigned int estimate;
+
+                percent = std::clamp(percent, 0u, 100u);
+
+                if(lastpercent > percent)
+                {
+                    detection_pass += 1;
+                }
+
+                lastpercent = percent;
+
+                switch(detection_pass)
+                {
+                    case 0:
+                        percent = 0;
+                        break;
+                    case 1:
+                        percent = percent * 4 / 5;
+                        break;
+                    case 2:
+                        percent = percent / 5 + 80;
+                        break;
+                    default:
+                        percent = 100;
+                        break;
+                }
+
+                estimate = (100 - percent) / 5 + 10;
+
+                ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, estimate * 1000);
+            }
+            break;
     }
-
-    lastpercent = percent;
-
-    switch(detection_pass)
-    {
-        case 0:
-            percent = 0;
-            break;
-        case 1:
-            percent = percent * 4 / 5;
-            break;
-        case 2:
-            percent = percent / 5 + 80;
-            break;
-        default:
-            percent = 100;
-            break;
-    }
-
-    estimate = (100 - percent) / 5 + 10;
-
-    ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, estimate * 1000);
 }
 
 /*---------------------------------------------------------*\
@@ -1815,7 +1822,7 @@ static int common_main(int argc, char* argv[])
         filesystem::path app_config_path = GetConfiguredServiceDirectory();
         filesystem::create_directories(app_config_path);
         startup_set_service_configuration_directory(app_config_path);
-        LogManager::get()->setServiceLogDirectory(app_config_path);
+        LogManager::get()->SetServiceLogDirectory(app_config_path);
 
         unsigned short service_port = GetConfiguredServicePort();
         WebSocketServer * ws_server = ResourceManager::get()->GetWebSocketServer();
@@ -1875,7 +1882,7 @@ static int common_main(int argc, char* argv[])
     \*-----------------------------------------------------*/
     if(started_as_service)
     {
-        ResourceManager::get()->RegisterDetectionProgressCallback(ServiceStartupProgress, NULL);
+        ResourceManager::get()->RegisterResourceManagerCallback(ServiceResourceManagerCallback, NULL);
     }
 
     /*-----------------------------------------------------*\
@@ -1891,12 +1898,26 @@ static int common_main(int argc, char* argv[])
     \*-----------------------------------------------------*/
     if(started_as_service)
     {
-        ResourceManager::get()->UnregisterDetectionProgressCallback(ServiceStartupProgress, NULL);
+        ResourceManager::get()->UnregisterResourceManagerCallback(ServiceResourceManagerCallback, NULL);
     }
 
     /*-----------------------------------------------------*\
-    | Perform ResourceManager cleanup before exiting        |
+    | If started in headless SDK server mode, wait until the|
+    | server shuts down before continuing cleanup.          |
     \*-----------------------------------------------------*/
+    if((ret_flags & RET_FLAG_START_SERVER) && !(ret_flags & RET_FLAG_START_GUI))
+    {
+        NetworkServer* server = ResourceManager::get()->GetServer();
+        if(server && server->GetOnline())
+        {
+            if(started_as_service)
+            {
+                ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
+            }
+            WaitWhileServerOnline(server);
+        }
+    }
+
     if(started_as_service && (exitval != EXIT_SUCCESS))
     {
         WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
@@ -1910,7 +1931,11 @@ static int common_main(int argc, char* argv[])
     }
     else
     {
-        ResourceManager::get()->Cleanup();
+        WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
+        if(ws_server)
+        {
+            ws_server->StopServer();
+        }
     }
 
     if(started_as_service)

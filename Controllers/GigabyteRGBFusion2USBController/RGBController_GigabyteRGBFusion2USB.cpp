@@ -25,7 +25,7 @@
     @effects :white_check_mark:
     @detectors DetectGigabyteRGBFusion2USBControllers
     @comment The Fusion 2 USB controller applies to most AMD and
-        Intel mainboards from the x570 and z390 chipsets onwards.
+        Intel mainboards from the X570 and z390 chipsets onwards.
 \*-------------------------------------------------------------------*/
 
 RGBController_RGBFusion2USB::RGBController_RGBFusion2USB(RGBFusion2USBController* controller_ptr, std::string detector)
@@ -39,7 +39,9 @@ RGBController_RGBFusion2USB::RGBController_RGBFusion2USB(RGBFusion2USBController
     version                     = controller->GetFWVersion();
     location                    = controller->GetDeviceLocation();
     serial                      = controller->GetSerial();
+    product_id                  = controller->GetProductID();
     device_num                  = controller->GetDeviceNum();
+
 
     mode Direct;
     Direct.name                 = "Direct";
@@ -206,6 +208,15 @@ RGBController_RGBFusion2USB::RGBController_RGBFusion2USB(RGBFusion2USBController
 
 RGBController_RGBFusion2USB::~RGBController_RGBFusion2USB()
 {
+    // Free any zones we allocated for the per-instance layout
+    for(gb_fusion2_zone* z : allocated_zones)
+    {
+        delete z;
+    }
+    allocated_zones.clear();
+
+    Shutdown();
+
     delete controller;
 }
 
@@ -214,94 +225,125 @@ RGBController_RGBFusion2USB::~RGBController_RGBFusion2USB()
 \*---------------------------------------------------------*/
 void RGBController_RGBFusion2USB::Init_Controller()
 {
-    const std::string SectionCustom      = "CustomLayout";
+
+    const gb_fusion2_device* src_layout  = gb_fusion2_device_list[device_index];
+    const std::string SectionGen2        = "Gigabyte-Gen2-ARGB";
+    const std::string SectionCustomBase  = "CustomLayout";
+    const std::string SectionCustom      = SectionCustomBase + std::to_string(device_num);
     const std::string SectionCalibration = "Calibration";
     RvrseLedHeaders ReverseLedLookup     = reverse_map(LedLookup);
     SettingsManager* settings_manager    = ResourceManager::get()->GetSettingsManager();
     nlohmann::json device_settings       = settings_manager->GetSettings(detector_name);
 
     /*---------------------------------------------------------*\
-    | Create the custom layout from the generic_device          |
+    | Checks for Gen2 support and adds flag to json.            |
     \*---------------------------------------------------------*/
-    gb_fusion2_device* layout = const_cast<gb_fusion2_device*>(gb_fusion2_device_list[device_index]);
+    if(controller->SupportsGen2())
+    {
+        if(!device_settings.contains(SectionGen2))
+        {
+            device_settings[SectionGen2]["Enabled"]   = false;
+            settings_manager->SetSettings(detector_name, device_settings);
+            settings_manager->SaveSettings();
+        }
+
+        supports_gen2 = device_settings[SectionGen2]["Enabled"];
+
+        if(supports_gen2)
+        {
+            controller->ScanGen2Strips();
+        }
+    }
+
+    /*---------------------------------------------------------*\
+    | Create the custom layout from the generic layout          |
+    \*---------------------------------------------------------*/
+    switch(product_id)
+    {
+        case 0x8950:
+                src_layout = gb_fusion2_device_list[device_index + 1];
+            break;
+        case 0x5711:
+                src_layout = gb_fusion2_device_list[device_index + 2];
+            break;
+        default:
+            break;
+    }
 
     if(!device_settings.contains(SectionCustom))
     {
         device_settings[SectionCustom]["Enabled"]   = false;
-        device_settings[SectionCustom]["Data"]      = BuildCustomLayoutJson(layout, ReverseLedLookup);
+        device_settings[SectionCustom]["Data"]      = BuildCustomLayoutJson(src_layout, ReverseLedLookup);
         settings_manager->SetSettings(detector_name, device_settings);
         settings_manager->SaveSettings();
     }
 
     bool custom_layout = device_settings[SectionCustom]["Enabled"];
 
-    if(custom_layout)
-    {
-        LoadCustomLayoutFromJson(device_settings[SectionCustom]["Data"], LedLookup, layout);
-    }
-
     EncodedCalibration hw_cal = controller->GetCalibration(false);
 
-    if(!device_settings.contains(SectionCalibration))
+    if(device_num == 0)
     {
-        device_settings[SectionCalibration]["Enabled"] = false;
-        device_settings[SectionCalibration]["Data"]    = WriteCalJsonFrom(hw_cal);
-        settings_manager->SetSettings(detector_name, device_settings);
-        settings_manager->SaveSettings();
-    }
-    else
-    {
-        nlohmann::json& cal_sec = device_settings[SectionCalibration];
-        bool cal_enable         = cal_sec.value("Enabled", false);
-
-        if(!cal_sec.contains("Data") || !cal_sec["Data"].is_object())
+        if(!device_settings.contains(SectionCalibration))
         {
-            cal_sec["Data"] = WriteCalJsonFrom(hw_cal);
+            device_settings[SectionCalibration]["Enabled"] = false;
+            device_settings[SectionCalibration]["Data"]    = WriteCalJsonFrom(hw_cal);
             settings_manager->SetSettings(detector_name, device_settings);
             settings_manager->SaveSettings();
         }
         else
         {
-            nlohmann::json& cdata = cal_sec["Data"];
-            FillMissingWith(cdata, hw_cal);
+            nlohmann::json& cal_sec = device_settings[SectionCalibration];
+            bool cal_enable         = cal_sec.value("Enabled", false);
 
-            if(!cal_enable)
+            if(!cal_sec.contains("Data") || !cal_sec["Data"].is_object())
             {
                 cal_sec["Data"] = WriteCalJsonFrom(hw_cal);
                 settings_manager->SetSettings(detector_name, device_settings);
                 settings_manager->SaveSettings();
             }
-        }
-
-        if(cal_enable)
-        {
-            const nlohmann::json& cdata = cal_sec["Data"];
-
-            EncodedCalibration desired;
-            desired.dled[0]   = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED1");
-            desired.dled[1]   = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED2");
-            desired.mainboard = GET_JSON_VAL_ELSE_OFF(cdata, "Mainboard");
-            desired.spare[0]  = GET_JSON_VAL_ELSE_OFF(cdata, "Spare0");
-            desired.spare[1]  = GET_JSON_VAL_ELSE_OFF(cdata, "Spare1");
-
-            if(controller->GetProductID() == 0x5711)
-            {
-                desired.dled[2]  = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED3");
-                desired.dled[3]  = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED4");
-                desired.spare[2] = GET_JSON_VAL_ELSE_OFF(cdata, "Spare2");
-                desired.spare[3] = GET_JSON_VAL_ELSE_OFF(cdata, "Spare3");
-            }
             else
             {
-                desired.dled[2]  = "OFF";
-                desired.dled[3]  = "OFF";
-                desired.spare[2] = "OFF";
-                desired.spare[3] = "OFF";
+                nlohmann::json& cdata = cal_sec["Data"];
+                FillMissingWith(cdata, hw_cal);
+
+                if(!cal_enable)
+                {
+                    cal_sec["Data"] = WriteCalJsonFrom(hw_cal);
+                    settings_manager->SetSettings(detector_name, device_settings);
+                    settings_manager->SaveSettings();
+                }
             }
-                controller->SetCalibration(desired, false);
+
+            if(cal_enable)
+            {
+                const nlohmann::json& cdata = cal_sec["Data"];
+
+                EncodedCalibration desired;
+                desired.dled[0]   = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED1");
+                desired.dled[1]   = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED2");
+                desired.mainboard = GET_JSON_VAL_ELSE_OFF(cdata, "Mainboard");
+                desired.spare[0]  = GET_JSON_VAL_ELSE_OFF(cdata, "Spare0");
+                desired.spare[1]  = GET_JSON_VAL_ELSE_OFF(cdata, "Spare1");
+
+                if(controller->GetProductID() == 0x5711)
+                {
+                    desired.dled[2]  = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED3");
+                    desired.dled[3]  = GET_JSON_VAL_ELSE_OFF(cdata, "HDR_D_LED4");
+                    desired.spare[2] = GET_JSON_VAL_ELSE_OFF(cdata, "Spare2");
+                    desired.spare[3] = GET_JSON_VAL_ELSE_OFF(cdata, "Spare3");
+                }
+                else
+                {
+                    desired.dled[2]  = "OFF";
+                    desired.dled[3]  = "OFF";
+                    desired.spare[2] = "OFF";
+                    desired.spare[3] = "OFF";
+                }
+                    controller->SetCalibration(desired, false);
+            }
         }
     }
-
     /*---------------------------------------------------------------------*\
     |  When no match found the first entry (generic_device) will be used    |
     |    otherwise look up channel map based on device name                 |
@@ -315,64 +357,190 @@ void RGBController_RGBFusion2USB::Init_Controller()
         \*-----------------------------------------------------------------*/
         for(unsigned int i = 0; i < GB_FUSION2_DEVICE_COUNT; i++)
         {
-            if(gb_fusion2_device_list[i]->name == name)
+            if(gb_fusion2_device_list[i]->name == name &&
+                gb_fusion2_device_list[i]->device_num == device_num)
             {
                 /*---------------------------------------------------------*\
                 | Set device ID                                             |
                 \*---------------------------------------------------------*/
                 device_index = i;
-                layout = const_cast<gb_fusion2_device*>(gb_fusion2_device_list[i]);
+                src_layout = gb_fusion2_device_list[i];
                 break;
             }
         }
     }
+    /*---------------------------------------------------------------------*\
+    |  Creates per instance copy of layouts.                                |
+    \*---------------------------------------------------------------------*/
+    instance_layout.zones      = &instance_zones;
+    instance_layout.layout_id  = src_layout->layout_id;
+    instance_layout.device_num = src_layout->device_num;
+    instance_layout.name       = src_layout->name;
 
-    /*---------------------------------------------------------*\
-    | Iterate through layout and process each zone              |
-    \*---------------------------------------------------------*/
-    for(uint8_t zone_idx = 0; zone_idx < GB_FUSION2_ZONES_MAX; zone_idx++)
+    for(uint8_t zi = 0; zi < GB_FUSION2_ZONES_MAX; ++zi)
     {
-        if(!layout->zones[0][zone_idx])
-        {
-            continue;
-        }
-        const gb_fusion2_zone* zone_at_idx = layout->zones[0][zone_idx];
-
-        zone new_zone;
-        new_zone.name               = zone_at_idx->name;
-        new_zone.leds_min           = zone_at_idx->leds_min;
-        new_zone.leds_max           = zone_at_idx->leds_max;
-        new_zone.leds_count         = new_zone.leds_min;
-        new_zone.type               = (new_zone.leds_min == new_zone.leds_max) ? ZONE_TYPE_SINGLE : ZONE_TYPE_LINEAR;
-        new_zone.matrix_map         = NULL;
-        zones.emplace_back(new_zone);
+        (*instance_layout.zones)[zi] = (*src_layout->zones)[zi];
     }
+
+    if(custom_layout)
+    {
+        LoadCustomLayoutFromJson(device_settings[SectionCustom]["Data"], LedLookup, &instance_layout);
+    }
+    /*---------------------------------------------------------------------*\
+    | Culls the mode support based on layout_id.                            |
+    \*---------------------------------------------------------------------*/
+    const uint32_t effect_mask = instance_layout.layout_id & GB_EFF_CORE_MASK;
+    modes.erase(std::remove_if(modes.begin(), modes.end(),
+        [effect_mask](const mode& m)
+        {
+            if(m.value == 0xFFFF /* Direct */) { return false; }
+            if(m.value == EFFECT_STATIC)        { return false; }
+
+            uint32_t bit = 0u;
+            switch(m.value)
+            {
+                    case EFFECT_PULSE:       bit = GB_EFF_BREATH; break;
+                    case EFFECT_COLORCYCLE:  bit = GB_EFF_CYCLE;  break;
+                    case EFFECT_BLINKING:    bit = GB_EFF_FLASH;  break;
+                    case EFFECT_RANDOM:      bit = GB_EFF_RANDOM; break;
+                    case EFFECT_WAVE:        bit = GB_EFF_WAVE;   break;
+                    case EFFECT_DFLASH:      bit = GB_EFF_DFLASH; break;
+                    case EFFECT_WAVE1:       bit = GB_EFF_WAVE1;  break;
+                    case EFFECT_WAVE2:       bit = GB_EFF_WAVE2;  break;
+                    case EFFECT_WAVE3:       bit = GB_EFF_WAVE1;  break;
+                    case EFFECT_WAVE4:       bit = GB_EFF_WAVE2;  break;
+                default:                 bit = 0u; break;
+            }
+            return (bit == 0u) || ((effect_mask & bit) == 0u);
+        }),
+        modes.end());
 }
 
 void RGBController_RGBFusion2USB::SetupZones()
 {
-    /*---------------------------------------------------------*\
-    | Clear any existing color/LED configuration                |
-    \*---------------------------------------------------------*/
+    /*-----------------------------------------------------*\
+    | Only set LED count on the first run                   |
+    \*-----------------------------------------------------*/
+    bool first_run = false;
+
+    if(zones.size() == 0)
+    {
+        first_run = true;
+    }
+
+    /*-----------------------------------------------------*\
+    | Clear any existing color/LED configuration            |
+    \*-----------------------------------------------------*/
     leds.clear();
     colors.clear();
 
+    /*-----------------------------------------------------*\
+    | Count number of zones to resize zones vector          |
+    \*-----------------------------------------------------*/
+    unsigned int num_zones;
+
+    for(num_zones = 0; num_zones < GB_FUSION2_ZONES_MAX; num_zones++)
+    {
+        if(!gb_fusion2_device_list[device_index]->zones[0][num_zones])
+        {
+            break;
+        }
+    }
+
+    zones.resize(num_zones);
+
     unsigned int d1 = 0, d2 = 0, d3 = 0, d4 = 0;
 
-    /*---------------------------------------------------------*\
-    | Set up zones (Fixed so as to not spam the controller)     |
-    \*---------------------------------------------------------*/
-
-    for(uint8_t zone_idx = 0; zone_idx < GB_FUSION2_ZONES_MAX; zone_idx++)
+    /*-----------------------------------------------------*\
+    | Set up zones (Fixed so as to not spam the controller) |
+    \*-----------------------------------------------------*/
+    for(std::size_t zone_idx = 0; zone_idx < zones.size(); zone_idx++)
     {
-        const gb_fusion2_zone* zone_at_idx = gb_fusion2_device_list[device_index]->zones[0][zone_idx];
+        /*-------------------------------------------------*\
+        | Get zone configuration from device data           |
+        \*-------------------------------------------------*/
+        const gb_fusion2_zone* zone_at_idx = (*instance_layout.zones)[zone_idx];
+
         if(!zone_at_idx)
         {
             continue;
         }
-        bool single_zone = (zone_at_idx->leds_min == zone_at_idx->leds_max);
 
-        if(!single_zone)
+        /*-------------------------------------------------*\
+        | Check if this is a fixed-size zone                |
+        \*-------------------------------------------------*/
+        bool fixed_zone = (zone_at_idx->leds_min == zone_at_idx->leds_max);
+
+        /*-------------------------------------------------*\
+        | (Re-)initialize the zone                          |
+        \*-------------------------------------------------*/
+        if(fixed_zone)
+        {
+            zones[zone_idx].name                        = zone_at_idx->name;
+            zones[zone_idx].type                        = ZONE_TYPE_SINGLE;
+            zones[zone_idx].leds_min                    = zone_at_idx->leds_min;
+            zones[zone_idx].leds_max                    = zone_at_idx->leds_max;
+            zones[zone_idx].leds_count                  = zones[zone_idx].leds_min;
+        }
+        else
+        {
+            zones[zone_idx].leds_min                    = zone_at_idx->leds_min;
+            zones[zone_idx].leds_max                    = zone_at_idx->leds_max;
+
+            if(first_run)
+            {
+                zones[zone_idx].flags                   = ZONE_FLAG_MANUALLY_CONFIGURABLE_SIZE
+                                                        | ZONE_FLAG_MANUALLY_CONFIGURABLE_NAME
+                                                        | ZONE_FLAG_MANUALLY_CONFIGURABLE_TYPE
+                                                        | ZONE_FLAG_MANUALLY_CONFIGURABLE_MATRIX_MAP
+                                                        | ZONE_FLAG_MANUALLY_CONFIGURABLE_SEGMENTS;
+            }
+
+            if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_NAME))
+            {
+                zones[zone_idx].name                    = zone_at_idx->name;
+            }
+
+            if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_SIZE))
+            {
+                zones[zone_idx].leds_count              = zone_at_idx->leds_min;
+            }
+
+            if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_TYPE))
+            {
+                zones[zone_idx].type                    = ZONE_TYPE_LINEAR;
+            }
+
+            if(!(zones[zone_idx].flags & ZONE_FLAG_MANUALLY_CONFIGURED_MATRIX_MAP))
+            {
+                zones[zone_idx].matrix_map.width        = 0;
+                zones[zone_idx].matrix_map.height       = 0;
+                zones[zone_idx].matrix_map.map.resize(0);
+            }
+        }
+
+        /*-------------------------------------------------*\
+        | Initialize LEDs                                   |
+        \*-------------------------------------------------*/
+        for(unsigned int led_idx = 0; led_idx < zones[zone_idx].leds_count; led_idx++)
+        {
+            led new_led;
+
+            new_led.name  = zone_at_idx->name;
+            new_led.value = zone_at_idx->idx;
+
+            if(!fixed_zone)
+            {
+                new_led.name.append(", LED " + std::to_string(led_idx + 1));
+            }
+
+            leds.push_back(new_led);
+        }
+
+        /*-------------------------------------------------*\
+        | If not a fixed-size zone, set up LED sizes        |
+        \*-------------------------------------------------*/
+        if(!fixed_zone)
         {
             switch(zone_at_idx->idx)
             {
@@ -391,21 +559,6 @@ void RGBController_RGBFusion2USB::SetupZones()
                     break;
             }
         }
-
-        for(unsigned int led_idx = 0; led_idx < zones[zone_idx].leds_count; led_idx++)
-        {
-            led new_led;
-
-            new_led.name  = zone_at_idx->name;
-            new_led.value = zone_at_idx->idx;
-
-            if(!single_zone)
-            {
-                new_led.name.append(" LED " + std::to_string(led_idx));
-            }
-
-            leds.push_back(new_led);
-        }
     }
 
     controller->SetLedCount(d1, d2, d3, d4);
@@ -413,17 +566,10 @@ void RGBController_RGBFusion2USB::SetupZones()
     SetupColors();
 }
 
-void RGBController_RGBFusion2USB::ResizeZone(int zone, int new_size)
+void RGBController_RGBFusion2USB::DeviceConfigureZone(int zone_idx)
 {
-    if((size_t) zone >= zones.size())
+    if((size_t)zone_idx < zones.size())
     {
-        return;
-    }
-
-    if(((unsigned int)new_size >= zones[zone].leds_min) && ((unsigned int)new_size <= zones[zone].leds_max))
-    {
-        zones[zone].leds_count = new_size;
-
         SetupZones();
     }
 }
@@ -519,7 +665,7 @@ void RGBController_RGBFusion2USB::DeviceUpdateLEDs()
     controller->ApplyEffect();
 }
 
-void RGBController_RGBFusion2USB::UpdateZoneLEDs(int zone)
+void RGBController_RGBFusion2USB::DeviceUpdateZoneLEDs(int zone)
 {
     /*---------------------------------------------------------*\
     | Get mode parameters                                       |
@@ -616,7 +762,7 @@ void RGBController_RGBFusion2USB::UpdateZoneLEDs(int zone)
     }
 }
 
-void RGBController_RGBFusion2USB::UpdateSingleLED(int led)
+void RGBController_RGBFusion2USB::DeviceUpdateSingleLED(int led)
 {
     /*---------------------------------------------------------*\
     | Get mode parameters                                       |
@@ -671,7 +817,7 @@ void RGBController_RGBFusion2USB::UpdateSingleLED(int led)
     \*---------------------------------------------------------*/
     else
     {
-        UpdateZoneLEDs(zone_idx);
+        DeviceUpdateZoneLEDs(zone_idx);
     }
 }
 
@@ -826,6 +972,7 @@ void RGBController_RGBFusion2USB::LoadCustomLayoutFromJson(
            && new_zone->idx <= GB_FUSION2_LED_IDX::LED11)
         {
             layout->zones[0][zone_idx]  = new_zone;
+            allocated_zones.push_back(new_zone);
         }
         else
         {

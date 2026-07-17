@@ -78,6 +78,8 @@ RGBController_HyperXMicrophone::RGBController_HyperXMicrophone(HyperXMicrophoneC
 
 RGBController_HyperXMicrophone::~RGBController_HyperXMicrophone()
 {
+    Shutdown();
+
     keepalive_thread_run = 0;
     keepalive_thread->join();
     delete keepalive_thread;
@@ -104,18 +106,9 @@ void RGBController_HyperXMicrophone::SetupZones()
     Mic.leds_min   = 2;
     Mic.leds_max   = 2;
     Mic.leds_count = 2;
-    Mic.matrix_map = nullptr;
-
     zones.push_back(Mic);
 
     SetupColors();
-}
-
-void RGBController_HyperXMicrophone::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_HyperXMicrophone::DeviceUpdateLEDs()
@@ -123,14 +116,17 @@ void RGBController_HyperXMicrophone::DeviceUpdateLEDs()
     last_update_time = std::chrono::steady_clock::now();
     controller->SendDirect(colors);
 }
-void RGBController_HyperXMicrophone::UpdateZoneLEDs(int /*zone*/)
+
+void RGBController_HyperXMicrophone::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
-void RGBController_HyperXMicrophone::UpdateSingleLED(int /*led*/)
+
+void RGBController_HyperXMicrophone::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
+
 void RGBController_HyperXMicrophone::DeviceUpdateMode()
 {
     DeviceUpdateLEDs();
@@ -148,7 +144,7 @@ void RGBController_HyperXMicrophone::KeepaliveThread()
     {
         if((std::chrono::steady_clock::now() - last_update_time) > std::chrono::milliseconds(50))
         {
-            UpdateLEDs();
+            UpdateLEDsInternal();
         }
         std::this_thread::sleep_for(15ms);
     }

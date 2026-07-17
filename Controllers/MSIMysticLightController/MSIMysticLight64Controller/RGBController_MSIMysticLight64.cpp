@@ -41,15 +41,9 @@ RGBController_MSIMysticLight64::RGBController_MSIMysticLight64
 
 RGBController_MSIMysticLight64::~RGBController_MSIMysticLight64()
 {
-    delete controller;
-}
+    Shutdown();
 
-void RGBController_MSIMysticLight64::ResizeZone
-(
-    int /*zone*/,
-    int /*new_size*/
-)
-{
+    delete controller;
 }
 
 void RGBController_MSIMysticLight64::SetupZones()
@@ -60,7 +54,6 @@ void RGBController_MSIMysticLight64::SetupZones()
     msi_zone.leds_min   = 1;
     msi_zone.leds_max   = 1;
     msi_zone.leds_count = 1;
-    msi_zone.matrix_map = NULL;
     zones.push_back(msi_zone);
 
     led msi_led;
@@ -96,12 +89,12 @@ void RGBController_MSIMysticLight64::DeviceUpdateLEDs()
     controller->SetMode(msi_mode, speed, brightness, num_colors, led_colors);
 }
 
-void RGBController_MSIMysticLight64::UpdateZoneLEDs(int /*zone*/)
+void RGBController_MSIMysticLight64::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_MSIMysticLight64::UpdateSingleLED(int /*led*/)
+void RGBController_MSIMysticLight64::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

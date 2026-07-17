@@ -10,50 +10,32 @@
 \*---------------------------------------------------------*/
 
 #include <hidapi.h>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "NollieController.h"
 #include "RGBController_Nollie.h"
 
-void DetectNollieControllers(hid_device_info* info, const std::string& name)
+DetectedControllers DetectNollieControllers(hid_device_info* info, const std::string& name)
 {
-    if((info->product_id == NOLLIE1_OS21_PID || info->product_id == NOLLIE8_OS21_PID || info->product_id == PRISM8_OS21_PID)
-       && info->interface_number != 2)
-    {
-        return;
-    }
+    DetectedControllers detected_controllers;
+    hid_device*         dev;
 
-    if((info->product_id == NOLLIE16_OS21_PID || info->product_id == NOLLIE32_OS21_PID)
-       && info->interface_number != 0)
-    {
-        return;
-    }
-
-    hid_device* dev = hid_open_path(info->path);
+    dev = hid_open_path(info->path);
 
     if(dev)
     {
-        wchar_t product[128];
-        hid_get_product_string(dev, product, 128);
-
-        std::wstring product_str(product);
-
         NollieController*     controller     = new NollieController(dev, info->path, info->vendor_id, info->product_id, name);
         RGBController_Nollie* rgb_controller = new RGBController_Nollie(controller);
 
-        ResourceManager::get()->RegisterRGBController(rgb_controller);
-
+        detected_controllers.push_back(rgb_controller);
     }
+
+    return(detected_controllers);
 }
 
 REGISTER_HID_DETECTOR("Nollie 32CH", DetectNollieControllers, NOLLIE32_VID, NOLLIE32_PID);
 REGISTER_HID_DETECTOR("Nollie 16CH", DetectNollieControllers, NOLLIE16_VID, NOLLIE16_PID);
 REGISTER_HID_DETECTOR("Nollie 8CH", DetectNollieControllers, NOLLIE8_VID, NOLLIE8_PID);
 REGISTER_HID_DETECTOR("Nollie 1CH", DetectNollieControllers, NOLLIE1_VID, NOLLIE1_PID);
-REGISTER_HID_DETECTOR("Nollie 32_OS2.1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE32_OS21_PID);
-REGISTER_HID_DETECTOR("Nollie 16_OS2.1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE16_OS21_PID);
-REGISTER_HID_DETECTOR("Nollie 8_OS2.1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE8_OS21_PID);
-REGISTER_HID_DETECTOR("Prism 8_OS2.1", DetectNollieControllers, NOLLIERGBOS_2_VID, PRISM8_OS21_PID);
-REGISTER_HID_DETECTOR("Nollie 1_OS2.1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE1_OS21_PID);
 REGISTER_HID_DETECTOR("Nollie 28 12", DetectNollieControllers, NOLLIE28_12_VID, NOLLIE28_12_PID);
 REGISTER_HID_DETECTOR("Nollie 28 L1", DetectNollieControllers, NOLLIE28_12_VID, NOLLIE28_L1_PID);
 REGISTER_HID_DETECTOR("Nollie 28 L2", DetectNollieControllers, NOLLIE28_12_VID, NOLLIE28_L2_PID);
@@ -62,3 +44,9 @@ REGISTER_HID_DETECTOR("Nollie 32_OS2", DetectNollieControllers, NOLLIERGBOS_2_VI
 REGISTER_HID_DETECTOR("Nollie 16_OS2", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE16_PID);
 REGISTER_HID_DETECTOR("Nollie 8_OS2", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE8_PID);
 REGISTER_HID_DETECTOR("Nollie 1_OS2", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE1_PID);
+/* OS2_1 composite device: RGB HID on interface 2 (1/8 CH) or 0 (16/32 CH) */
+REGISTER_HID_DETECTOR_I("Nollie 32_OS2_1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE32_OS2_1_PID, 0);
+REGISTER_HID_DETECTOR_I("Nollie 16_OS2_1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE16_OS2_1_PID, 0);
+REGISTER_HID_DETECTOR_I("Nollie 8_OS2_1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE8_OS2_1_PID, 2);
+REGISTER_HID_DETECTOR_I("Prism8 8_OS2_1", DetectNollieControllers, NOLLIERGBOS_2_VID, PRISM8_OS2_1_PID, 2);
+REGISTER_HID_DETECTOR_I("Nollie 1_OS2_1", DetectNollieControllers, NOLLIERGBOS_2_VID, NOLLIE1_OS2_1_PID, 2);

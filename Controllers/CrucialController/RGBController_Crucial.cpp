@@ -129,6 +129,8 @@ RGBController_Crucial::RGBController_Crucial(CrucialController* controller_ptr)
 
 RGBController_Crucial::~RGBController_Crucial()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -143,7 +145,6 @@ void RGBController_Crucial::SetupZones()
     new_zone.leds_min       = 8;
     new_zone.leds_max       = 8;
     new_zone.leds_count     = 8;
-    new_zone.matrix_map     = NULL;
     zones.push_back(new_zone);
 
     /*---------------------------------------------------------*\
@@ -158,13 +159,6 @@ void RGBController_Crucial::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_Crucial::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_Crucial::DeviceUpdateLEDs()
@@ -184,12 +178,12 @@ void RGBController_Crucial::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_Crucial::UpdateZoneLEDs(int /*zone*/)
+void RGBController_Crucial::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_Crucial::UpdateSingleLED(int /*led*/)
+void RGBController_Crucial::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

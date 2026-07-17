@@ -12,23 +12,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "GoveeController.h"
 #include "RGBController.h"
 #include "RGBController_Govee.h"
+#include "ResourceManager.h"
 #include "SettingsManager.h"
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectGoveeControllers                                                                 *
-*                                                                                          *
-*       Detect Govee devices                                                               *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectGoveeControllers()
+DetectedControllers DetectGoveeControllers()
 {
-    json                    govee_settings;
+    DetectedControllers detected_controllers;
+    json                govee_settings;
 
     /*-----------------------------------------------------*\
     | Get Govee settings from settings manager              |
@@ -69,7 +63,7 @@ void DetectGoveeControllers()
                 GoveeController*     controller     = new GoveeController(govee_ip);
                 RGBController_Govee* rgb_controller = new RGBController_Govee(controller);
 
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+                detected_controllers.push_back(rgb_controller);
             }
         }
 
@@ -87,6 +81,7 @@ void DetectGoveeControllers()
         }
     }
 
-}   /* DetectGoveeControllers() */
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR("Govee", DetectGoveeControllers);

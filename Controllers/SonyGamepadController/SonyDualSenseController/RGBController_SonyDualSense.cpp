@@ -75,6 +75,8 @@ RGBController_SonyDualSense::RGBController_SonyDualSense(SonyDualSenseController
 
 RGBController_SonyDualSense::~RGBController_SonyDualSense()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -90,7 +92,6 @@ void RGBController_SonyDualSense::SetupZones()
     lightbar.leds_min        = SONY_DUALSENSE_LIGHTBAR_LED_COUNT;
     lightbar.leds_max        = SONY_DUALSENSE_LIGHTBAR_LED_COUNT;
     lightbar.leds_count      = SONY_DUALSENSE_LIGHTBAR_LED_COUNT;
-    lightbar.matrix_map      = NULL;
     zones.push_back(lightbar);
 
     zone playerleds;
@@ -99,7 +100,6 @@ void RGBController_SonyDualSense::SetupZones()
     playerleds.leds_min      = SONY_DUALSENSE_PLAYER_LED_COUNT;
     playerleds.leds_max      = SONY_DUALSENSE_PLAYER_LED_COUNT;
     playerleds.leds_count    = SONY_DUALSENSE_PLAYER_LED_COUNT;
-    playerleds.matrix_map    = NULL;
     zones.push_back(playerleds);
 
     leds.resize(SONY_DUALSENSE_LIGHTBAR_LED_COUNT + SONY_DUALSENSE_PLAYER_LED_COUNT);
@@ -114,24 +114,17 @@ void RGBController_SonyDualSense::SetupZones()
     SetupColors();
 }
 
-void RGBController_SonyDualSense::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_SonyDualSense::DeviceUpdateLEDs()
 {
     controller->SetColors(colors, modes[active_mode].brightness, modes[active_mode].value);
 }
 
-void RGBController_SonyDualSense::UpdateZoneLEDs(int /*zone*/)
+void RGBController_SonyDualSense::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_SonyDualSense::UpdateSingleLED(int /*led*/)
+void RGBController_SonyDualSense::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

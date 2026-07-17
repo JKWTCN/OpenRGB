@@ -121,6 +121,8 @@ RGBController_ClevoLightbar::RGBController_ClevoLightbar(ClevoLightbarController
 
 RGBController_ClevoLightbar::~RGBController_ClevoLightbar()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -132,7 +134,6 @@ void RGBController_ClevoLightbar::SetupZones()
     lightbar_zone.leds_min   = 1;
     lightbar_zone.leds_max   = 1;
     lightbar_zone.leds_count = 1;
-    lightbar_zone.matrix_map = NULL;
     zones.push_back(lightbar_zone);
 
     led lightbar_led;
@@ -140,13 +141,6 @@ void RGBController_ClevoLightbar::SetupZones()
     leds.push_back(lightbar_led);
 
     SetupColors();
-}
-
-void RGBController_ClevoLightbar::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_ClevoLightbar::DeviceUpdateLEDs()
@@ -167,12 +161,12 @@ void RGBController_ClevoLightbar::DeviceUpdateLEDs()
     controller->SetMode(mode_value, brightness, speed);
 }
 
-void RGBController_ClevoLightbar::UpdateZoneLEDs(int /*zone*/)
+void RGBController_ClevoLightbar::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_ClevoLightbar::UpdateSingleLED(int /*led*/)
+void RGBController_ClevoLightbar::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

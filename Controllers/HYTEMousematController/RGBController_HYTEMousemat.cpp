@@ -53,6 +53,8 @@ RGBController_HYTEMousemat::RGBController_HYTEMousemat(HYTEMousematController* c
 
 RGBController_HYTEMousemat::~RGBController_HYTEMousemat()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -65,7 +67,6 @@ void RGBController_HYTEMousemat::SetupZones()
     mousemat_zone.leds_min      = 50;
     mousemat_zone.leds_max      = 50;
     mousemat_zone.leds_count    = 50;
-    mousemat_zone.matrix_map    = NULL;
 
     zones.push_back(mousemat_zone);
 
@@ -82,22 +83,17 @@ void RGBController_HYTEMousemat::SetupZones()
     SetupColors();
 }
 
-void RGBController_HYTEMousemat::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-
-}
-
 void RGBController_HYTEMousemat::DeviceUpdateLEDs()
 {
     controller->StreamingCommand(&colors[0]);
 }
 
-void RGBController_HYTEMousemat::UpdateZoneLEDs(int /*zone*/)
+void RGBController_HYTEMousemat::DeviceUpdateZoneLEDs(int /*zone*/)
 {
 
 }
 
-void RGBController_HYTEMousemat::UpdateSingleLED(int /*led*/)
+void RGBController_HYTEMousemat::DeviceUpdateSingleLED(int /*led*/)
 {
 
 }

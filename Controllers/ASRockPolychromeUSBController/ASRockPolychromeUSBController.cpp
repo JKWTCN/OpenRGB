@@ -11,12 +11,12 @@
 \*---------------------------------------------------------*/
 
 #include <cstring>
-#include "RGBController.h"
-#include "ResourceManager.h"
-#include "SettingsManager.h"
-#include "StringUtils.h"
 #include "ASRockPolychromeUSBController.h"
 #include "dmiinfo.h"
+#include "ResourceManager.h"
+#include "RGBController.h"
+#include "SettingsManager.h"
+#include "StringUtils.h"
 
 #define POLYCHROME_USB_READ_ZONE_CONFIG 0x11
 #define POLYCHROME_USB_READ_HEADER      0x14
@@ -191,7 +191,7 @@ void PolychromeUSBController::SetDeviceInfo()
     WriteRGSwap(rgswap_final[0], rgswap_final[1], rgswap_final[2], rgswap_final[3], rgswap_final[4], rgswap_final[5], rgswap_final[6], rgswap_final[7]);
 }
 
-void PolychromeUSBController::ResizeZone(int zone, int new_size)
+void PolychromeUSBController::SetZoneSize(int zone, int new_size)
 {
     unsigned char zonecfg[POLYCHROME_USB_ZONE_MAX_NUM];
 

@@ -7,8 +7,7 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
-#ifndef LOGMANAGER_H
-#define LOGMANAGER_H
+#pragma once
 
 #include <fstream>
 #include <mutex>
@@ -41,120 +40,167 @@ enum
     LL_DIALOG       // Log messages to be shown in a GUI dialog box
 };
 
-struct LogMessage
+typedef struct
 {
-    std::string buffer;
-    unsigned int level;
-    const char* filename;
-    int line;
-    std::chrono::duration<double> counted_second;
-    // int timestamp or float time_offset? TBD
-};
+    unsigned int                    level;
+    unsigned int                    line;
+    unsigned int                    timestamp;
+    std::string                     filename;
+    std::string                     text;
+} LogMessage;
+
 typedef std::shared_ptr<LogMessage> PLogMessage;
-typedef void(*LogDialogShowCallback)(void*, PLogMessage);
+
+/*---------------------------------------------------------*\
+| Callback Types                                            |
+\*---------------------------------------------------------*/
+typedef void(*LogManagerCallback)(void*, unsigned int, PLogMessage);
+
+/*---------------------------------------------------------*\
+| LogManager Update Reason Codes                            |
+\*---------------------------------------------------------*/
+enum
+{
+    LOGMANAGER_UPDATE_REASON_LOG_ENTRY,             /* Log entry                        */
+    LOGMANAGER_UPDATE_REASON_SHOW_DIALOG,           /* Show dialog                      */
+};
 
 class LogManager
 {
-private:
-    LogManager();
-    LogManager(const LogManager&) = delete;
-    LogManager(LogManager&&) = delete;
-    ~LogManager();
-    std::recursive_mutex entry_mutex;
-    std::mutex section_mutex;
-    std::ofstream log_stream;
-    filesystem::path current_log_path = "";
-    bool log_has_entries = false;
-
-    std::vector<LogDialogShowCallback>  dialog_show_callbacks;
-    std::vector<void*>                  dialog_show_callback_args;
-
-    // A temporary log message storage to hold them until the stream opens
-    std::vector<PLogMessage> temp_messages;
-
-    // A log message storage used while suppression mode is active. Messages
-    // produced during a device scan are buffered here and only flushed to the
-    // file/stdout if the scan actually changed the device set; otherwise they
-    // are discarded to keep the log file from growing on every rescan.
-    std::vector<PLogMessage> suppressed_messages;
-    bool                     suppress_mode = false;
-
-    // A log message storage that will be displayed in the app
-    std::vector<PLogMessage> all_messages;
-
-    // A flag that marks if the message source file name and line number should be printed on screen
-    bool print_source = false;
-
-    // Logfile max level
-    unsigned int loglevel = LL_INFO;
-    int configured_log_limit = 0;
-
-    // Verbosity (stdout) max level
-    unsigned int verbosity = LL_WARNING;
-
-    //Clock from LogManager creation
-    std::chrono::time_point<std::chrono::steady_clock> base_clock;
-
-    /*-------------------------------------------------*\
-    | Per-day log rotation (service mode only)          |
-    \*-------------------------------------------------*/
-    bool                daily_rollover    = false;
-    bool                service_log_mode  = false;
-    std::string         daily_basename    = "";
-    std::string         configured_log_template = "RGBServer_#.log";
-    filesystem::path    log_base_dir      = "";
-    filesystem::path    service_log_dir   = "";
-    std::string         current_log_date  = "";
-    int                 daily_log_limit   = 0;
-
-    // A non-guarded append()
-    void _append(const char* filename, int line, unsigned int level, const char* fmt, va_list va);
-
-    // A non-guarded flush()
-    void _flush();
-
-    // Opens (or reopens, on day rollover) the log file used in service mode.
-    // Service mode uses one file per day (RGBServer_YYYYMMDD.log), appended to
-    // across same-day restarts, and rolled over at midnight while running.
-    void _open_daily_log(const std::string& yyyymmdd);
-
-    void rotate_logs(const filesystem::path& folder, const filesystem::path& templ, int max_count, const char* timestamp_regex);
-
 public:
-    static LogManager* get();
-    void configure(json config, const filesystem::path & defaultDir);
-    void setServiceLogDirectory(const filesystem::path& defaultDir);
-    void reconfigure_daily_log(const filesystem::path& defaultDir);
-    void flush();
-    void append(const char* filename, int line, unsigned int level, const char* fmt, ...);
+    LogManager();
+    ~LogManager();
 
-    /*-------------------------------------------------*\
-    | Suppression mode for device-scan logging.         |
-    | While active, INFO/VERBOSE/DEBUG/TRACE messages   |
-    | are buffered in memory instead of written.        |
-    | StartSuppressing() begins buffering;              |
-    | StopSuppressing(true) flushes the buffer,         |
-    | StopSuppressing(false) discards it.               |
-    | FATAL/ERROR/DIALOG are never suppressed.          |
-    \-------------------------------------------------*/
-    void StartSuppressing();
-    void StopSuppressing(bool flush);
-    void setLoglevel(unsigned int);
-    void setVerbosity(unsigned int);
-    void setPrintSource(bool);
-    void RegisterDialogShowCallback(LogDialogShowCallback callback, void* receiver);
-    void UnregisterDialogShowCallback(LogDialogShowCallback callback, void* receiver);
-    unsigned int getLoglevel();
-    unsigned int getVerbosity() {return verbosity;}
-    void clearMessages();
-    std::vector<PLogMessage> messages();
+    /*-----------------------------------------------------*\
+    | LogManager Global Instance Accessor                   |
+    \*-----------------------------------------------------*/
+    static LogManager*                  get();
 
-    bool log_console_enabled;
-    bool log_file_enabled;
-    static const char* log_codes[];
+    /*-----------------------------------------------------*\
+    | Callback Registration                                 |
+    \*-----------------------------------------------------*/
+    void                                RegisterLogManagerCallback(LogManagerCallback callback, void* receiver);
+    void                                UnregisterLogManagerCallback(LogManagerCallback callback, void* receiver);
+
+    /*-----------------------------------------------------*\
+    | Configuration                                         |
+    \*-----------------------------------------------------*/
+    void                                Configure(json config, const filesystem::path& config_dir);
+    void                                SetServiceLogDirectory(const filesystem::path& config_dir);
+    void                                ReconfigureDailyLog(const filesystem::path& config_dir);
+
+    /*-----------------------------------------------------*\
+    | Device-scan log suppression                           |
+    \*-----------------------------------------------------*/
+    void                                StartSuppressing();
+    void                                StopSuppressing(bool flush);
+
+    /*-----------------------------------------------------*\
+    | Log Buffer Functions                                  |
+    \*-----------------------------------------------------*/
+    void                                ClearLogBuffer();
+    std::vector<PLogMessage>            GetLogBuffer();
+
+    /*-----------------------------------------------------*\
+    | Log Level Functions                                   |
+    \*-----------------------------------------------------*/
+    unsigned int                        GetLogLevel();
+    unsigned int                        GetVerbosity();
+
+    void                                SetLogLevel(unsigned int, bool local_only = false);
+    void                                SetVerbosity(unsigned int);
+
+    /*-----------------------------------------------------*\
+    | Log Format Functions                                  |
+    \*-----------------------------------------------------*/
+    void                                SetPrintSource(bool print);
+
+    /*-----------------------------------------------------*\
+    | Log Entry Functions                                   |
+    \*-----------------------------------------------------*/
+    void                                LogEntry(const char* filename, int line, unsigned int level, const char* fmt, ...);
+    void                                LogEntry_message(PLogMessage message);
+    void                                LogEntry_va(const char* filename, int line, unsigned int level, const char* fmt, va_list va);
+
+    /*-----------------------------------------------------*\
+    | Log Code String Constants                             |
+    \*-----------------------------------------------------*/
+    static const char*                  LOG_CODES[];
+
+private:
+    /*-----------------------------------------------------*\
+    | Static pointer to shared instance of LogManager       |
+    \*-----------------------------------------------------*/
+    static LogManager*                  instance;
+
+    /*-----------------------------------------------------*\
+    | Log Levels                                            |
+    \*-----------------------------------------------------*/
+    unsigned int                        loglevel;
+    unsigned int                        verbosity;
+
+    /*-----------------------------------------------------*\
+    | Log Formatting                                        |
+    \*-----------------------------------------------------*/
+    std::chrono::time_point<std::chrono::steady_clock>
+                                        base_clock;
+    bool                                log_console_enabled;
+    bool                                print_source;
+
+    /*-----------------------------------------------------*\
+    | Log Mutexes                                           |
+    \*-----------------------------------------------------*/
+    std::recursive_mutex                entry_mutex;
+    std::mutex                          section_mutex;
+
+    /*-----------------------------------------------------*\
+    | Log File Output Stream                                |
+    \*-----------------------------------------------------*/
+    std::ofstream                       log_stream;
+
+    /*-----------------------------------------------------*\
+    | LogManager Callbacks                                  |
+    \*-----------------------------------------------------*/
+    std::vector<LogManagerCallback>     LogManagerCallbacks;
+    std::vector<void *>                 LogManagerCallbackArgs;
+    std::mutex                          LogManagerCallbackMutex;
+
+    /*-----------------------------------------------------*\
+    | Log Buffers                                           |
+    \*-----------------------------------------------------*/
+    std::vector<PLogMessage>            temp_messages;
+    std::vector<PLogMessage>            all_messages;
+    std::vector<PLogMessage>            suppressed_messages;
+    bool                                suppress_mode;
+
+    /*-----------------------------------------------------*\
+    | Service-mode daily log rotation                       |
+    \*-----------------------------------------------------*/
+    bool                                log_file_enabled;
+    bool                                daily_rollover;
+    bool                                service_log_mode;
+    bool                                log_has_entries;
+    int                                 configured_log_limit;
+    int                                 daily_log_limit;
+    std::string                         configured_log_template;
+    std::string                         daily_basename;
+    std::string                         current_log_date;
+    filesystem::path                    current_log_path;
+    filesystem::path                    log_base_dir;
+    filesystem::path                    service_log_dir;
+
+    /*-----------------------------------------------------*\
+    | Private Functions                                     |
+    \*-----------------------------------------------------*/
+    void                                LogFlush();
+    void                                OpenDailyLog(const std::string& yyyymmdd);
+    void                                LogRotate(const filesystem::path& folder, const filesystem::path& templ, std::size_t max_count, const char* timestamp_regex);
 };
 
-#define LogAppend(level, ...)   LogManager::get()->append(__FILE__, __LINE__, level, __VA_ARGS__)
+/*---------------------------------------------------------*\
+| Log Macros                                                |
+\*---------------------------------------------------------*/
+#define LogAppend(level, ...)   LogManager::get()->LogEntry(__FILE__, __LINE__, level, __VA_ARGS__)
 #define LOG_FATAL(...)          LogAppend(LL_FATAL,     __VA_ARGS__)
 #define LOG_ERROR(...)          LogAppend(LL_ERROR,     __VA_ARGS__)
 #define LOG_WARNING(...)        LogAppend(LL_WARNING,   __VA_ARGS__)
@@ -163,5 +209,3 @@ public:
 #define LOG_DEBUG(...)          LogAppend(LL_DEBUG,     __VA_ARGS__)
 #define LOG_TRACE(...)          LogAppend(LL_TRACE,     __VA_ARGS__)
 #define LOG_DIALOG(...)         LogAppend(LL_DIALOG,    __VA_ARGS__)
-
-#endif // LOGMANAGER_H

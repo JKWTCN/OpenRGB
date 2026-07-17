@@ -13,27 +13,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <vector>
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "ENESMBusController.h"
 #include "ENESMBusInterface_SpectrixS40G_Linux.h"
 #include "LogManager.h"
 #include "RGBController.h"
 #include "RGBController_ENESMBus.h"
 
-/******************************************************************************************\
-*                                                                                          *
-*   DetectSpectrixS40GControllers                                                          *
-*                                                                                          *
-*           Detects ENE SMBus controllers on XPG Spectrix S40G NVMe devices                *
-*                                                                                          *
-\******************************************************************************************/
-
-void DetectSpectrixS40GControllers()
+DetectedControllers DetectSpectrixS40GControllers()
 {
-    /*---------------------------------------------------------------------*\
-    | Search for /dev/nvmeX nodes with model matching "XPG SPECTRIX S40G"   |
-    \*---------------------------------------------------------------------*/
-    unsigned int nvme_idx = 0;
+    DetectedControllers detected_controllers;
+
+    /*-----------------------------------------------------*\
+    | Search for /dev/nvmeX nodes with model matching       |
+    | "XPG SPECTRIX S40G"                                   |
+    \*-----------------------------------------------------*/
+    unsigned int        nvme_idx = 0;
 
     while(1)
     {
@@ -82,12 +77,14 @@ void DetectSpectrixS40GControllers()
                 ENESMBusController*             controller     = new ENESMBusController(interface, 0x67, "XPG Spectrix S40G", DEVICE_TYPE_STORAGE);
                 RGBController_ENESMBus*         rgb_controller = new RGBController_ENESMBus(controller);
 
-                ResourceManager::get()->RegisterRGBController(rgb_controller);
+                detected_controllers.push_back(rgb_controller);
             }
         }
 
         nvme_idx++;
     }
-}   /* DetectSpectrixS40GControllers() */
+
+    return(detected_controllers);
+}
 
 REGISTER_DETECTOR(    "XPG Spectrix S40G",              DetectSpectrixS40GControllers);

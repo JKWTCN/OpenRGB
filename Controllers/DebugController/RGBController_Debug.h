@@ -20,16 +20,25 @@ using json = nlohmann::json;
 class RGBController_Debug : public RGBController
 {
 public:
-    RGBController_Debug(bool custom_controller, json debug_settings);
+    RGBController_Debug(bool custom, json settings);
     ~RGBController_Debug();
 
+    void        SetupDevice();
     void        SetupZones();
 
-    void        ResizeZone(int zone, int new_size);
+    void        DeviceConfigureDevice();
+    void        DeviceConfigureZone(int zone_idx);
 
     void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void        DeviceUpdateZoneLEDs(int zone);
+    void        DeviceUpdateSingleLED(int led);
 
     void        DeviceUpdateMode();
+
+    void        DeviceUpdateDeviceSpecificConfiguration();
+    void        DeviceUpdateDeviceSpecificZoneConfiguration(int zone);
+
+private:
+    json        debug_settings;
+    bool        custom_controller;
 };

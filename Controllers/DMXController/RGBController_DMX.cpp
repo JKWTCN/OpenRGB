@@ -101,27 +101,13 @@ RGBController_DMX::RGBController_DMX(std::vector<DMXDevice> device_list)
 
 RGBController_DMX::~RGBController_DMX()
 {
+    Shutdown();
+
     if(keepalive_thread != nullptr)
     {
         keepalive_thread_run = 0;
         keepalive_thread->join();
         delete keepalive_thread;
-    }
-
-    /*---------------------------------------------------------*\
-    | Delete the matrix map                                     |
-    \*---------------------------------------------------------*/
-    for(unsigned int zone_index = 0; zone_index < zones.size(); zone_index++)
-    {
-        if(zones[zone_index].matrix_map != NULL)
-        {
-            if(zones[zone_index].matrix_map->map != NULL)
-            {
-                delete zones[zone_index].matrix_map->map;
-            }
-
-            delete zones[zone_index].matrix_map;
-        }
     }
 }
 
@@ -138,8 +124,6 @@ void RGBController_DMX::SetupZones()
         led_zone.leds_min       = 1;
         led_zone.leds_max       = 1;
         led_zone.leds_count     = 1;
-        led_zone.matrix_map     = NULL;
-
         zones.push_back(led_zone);
     }
 
@@ -160,13 +144,6 @@ void RGBController_DMX::SetupZones()
     }
 
     SetupColors();
-}
-
-void RGBController_DMX::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_DMX::DeviceUpdateLEDs()
@@ -204,12 +181,12 @@ void RGBController_DMX::DeviceUpdateLEDs()
     port->serial_write((char*)&dmx_data, sizeof(dmx_data));
 }
 
-void RGBController_DMX::UpdateZoneLEDs(int /*zone*/)
+void RGBController_DMX::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_DMX::UpdateSingleLED(int /*led*/)
+void RGBController_DMX::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }
@@ -225,7 +202,7 @@ void RGBController_DMX::KeepaliveThreadFunction()
     {
         if((std::chrono::steady_clock::now() - last_update_time) > ( keepalive_delay * 0.95f ) )
         {
-            UpdateLEDs();
+            UpdateLEDsInternal();
         }
         std::this_thread::sleep_for(keepalive_delay / 2);
     }

@@ -64,7 +64,7 @@ s32 i2c_smbus_linux::i2c_xfer(u8 addr, char read_write, int* size, u8* data)
     return ret_val;
 }
 
-#include "Detector.h"
+#include "DetectionManager.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -136,8 +136,14 @@ bool i2c_smbus_linux_detect()
                     port_id                 = 0;
                     bus_id                  = 0;
 
+                    // Get port ID for AMD GPU aux bus
+                    sscanf(device_string, "AMDGPU DM aux hw bus %hu", &port_id);
+
                     // Get port ID for Nvidia GPUs
                     sscanf(device_string, "NVIDIA i2c adapter %hu at", &port_id);
+
+                    // Get port ID for PIIX4 SMBus
+                    sscanf(device_string, "SMBus PIIX4 adapter port %hu at", &port_id);
 
                     // Get the Linux Bus ID
                     sscanf(ent->d_name, "i2c-%hu", &bus_id);
@@ -269,15 +275,15 @@ bool i2c_smbus_linux_detect()
                     }
 
                     bus = new i2c_smbus_linux();
-                    snprintf(bus->device_name, sizeof(bus->device_name), "%s (%s)", device_string, device_path);
-                    bus->handle               = test_fd;
-                    bus->pci_device           = pci_device;
-                    bus->pci_vendor           = pci_vendor;
-                    bus->pci_subsystem_device = pci_subsystem_device;
-                    bus->pci_subsystem_vendor = pci_subsystem_vendor;
-                    bus->port_id              = port_id;
-                    bus->bus_id               = bus_id;
-                    ResourceManager::get()->RegisterI2CBus(bus);
+                    snprintf(bus->info.device_name, sizeof(bus->info.device_name), "%s (%s)", device_string, device_path);
+                    bus->handle                     = test_fd;
+                    bus->info.pci_device            = pci_device;
+                    bus->info.pci_vendor            = pci_vendor;
+                    bus->info.pci_subsystem_device  = pci_subsystem_device;
+                    bus->info.pci_subsystem_vendor  = pci_subsystem_vendor;
+                    bus->info.port_id               = port_id;
+                    bus->info.bus_id                = bus_id;
+                    DetectionManager::get()->RegisterI2CBus(bus);
                 }
                 else
                 {

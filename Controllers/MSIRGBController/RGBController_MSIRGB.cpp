@@ -44,6 +44,8 @@ RGBController_MSIRGB::RGBController_MSIRGB(MSIRGBController* controller_ptr)
 
 RGBController_MSIRGB::~RGBController_MSIRGB()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -55,7 +57,6 @@ void RGBController_MSIRGB::SetupZones()
     msi_zone.leds_min       = 1;
     msi_zone.leds_max       = 1;
     msi_zone.leds_count     = 1;
-    msi_zone.matrix_map     = NULL;
     zones.push_back(msi_zone);
 
     led msi_led;
@@ -63,11 +64,6 @@ void RGBController_MSIRGB::SetupZones()
     leds.push_back(msi_led);
 
     SetupColors();
-}
-
-void RGBController_MSIRGB::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-
 }
 
 void RGBController_MSIRGB::DeviceUpdateLEDs()
@@ -80,12 +76,12 @@ void RGBController_MSIRGB::DeviceUpdateLEDs()
     controller->SetColor(red, grn, blu);
 }
 
-void RGBController_MSIRGB::UpdateZoneLEDs(int /*zone*/)
+void RGBController_MSIRGB::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_MSIRGB::UpdateSingleLED(int /*led*/)
+void RGBController_MSIRGB::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

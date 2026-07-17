@@ -121,6 +121,8 @@ RGBController_GigabyteAorusMouse::RGBController_GigabyteAorusMouse(GigabyteAorus
 
 RGBController_GigabyteAorusMouse::~RGBController_GigabyteAorusMouse()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -133,7 +135,6 @@ void RGBController_GigabyteAorusMouse::SetupZones()
     new_zone.leds_min   = 1;
     new_zone.leds_max   = 1;
     new_zone.leds_count = 1;
-    new_zone.matrix_map = nullptr;
 
     zones.emplace_back(new_zone);
 
@@ -143,24 +144,17 @@ void RGBController_GigabyteAorusMouse::SetupZones()
     SetupColors();
 }
 
-void RGBController_GigabyteAorusMouse::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_GigabyteAorusMouse::DeviceUpdateLEDs()
 {
     controller->SendDirect(colors[0]);
 }
 
-void RGBController_GigabyteAorusMouse::UpdateZoneLEDs(int /*zone*/)
+void RGBController_GigabyteAorusMouse::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_GigabyteAorusMouse::UpdateSingleLED(int /*led*/)
+void RGBController_GigabyteAorusMouse::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

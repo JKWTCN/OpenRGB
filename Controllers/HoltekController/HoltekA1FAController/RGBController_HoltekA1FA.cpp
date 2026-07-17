@@ -82,6 +82,8 @@ RGBController_HoltekA1FA::RGBController_HoltekA1FA(HoltekA1FAController* control
 
 RGBController_HoltekA1FA::~RGBController_HoltekA1FA()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -93,7 +95,6 @@ void RGBController_HoltekA1FA::SetupZones()
     mouse_zone.leds_min     = 1;
     mouse_zone.leds_max     = 1;
     mouse_zone.leds_count   = 1;
-    mouse_zone.matrix_map   = NULL;
     zones.push_back(mouse_zone);
 
     led mouse_led;
@@ -101,13 +102,6 @@ void RGBController_HoltekA1FA::SetupZones()
     leds.push_back(mouse_led);
 
     SetupColors();
-}
-
-void RGBController_HoltekA1FA::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
 }
 
 void RGBController_HoltekA1FA::DeviceUpdateLEDs()
@@ -123,12 +117,12 @@ void RGBController_HoltekA1FA::DeviceUpdateLEDs()
     controller->SendData(mode, brightness, speed, preset, red, green, blue);
 }
 
-void RGBController_HoltekA1FA::UpdateZoneLEDs(int /*zone*/)
+void RGBController_HoltekA1FA::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_HoltekA1FA::UpdateSingleLED(int /*led*/)
+void RGBController_HoltekA1FA::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

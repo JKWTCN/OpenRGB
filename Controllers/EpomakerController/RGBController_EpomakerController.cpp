@@ -274,6 +274,8 @@ RGBController_EpomakerController::RGBController_EpomakerController(EpomakerContr
 
 RGBController_EpomakerController::~RGBController_EpomakerController()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -382,7 +384,6 @@ void RGBController_EpomakerController::SetupZones()
     new_zone.leds_min      = 1;
     new_zone.leds_max      = 1;
     new_zone.leds_count    = 1;
-    new_zone.matrix_map    = NULL;
 
     zones.push_back(new_zone);
 
@@ -394,20 +395,12 @@ void RGBController_EpomakerController::SetupZones()
     SetupColors();
 }
 
-
-void RGBController_EpomakerController::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | Not implemented                                           |
-    \*---------------------------------------------------------*/
-}
-
-void RGBController_EpomakerController::UpdateZoneLEDs(int /*zone*/)
+void RGBController_EpomakerController::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_EpomakerController::UpdateSingleLED(int /*led*/)
+void RGBController_EpomakerController::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

@@ -80,6 +80,13 @@ RGBController_PNYGPU::RGBController_PNYGPU(PNYGPUController* controller_ptr)
     active_mode = 0;
 }
 
+RGBController_PNYGPU::~RGBController_PNYGPU()
+{
+    Shutdown();
+
+    delete controller;
+}
+
 void RGBController_PNYGPU::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -94,7 +101,6 @@ void RGBController_PNYGPU::SetupZones()
     new_zone->leds_min      = 1;
     new_zone->leds_max      = 1;
     new_zone->leds_count    = 1;
-    new_zone->matrix_map    = NULL;
 
     new_led->name           = "GPU LED";
 
@@ -106,24 +112,17 @@ void RGBController_PNYGPU::SetupZones()
     SetupColors();
 }
 
-void RGBController_PNYGPU::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_PNYGPU::DeviceUpdateLEDs()
 {
     DeviceUpdateMode();
 }
 
-void RGBController_PNYGPU::UpdateZoneLEDs(int /*zone*/)
+void RGBController_PNYGPU::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_PNYGPU::UpdateSingleLED(int /*led*/)
+void RGBController_PNYGPU::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

@@ -72,6 +72,8 @@ RGBController_LegoDimensionsToypadBase::RGBController_LegoDimensionsToypadBase(L
 
 RGBController_LegoDimensionsToypadBase::~RGBController_LegoDimensionsToypadBase()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -93,7 +95,6 @@ void RGBController_LegoDimensionsToypadBase::SetupZones()
         new_zone.leds_min   = 1;
         new_zone.leds_max   = 1;
         new_zone.leds_count = 1;
-        new_zone.matrix_map = nullptr;
 
         zones.emplace_back(new_zone);
 
@@ -105,29 +106,22 @@ void RGBController_LegoDimensionsToypadBase::SetupZones()
     SetupColors();
 }
 
-void RGBController_LegoDimensionsToypadBase::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_LegoDimensionsToypadBase::DeviceUpdateLEDs()
 {
     for(unsigned int zone = 0; zone < zones.size(); zone++)
     {
-        UpdateZoneLEDs(zone);
+        DeviceUpdateZoneLEDs(zone);
     }
 }
 
-void RGBController_LegoDimensionsToypadBase::UpdateZoneLEDs(int zone)
+void RGBController_LegoDimensionsToypadBase::DeviceUpdateZoneLEDs(int zone)
 {
     controller->SetDirect(zone + 1, zones[zone].colors[0]);
 }
 
-void RGBController_LegoDimensionsToypadBase::UpdateSingleLED(int /*led*/)
+void RGBController_LegoDimensionsToypadBase::DeviceUpdateSingleLED(int /*led*/)
 {
-    UpdateZoneLEDs(0);
+    DeviceUpdateZoneLEDs(0);
 }
 
 void RGBController_LegoDimensionsToypadBase::DeviceUpdateMode()

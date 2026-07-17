@@ -84,11 +84,20 @@ device_info RoccatVulcanKeyboardController::InitDeviceInfo()
     memset(buf, 0x00, packet_length);
 
     buf[0] = report_id;
+    /*-------------------------------------------------------------*\
+    | Store the actual read bytes to verify data availability       |
+    \*-------------------------------------------------------------*/
+    int res = hid_get_feature_report(dev_ctrl, buf, packet_length);
     hid_get_feature_report(dev_ctrl, buf, packet_length);
 
-    char version[5];
-    snprintf(version, 5, "%d.%02d", buf[2] / 100, buf[2] % 100);
+    /*-------------------------------------------------------------*\
+    | buf[2] is version e.g. 103 means v1.03                        |
+    \*-------------------------------------------------------------*/
+    dev_info.version_major = buf[2] / 100;
+    dev_info.version_minor = buf[2] % 100;
 
+    char version[5];
+    snprintf(version, 5, "%d.%02d", dev_info.version_major, dev_info.version_minor);
     dev_info.version = version;
 
     if(device_pid == ROCCAT_MAGMA_PID || device_pid == ROCCAT_MAGMA_MINI_PID)
@@ -102,11 +111,22 @@ device_info RoccatVulcanKeyboardController::InitDeviceInfo()
     }
     else
     {
-        dev_info.layout_type    = buf[6];
+        /*---------------------------------------------------------*\
+        | Safe check for reported buffer length before accessing    |
+        | buf[6] to prevent out-of-bounds array access.             |
+        | Vulcan II Max (JP) returns 0x06 at buf[6] for JIS layout. |
+        \*---------------------------------------------------------*/
+        if(res >= 7)
+        {
+            dev_info.layout_type = buf[6];
+            LOG_DEBUG("[Roccat Vulcan Keyboard]: Detected layout '0x%02X'", buf[6]);
+        }
+        else
+        {
+            dev_info.layout_type = ROCCAT_VULCAN_LAYOUT_US;
+            LOG_DEBUG("[Roccat Vulcan Keyboard]: Failed to detect layout, falling back to US");
+        }
     }
-
-    LOG_DEBUG("[Roccat Vulcan Keyboard]: Detected layout '0x%02X'", buf[6]);
-
     delete[] buf;
     return dev_info;
 }
@@ -114,6 +134,11 @@ device_info RoccatVulcanKeyboardController::InitDeviceInfo()
 device_info RoccatVulcanKeyboardController::GetDeviceInfo()
 {
     return dev_info;
+}
+
+bool RoccatVulcanKeyboardController::IsBigEndianDirectMode()
+{
+    return (dev_info.version_major >= 1 && dev_info.version_minor >= 16);
 }
 
 void RoccatVulcanKeyboardController::EnableDirect(bool on_off_switch)
@@ -218,8 +243,16 @@ void RoccatVulcanKeyboardController::SendColors(std::vector<led_color> colors)
     }
     else
     {
-        bufs[0][3] = packet_length & 0xFF;
-        bufs[0][4] = (packet_length >> 8) & 0xFF;
+        if(IsBigEndianDirectMode())
+        {
+            bufs[0][3] = (packet_length >> 8) & 0xFF;
+            bufs[0][4] = packet_length & 0xFF;
+        }
+        else
+        {
+            bufs[0][3] = packet_length & 0xFF;
+            bufs[0][4] = (packet_length >> 8) & 0xFF;
+        }
     }
 
     unsigned int data_length_packet = 64 - header_length_first;

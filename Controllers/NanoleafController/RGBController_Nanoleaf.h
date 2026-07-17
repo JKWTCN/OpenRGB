@@ -19,14 +19,13 @@ class RGBController_Nanoleaf : public RGBController
 
 public:
     RGBController_Nanoleaf(std::string a_address, int a_port, std::string a_auth_token);
+    ~RGBController_Nanoleaf();
 
     void        SetupZones();
 
-    void        ResizeZone(int zone, int new_size);
-
     void        DeviceUpdateLEDs();
-    void        UpdateZoneLEDs(int zone);
-    void        UpdateSingleLED(int led);
+    void        DeviceUpdateZoneLEDs(int zone);
+    void        DeviceUpdateSingleLED(int led);
 
     void        DeviceUpdateMode();
 

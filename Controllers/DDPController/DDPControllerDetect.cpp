@@ -9,20 +9,22 @@
 
 #include <string>
 #include <vector>
-#include "Detector.h"
+#include <nlohmann/json.hpp>
+#include "DetectionManager.h"
+#include "LogManager.h"
+#include "ResourceManager.h"
 #include "RGBController.h"
 #include "RGBController_DDP.h"
 #include "SettingsManager.h"
-#include "LogManager.h"
-#include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
 
-void DetectDDPControllers()
+DetectedControllers DetectDDPControllers()
 {
-    json ddp_settings;
+    DetectedControllers                 detected_controllers;
+    json                                ddp_settings;
     std::vector<std::vector<DDPDevice>> device_lists;
-    DDPDevice dev;
+    DDPDevice                           dev;
 
     ddp_settings = ResourceManager::get()->GetSettingsManager()->GetSettings("DDPDevices");
 
@@ -84,9 +86,11 @@ void DetectDDPControllers()
         for(unsigned int list_idx = 0; list_idx < device_lists.size(); list_idx++)
         {
             RGBController_DDP* rgb_controller = new RGBController_DDP(device_lists[list_idx]);
-            ResourceManager::get()->RegisterRGBController(rgb_controller);
+            detected_controllers.push_back(rgb_controller);
         }
     }
+
+    return(detected_controllers);
 }
 
 REGISTER_DETECTOR("DDP", DetectDDPControllers);

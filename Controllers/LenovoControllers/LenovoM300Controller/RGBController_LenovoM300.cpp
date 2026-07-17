@@ -73,6 +73,8 @@ RGBController_LenovoM300::RGBController_LenovoM300(LenovoM300Controller* control
 
 RGBController_LenovoM300::~RGBController_LenovoM300()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -84,7 +86,6 @@ void RGBController_LenovoM300::SetupZones()
     default_zone.leds_min       = 1;
     default_zone.leds_max       = 1;
     default_zone.leds_count     = 1;
-    default_zone.matrix_map     = nullptr;
     zones.emplace_back(default_zone);
 
     leds.resize(1);
@@ -93,23 +94,18 @@ void RGBController_LenovoM300::SetupZones()
     SetupColors();
 }
 
-void RGBController_LenovoM300::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    // Not Supported
-}
-
 void RGBController_LenovoM300::DeviceUpdateLEDs()
 {
     const mode& active = modes[active_mode];
     controller->SetMode(active.colors, active.value, active.brightness);
 }
 
-void RGBController_LenovoM300::UpdateZoneLEDs(int /*zone*/)
+void RGBController_LenovoM300::DeviceUpdateZoneLEDs(int /*zone*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_LenovoM300::UpdateSingleLED(int /*led*/)
+void RGBController_LenovoM300::DeviceUpdateSingleLED(int /*led*/)
 {
     DeviceUpdateLEDs();
 }

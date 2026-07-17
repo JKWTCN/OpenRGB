@@ -62,9 +62,17 @@ int main(int argc, char* argv[])
     int exitval = startup(argc, argv, ret_flags);
 
     /*-----------------------------------------------------*\
-    | Perform ResourceManager cleanup before exiting        |
+    | If started in headless server mode, wait until server |
+    | shuts down before closing application.                |
     \*-----------------------------------------------------*/
-    ResourceManager::get()->Cleanup();
+    if((ret_flags & RET_FLAG_START_SERVER) && !(ret_flags & RET_FLAG_START_GUI))
+    {
+        NetworkServer* server = ResourceManager::get()->GetServer();
+        if(server)
+        {
+            WaitWhileServerOnline(server);
+        }
+    }
 
     LOG_TRACE("%s finishing with exit code %d", APP_NAME, exitval);
 

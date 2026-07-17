@@ -114,6 +114,8 @@ RGBController_RoccatKonePro::RGBController_RoccatKonePro(RoccatKoneProController
 
 RGBController_RoccatKonePro::~RGBController_RoccatKonePro()
 {
+    Shutdown();
+
     delete controller;
 }
 
@@ -125,7 +127,6 @@ void RGBController_RoccatKonePro::SetupZones()
     new_zone.leds_min      = ROCCAT_KONE_PRO_LED_COUNT;
     new_zone.leds_max      = ROCCAT_KONE_PRO_LED_COUNT;
     new_zone.leds_count    = ROCCAT_KONE_PRO_LED_COUNT;
-    new_zone.matrix_map    = NULL;
     zones.push_back(new_zone);
 
     std::string led_names[2] =
@@ -144,13 +145,6 @@ void RGBController_RoccatKonePro::SetupZones()
     SetupColors();
 }
 
-void RGBController_RoccatKonePro::ResizeZone(int /*zone*/, int /*new_size*/)
-{
-    /*---------------------------------------------------------*\
-    | This device does not support resizing zones               |
-    \*---------------------------------------------------------*/
-}
-
 void RGBController_RoccatKonePro::DeviceUpdateLEDs()
 {
     const mode& active = modes[active_mode];
@@ -165,12 +159,12 @@ void RGBController_RoccatKonePro::DeviceUpdateLEDs()
     }
 }
 
-void RGBController_RoccatKonePro::UpdateZoneLEDs(int /*zone_idx*/)
+void RGBController_RoccatKonePro::DeviceUpdateZoneLEDs(int /*zone_idx*/)
 {
     DeviceUpdateLEDs();
 }
 
-void RGBController_RoccatKonePro::UpdateSingleLED(int /*led_idx*/)
+void RGBController_RoccatKonePro::DeviceUpdateSingleLED(int /*led_idx*/)
 {
     DeviceUpdateLEDs();
 }

@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "macUSPCIOAccess.h"
 
-#include "Detector.h"
+#include "DetectionManager.h"
 #include "i2c_smbus_piix4.h"
 #include "LogManager.h"
 #include "pci_ids.h"
@@ -264,23 +264,23 @@ bool i2c_smbus_piix4_detect()
 
     i2c_smbus_interface * bus;
 
-    bus                         = new i2c_smbus_piix4();
-    bus->pci_vendor             = vendor_id;
-    bus->pci_device             = device_id;
-    bus->pci_subsystem_vendor   = subsystem_vendor_id;
-    bus->pci_subsystem_device   = subsystem_device_id;
-    strcpy(bus->device_name, "Advanced Micro Devices, Inc PIIX4 SMBus at 0x0B00");
+    bus                             = new i2c_smbus_piix4();
+    bus->info.pci_vendor            = vendor_id;
+    bus->info.pci_device            = device_id;
+    bus->info.pci_subsystem_vendor  = subsystem_vendor_id;
+    bus->info.pci_subsystem_device  = subsystem_device_id;
+    strcpy(bus->info.device_name, "Advanced Micro Devices, Inc PIIX4 SMBus at 0x0B00");
     ((i2c_smbus_piix4 *)bus)->piix4_smba = 0x0B00;
-    ResourceManager::get()->RegisterI2CBus(bus);
+    DetectionManager::get()->RegisterI2CBus(bus);
 
-    bus                         = new i2c_smbus_piix4();
-    bus->pci_vendor             = vendor_id;
-    bus->pci_device             = device_id;
-    bus->pci_subsystem_vendor   = subsystem_vendor_id;
-    bus->pci_subsystem_device   = subsystem_device_id;
+    bus                             = new i2c_smbus_piix4();
+    bus->info.pci_vendor            = vendor_id;
+    bus->info.pci_device            = device_id;
+    bus->info.pci_subsystem_vendor  = subsystem_vendor_id;
+    bus->info.pci_subsystem_device  = subsystem_device_id;
     ((i2c_smbus_piix4 *)bus)->piix4_smba = 0x0B20;
-    strcpy(bus->device_name, "Advanced Micro Devices, Inc PIIX4 SMBus at 0x0B20");
-    ResourceManager::get()->RegisterI2CBus(bus);
+    strcpy(bus->info.device_name, "Advanced Micro Devices, Inc PIIX4 SMBus at 0x0B20");
+    DetectionManager::get()->RegisterI2CBus(bus);
 
     return(true);
 }
