@@ -273,12 +273,17 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
             WebSocketServer* ws_server = ResourceManager::get()->GetWebSocketServer();
             if(ws_server)
             {
-                if(!startup_service_mode && !ws_server->GetOnline())
+                if(!ws_server->GetOnline())
                 {
                     ws_server->StartServer();
                 }
 
-                if(startup_service_mode && startup_service_started_callback)
+                if(!ws_server->GetOnline())
+                {
+                    LOG_ERROR("[startup] WebSocket server failed to start: %s", ws_server->GetLastError().c_str());
+                    exitval = EXIT_FAILURE;
+                }
+                else if(startup_service_mode && startup_service_started_callback)
                 {
                     startup_service_started_callback();
                 }
@@ -287,31 +292,34 @@ int startup(int argc, char* argv[], unsigned int ret_flags)
                 | Start the event loop to process Qt events |
                 | Exit when WebSocket server is stopped    |
                 \*-----------------------------------------*/
-                bool server_was_online = ws_server->GetOnline();
-                QTimer* server_check_timer = new QTimer(cli_app);
-                QObject::connect(server_check_timer, &QTimer::timeout, [cli_app, ws_server, server_was_online]() mutable {
-                    if(startup_service_mode)
-                    {
-                        return;
-                    }
-
-                    if(ws_server->GetOnline())
-                    {
-                        server_was_online = true;
-                    }
-                    else if(server_was_online)
-                    {
-                        cli_app->quit();
-                    }
-                });
-                server_check_timer->start(startup_service_mode ? 100 : 1000);
-
-                exitval = cli_app->exec();
-                if(startup_service_mode && !startup_shutdown_requested())
+                if(ws_server->GetOnline())
                 {
-                    ResourceManager::get()->WaitForInitialization();
+                    bool server_was_online = true;
+                    QTimer* server_check_timer = new QTimer(cli_app);
+                    QObject::connect(server_check_timer, &QTimer::timeout, [cli_app, ws_server, server_was_online]() mutable {
+                        if(startup_service_mode)
+                        {
+                            return;
+                        }
+
+                        if(ws_server->GetOnline())
+                        {
+                            server_was_online = true;
+                        }
+                        else if(server_was_online)
+                        {
+                            cli_app->quit();
+                        }
+                    });
+                    server_check_timer->start(startup_service_mode ? 100 : 1000);
+
+                    exitval = cli_app->exec();
+                    if(startup_service_mode && !startup_shutdown_requested())
+                    {
+                        ResourceManager::get()->WaitForInitialization();
+                    }
+                    delete server_check_timer;
                 }
-                delete server_check_timer;
             }
             else
             {

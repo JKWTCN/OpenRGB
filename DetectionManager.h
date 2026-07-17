@@ -231,6 +231,15 @@ private:
     std::vector<RGBController*>                 rgb_controllers;
 
     /*-----------------------------------------------------*\
+    | Device lists retained while a replacement scan runs   |
+    |                                                       |
+    | ResourceManager continues serving these controllers   |
+    | until the newly detected list is complete.            |
+    \*-----------------------------------------------------*/
+    std::vector<i2c_smbus_interface*>           retained_i2c_buses;
+    std::vector<RGBController*>                 retained_rgb_controllers;
+
+    /*-----------------------------------------------------*\
     | Detectors                                             |
     \*-----------------------------------------------------*/
     std::vector<DeviceDetectorFunction>         device_detectors;
@@ -338,7 +347,8 @@ private:
     /*-----------------------------------------------------*\
     | Detection processing functions                        |
     \*-----------------------------------------------------*/
-    void ProcessCleanup();
+    void CommitDetectionResults();
+    void PrepareDetectionResults();
     void ProcessDynamicDetectors();
     bool ProcessPreDetection();
     void ProcessPreDetectionHooks();

@@ -14,6 +14,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <utility>
 #include "DetectionManager.h"
 #include "JsonUtils.h"
 #include "LogManager.h"
@@ -554,7 +555,10 @@ void DetectionManager::RegisterRGBController(RGBController *rgb_controller)
     /*-----------------------------------------------------*\
     | Signal Device List Update                             |
     \*-----------------------------------------------------*/
-    SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_REGISTERED);
+    if(!detection_in_progress.load())
+    {
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_REGISTERED);
+    }
 }
 
 void DetectionManager::UnregisterRGBController(RGBController* rgb_controller)
@@ -580,7 +584,10 @@ void DetectionManager::UnregisterRGBController(RGBController* rgb_controller)
     /*-----------------------------------------------------*\
     | Signal Device List Update                             |
     \*-----------------------------------------------------*/
-    SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_UNREGISTERED);
+    if(!detection_in_progress.load())
+    {
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_UNREGISTERED);
+    }
 }
 
 /*---------------------------------------------------------*\
@@ -597,6 +604,18 @@ void DetectionManager::AbortDetection()
 
 void DetectionManager::BeginDetection()
 {
+    bool detection_was_in_progress = false;
+
+    /*-----------------------------------------------------*\
+    | Reserve the detection slot before doing synchronous   |
+    | preparation.  Periodic scan requests can otherwise    |
+    | race and schedule more than one replacement scan.     |
+    \*-----------------------------------------------------*/
+    if(!detection_in_progress.compare_exchange_strong(detection_was_in_progress, true))
+    {
+        return;
+    }
+
     /*-----------------------------------------------------*\
     | Perform pre-detection setup                           |
     \*-----------------------------------------------------*/
@@ -609,6 +628,10 @@ void DetectionManager::BeginDetection()
     if(detection_ready)
     {
         RunInBackgroundThread(std::bind(&DetectionManager::BackgroundDetectDevices, this));
+    }
+    else
+    {
+        detection_in_progress = false;
     }
 }
 
@@ -720,11 +743,6 @@ void DetectionManager::BackgroundDetectDevices()
     | Lock detection mutex                                  |
     \*-----------------------------------------------------*/
     DetectDevicesMutex.lock();
-
-    /*-----------------------------------------------------*\
-    | Set detection in progress flag                        |
-    \*-----------------------------------------------------*/
-    detection_in_progress = true;
 
     /*-----------------------------------------------------*\
     | Initialize local variables                            |
@@ -882,10 +900,24 @@ void DetectionManager::BackgroundDetectDevices()
     BackgroundDetectOtherDevices(detector_settings);
 
     /*-----------------------------------------------------*\
+    | Publish the complete replacement list before retiring |
+    | the old controllers.  ResourceManager switches lists  |
+    | under its device-list mutex, so controls already in    |
+    | flight finish on the old list and subsequent controls  |
+    | use the new list.                                      |
+    \*-----------------------------------------------------*/
+    CommitDetectionResults();
+
+    /*-----------------------------------------------------*\
     | Signal that detection progress reached 100%           |
     \*-----------------------------------------------------*/
     detection_percent     = 100;
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED);
+
+    /*-----------------------------------------------------*\
+    | Clear detection in progress flag                      |
+    \*-----------------------------------------------------*/
+    detection_in_progress = false;
 
     /*-----------------------------------------------------*\
     | Signal that detection is complete                     |
@@ -895,11 +927,6 @@ void DetectionManager::BackgroundDetectDevices()
     LOG_INFO("------------------------------------------------------");
     LOG_INFO("|                Detection completed                 |");
     LOG_INFO("------------------------------------------------------");
-
-    /*-----------------------------------------------------*\
-    | Clear detection in progress flag                      |
-    \*-----------------------------------------------------*/
-    detection_in_progress = false;
 
     /*-----------------------------------------------------*\
     | Unlock detection mutex                                |
@@ -1684,7 +1711,7 @@ void DetectionManager::RunHIDWrappedDetector(const hidapi_wrapper* wrapper, hid_
 /*---------------------------------------------------------*\
 | Detection processing functions                            |
 \*---------------------------------------------------------*/
-void DetectionManager::ProcessCleanup()
+void DetectionManager::PrepareDetectionResults()
 {
     WaitForDetection();
 
@@ -1693,47 +1720,46 @@ void DetectionManager::ProcessCleanup()
 #endif
 
     /*-----------------------------------------------------*\
-    | Make a copy of the list so that the controllers can   |
-    | be deleted after the list is cleared                  |
+    | Retain the currently published devices while detectors|
+    | build a complete replacement list.  ResourceManager   |
+    | still owns references to these objects, so controls    |
+    | remain available throughout the scan.                 |
     \*-----------------------------------------------------*/
-    std::vector<RGBController *> rgb_controllers_copy = rgb_controllers;
+    retained_rgb_controllers = std::move(rgb_controllers);
+    retained_i2c_buses       = std::move(i2c_buses);
 
     /*-----------------------------------------------------*\
-    | Clear the controllers list                            |
+    | Detection registers results into fresh staging lists  |
     \*-----------------------------------------------------*/
     rgb_controllers.clear();
+    i2c_buses.clear();
+}
 
+void DetectionManager::CommitDetectionResults()
+{
     /*-----------------------------------------------------*\
-    | Signal the list cleared callback                      |
+    | Publish the fully built list in one callback.          |
+    | Despite the legacy reason name, ResourceManager reads  |
+    | the current DetectionManager list and atomically       |
+    | replaces its public controller list.                   |
     \*-----------------------------------------------------*/
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_LIST_CLEARED);
 
     /*-----------------------------------------------------*\
-    | Delete the controllers                                |
+    | The callback above returns only after consumers have   |
+    | switched away from the retained controller objects.   |
     \*-----------------------------------------------------*/
-    for(RGBController* rgb_controller : rgb_controllers_copy)
+    for(RGBController* rgb_controller : retained_rgb_controllers)
     {
         delete rgb_controller;
     }
+    retained_rgb_controllers.clear();
 
-    /*-----------------------------------------------------*\
-    | Make a copy of the list so that the I2C buses can be  |
-    | deleted after the list is cleared                     |
-    \*-----------------------------------------------------*/
-    std::vector<i2c_smbus_interface *> i2c_buses_copy = i2c_buses;
-
-    /*-----------------------------------------------------*\
-    | Clear the I2C buses list                              |
-    \*-----------------------------------------------------*/
-    i2c_buses.clear();
-
-    /*-----------------------------------------------------*\
-    | Delete the I2C buses                                  |
-    \*-----------------------------------------------------*/
-    for(i2c_smbus_interface* bus : i2c_buses_copy)
+    for(i2c_smbus_interface* bus : retained_i2c_buses)
     {
         delete bus;
     }
+    retained_i2c_buses.clear();
 }
 
 void DetectionManager::ProcessDynamicDetectors()
@@ -1748,15 +1774,6 @@ void DetectionManager::ProcessDynamicDetectors()
 
 bool DetectionManager::ProcessPreDetection()
 {
-    /*-----------------------------------------------------*\
-    | Check if detection is already in progress before      |
-    | continuing                                            |
-    \*-----------------------------------------------------*/
-    if(detection_in_progress.load())
-    {
-        return false;
-    }
-
     /*-----------------------------------------------------*\
     | Process pre-detection hooks                           |
     \*-----------------------------------------------------*/
@@ -1783,9 +1800,9 @@ bool DetectionManager::ProcessPreDetection()
     UpdateDetectorSettings();
 
     /*-----------------------------------------------------*\
-    | Clean up any existing detected devices                |
+    | Stage new results without withdrawing existing devices|
     \*-----------------------------------------------------*/
-    ProcessCleanup();
+    PrepareDetectionResults();
 
     return true;
 }
