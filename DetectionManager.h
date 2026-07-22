@@ -240,6 +240,16 @@ private:
     std::vector<RGBController*>                 retained_rgb_controllers;
 
     /*-----------------------------------------------------*\
+    | Controller lifecycle synchronization                  |
+    |                                                       |
+    | HID hotplug callbacks run on an internal event thread |
+    | while detection runs on the background thread.  This  |
+    | mutex serializes list publication, callback ownership,|
+    | and controller retirement.                            |
+    \*-----------------------------------------------------*/
+    std::mutex                                  ControllerLifecycleMutex;
+
+    /*-----------------------------------------------------*\
     | Detectors                                             |
     \*-----------------------------------------------------*/
     std::vector<DeviceDetectorFunction>         device_detectors;
@@ -272,6 +282,15 @@ private:
     \*-----------------------------------------------------*/
 #if(HID_HOTPLUG_ENABLED)
     hid_hotplug_callback_handle                 hotplug_callback_handle;
+
+    typedef struct
+    {
+        hid_hotplug_callback_handle             handle;
+        RGBController*                          controller;
+        const hidapi_wrapper*                   wrapper;
+    } HIDUnplugCallbackRegistration;
+
+    std::vector<HIDUnplugCallbackRegistration>  unplug_callback_registrations;
 #ifdef __linux__
 #ifdef __GLIBC__
     hid_hotplug_callback_handle                 libusb_hotplug_callback_handle;
@@ -312,6 +331,7 @@ private:
 
     std::atomic<bool>                           background_thread_running;
     std::atomic<bool>                           detection_in_progress;
+    bool                                        controller_list_published;
 
     /*-----------------------------------------------------*\
     | Background Thread Functions                           |
@@ -353,6 +373,9 @@ private:
     bool ProcessPreDetection();
     void ProcessPreDetectionHooks();
     void UpdateDetectorSettings();
+    void InitializeRGBController(RGBController* rgb_controller);
+    void RegisterRGBControllerLocked(RGBController* rgb_controller);
+    bool UnregisterRGBControllerLocked(RGBController* rgb_controller);
 
 #if(HID_HOTPLUG_ENABLED)
     /*-----------------------------------------------------*\
@@ -360,6 +383,9 @@ private:
     \*-----------------------------------------------------*/
     void StartHIDHotplug();
     void StopHIDHotplug();
+    void RegisterHIDRGBController(RGBController* rgb_controller, const hidapi_wrapper* wrapper, unsigned short vendor_id, unsigned short product_id);
+    void CollectUnplugCallbacksLocked(RGBController* rgb_controller, std::vector<HIDUnplugCallbackRegistration>& registrations);
+    int HandleUnplugCallback(hid_hotplug_callback_handle callback_handle, hid_device_info* device, RGBController* controller);
 
     /*-----------------------------------------------------*\
     | HID hotplug callback functions                        |
