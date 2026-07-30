@@ -965,6 +965,18 @@ void DetectionManager::BackgroundDetectDevices()
 #if(HID_HOTPLUG_ENABLED)
         StopHIDHotplug();
         StartHIDHotplug();
+
+        /*-------------------------------------------------*\
+        | hid_devices was allocated by hid_enumerate() for |
+        | progress accounting above.  Hotplug detection    |
+        | enumerates devices through its registration      |
+        | callback, so this list has no remaining owner.    |
+        \*-------------------------------------------------*/
+        if(hid_devices != nullptr)
+        {
+            hid_free_enumeration(hid_devices);
+            hid_devices = nullptr;
+        }
 #else
         BackgroundDetectHIDDevices(hid_devices, detector_settings);
 #endif
