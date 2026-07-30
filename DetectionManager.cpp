@@ -600,6 +600,24 @@ bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controll
 {
     std::vector<RGBController*>::iterator rgb_it = std::find(rgb_controllers.begin(), rgb_controllers.end(), rgb_controller);
 
+    /*-----------------------------------------------------*\
+    | A reused HID controller is present in both the staged |
+    | and retained lists until publication.  If it is       |
+    | unplugged during that window, omit it from the staged  |
+    | list but retain its storage for current RPC users.     |
+    \*-----------------------------------------------------*/
+    if(!controller_list_published
+    && std::find(retained_rgb_controllers.begin(), retained_rgb_controllers.end(), rgb_controller) != retained_rgb_controllers.end())
+    {
+        if(rgb_it != rgb_controllers.end())
+        {
+            rgb_controllers.erase(rgb_it);
+        }
+
+        LOG_INFO("[%s] Deferring removal of disconnected RGB controller %s until detection commit", DETECTIONMANAGER, rgb_controller->GetName().c_str());
+        return false;
+    }
+
     if(rgb_it != rgb_controllers.end())
     {
         LOG_INFO("[%s] Unregistering RGB controller %s", DETECTIONMANAGER, rgb_controller->GetName().c_str());
@@ -623,19 +641,6 @@ bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controll
         }
 
         return true;
-    }
-
-    /*-----------------------------------------------------*\
-    | Published controllers are retained during a rescan.   |
-    | If one is unplugged, keep the object alive until the   |
-    | replacement list is published.  RPC clients may still |
-    | be using it through ResourceManager in the meantime.   |
-    \*-----------------------------------------------------*/
-    if(!controller_list_published
-    && std::find(retained_rgb_controllers.begin(), retained_rgb_controllers.end(), rgb_controller) != retained_rgb_controllers.end())
-    {
-        LOG_INFO("[%s] Deferring removal of disconnected RGB controller %s until detection commit", DETECTIONMANAGER, rgb_controller->GetName().c_str());
-        return false;
     }
 
     return false;
@@ -1870,6 +1875,21 @@ void DetectionManager::CommitDetectionResults()
     controller_list_published = true;
 
     /*-----------------------------------------------------*\
+    | Reused HID controllers occur in both lists until the  |
+    | new list is published.  They keep their open handles  |
+    | and unplug registrations and must not be retired.      |
+    \*-----------------------------------------------------*/
+    retained_rgb_controllers.erase(
+        std::remove_if(
+            retained_rgb_controllers.begin(),
+            retained_rgb_controllers.end(),
+            [this](RGBController* retained_controller)
+            {
+                return std::find(rgb_controllers.begin(), rgb_controllers.end(), retained_controller) != rgb_controllers.end();
+            }),
+        retained_rgb_controllers.end());
+
+    /*-----------------------------------------------------*\
     | Detach all callbacks that still refer to the retired   |
     | controllers before allowing hotplug callbacks to run. |
     \*-----------------------------------------------------*/
@@ -2116,6 +2136,38 @@ void DetectionManager::UpdateDetectorSettings()
 /*---------------------------------------------------------*\
 | HID hotplug management functions                          |
 \*---------------------------------------------------------*/
+bool DetectionManager::ReuseRetainedHIDControllers(const hidapi_wrapper* wrapper, const char* path)
+{
+    if(path == nullptr)
+    {
+        return false;
+    }
+
+    bool reused = false;
+    std::lock_guard<std::mutex> guard(ControllerLifecycleMutex);
+    for(RGBController* retained_controller : retained_rgb_controllers)
+    {
+        bool wrapper_matches = std::any_of(
+            unplug_callback_registrations.begin(),
+            unplug_callback_registrations.end(),
+            [retained_controller, wrapper](const HIDUnplugCallbackRegistration& registration)
+            {
+                return registration.controller == retained_controller && registration.wrapper == wrapper;
+            });
+
+        if(wrapper_matches && retained_controller->detection_path == path)
+        {
+            if(std::find(rgb_controllers.begin(), rgb_controllers.end(), retained_controller) == rgb_controllers.end())
+            {
+                rgb_controllers.push_back(retained_controller);
+            }
+            reused = true;
+        }
+    }
+
+    return reused;
+}
+
 void DetectionManager::RegisterHIDRGBController(RGBController* rgb_controller, const hidapi_wrapper* wrapper, unsigned short vendor_id, unsigned short product_id)
 {
     InitializeRGBController(rgb_controller);
@@ -2233,8 +2285,11 @@ int DetectionManager::HotplugCallbackFunction(hid_hotplug_callback_handle /*call
             LOG_INFO_UNSUPPRESSED("[%s] HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
         }
 
-        dm->RunHIDDetector(device, detector_settings);
-        dm->RunHIDWrappedDetector(&default_hidapi_wrapper, device, detector_settings);
+        if(!hid_hotplug_registration_enumeration || !dm->ReuseRetainedHIDControllers(&default_hidapi_wrapper, device->path))
+        {
+            dm->RunHIDDetector(device, detector_settings);
+            dm->RunHIDWrappedDetector(&default_hidapi_wrapper, device, detector_settings);
+        }
     }
 
     return 0;
@@ -2334,8 +2389,13 @@ int DetectionManager::WrappedHotplugCallbackFunction(hid_hotplug_callback_handle
             LOG_INFO_UNSUPPRESSED("[%s] libusb HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
         }
 
-        dm->RunHIDDetector(device, detector_settings);
-        dm->RunHIDWrappedDetector(&DetectionManager::get()->hidapi_libusb_wrapper, device, detector_settings);
+        const hidapi_wrapper* wrapper = &DetectionManager::get()->hidapi_libusb_wrapper;
+
+        if(!hid_hotplug_registration_enumeration || !dm->ReuseRetainedHIDControllers(wrapper, device->path))
+        {
+            dm->RunHIDDetector(device, detector_settings);
+            dm->RunHIDWrappedDetector(wrapper, device, detector_settings);
+        }
     }
 
     return 0;

@@ -383,6 +383,7 @@ private:
     \*-----------------------------------------------------*/
     void StartHIDHotplug();
     void StopHIDHotplug();
+    bool ReuseRetainedHIDControllers(const hidapi_wrapper* wrapper, const char* path);
     void RegisterHIDRGBController(RGBController* rgb_controller, const hidapi_wrapper* wrapper, unsigned short vendor_id, unsigned short product_id);
     void CollectUnplugCallbacksLocked(RGBController* rgb_controller, std::vector<HIDUnplugCallbackRegistration>& registrations);
     int HandleUnplugCallback(hid_hotplug_callback_handle callback_handle, hid_device_info* device, RGBController* controller);
