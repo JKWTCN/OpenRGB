@@ -215,4 +215,5 @@ private:
 #define LOG_DEBUG(...)          LogAppend(LL_DEBUG,     __VA_ARGS__)
 #define LOG_TRACE(...)          LogAppend(LL_TRACE,     __VA_ARGS__)
 #define LOG_DIALOG(...)         LogAppend(LL_DIALOG,    __VA_ARGS__)
+#define LOG_ERROR_UNSUPPRESSED(...) LogManager::get()->LogEntryUnsuppressed(__FILE__, __LINE__, LL_ERROR, __VA_ARGS__)
 #define LOG_INFO_UNSUPPRESSED(...) LogManager::get()->LogEntryUnsuppressed(__FILE__, __LINE__, LL_INFO, __VA_ARGS__)

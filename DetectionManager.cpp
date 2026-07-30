@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <utility>
 #include "DetectionManager.h"
@@ -609,9 +610,23 @@ bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controll
     if(!controller_list_published
     && std::find(retained_rgb_controllers.begin(), retained_rgb_controllers.end(), rgb_controller) != retained_rgb_controllers.end())
     {
+        /*-------------------------------------------------*\
+        | Stop effect and update producers immediately. The |
+        | object remains alive for in-flight RPC users until |
+        | the replacement list is published, but no new      |
+        | asynchronous device work may be queued after the   |
+        | HID handle has disappeared.                         |
+        \*-------------------------------------------------*/
+        rgb_controller->ClearCallbacks();
+
         if(rgb_it != rgb_controllers.end())
         {
             rgb_controllers.erase(rgb_it);
+        }
+
+        if(std::find(deferred_disconnected_rgb_controllers.begin(), deferred_disconnected_rgb_controllers.end(), rgb_controller) == deferred_disconnected_rgb_controllers.end())
+        {
+            deferred_disconnected_rgb_controllers.push_back(rgb_controller);
         }
 
         LOG_INFO("[%s] Deferring removal of disconnected RGB controller %s until detection commit", DETECTIONMANAGER, rgb_controller->GetName().c_str());
@@ -697,7 +712,22 @@ bool DetectionManager::BeginDetection()
     /*-----------------------------------------------------*\
     | Perform pre-detection setup                           |
     \*-----------------------------------------------------*/
-    bool detection_ready = ProcessPreDetection();
+    bool detection_ready = false;
+
+    try
+    {
+        detection_ready = ProcessPreDetection();
+    }
+    catch(const std::exception& e)
+    {
+        HandleDetectionFailure(e.what());
+        return false;
+    }
+    catch(...)
+    {
+        HandleDetectionFailure("unknown exception during detection preparation");
+        return false;
+    }
 
     /*-----------------------------------------------------*\
     | Run DetectDevices function in background thread if    |
@@ -767,11 +797,25 @@ void DetectionManager::BackgroundThreadFunction()
             }
             catch(std::exception& e)
             {
-                LOG_ERROR("[%s] Unhandled exception in coroutine; e.what(): %s", DETECTIONMANAGER, e.what());
+                if(detection_in_progress)
+                {
+                    HandleDetectionFailure(e.what());
+                }
+                else
+                {
+                    LOG_ERROR_UNSUPPRESSED("[%s] Unhandled exception in coroutine; e.what(): %s", DETECTIONMANAGER, e.what());
+                }
             }
             catch(...)
             {
-                LOG_ERROR("[%s] Unhandled exception in coroutine", DETECTIONMANAGER);
+                if(detection_in_progress)
+                {
+                    HandleDetectionFailure("unknown exception in detection coroutine");
+                }
+                else
+                {
+                    LOG_ERROR_UNSUPPRESSED("[%s] Unhandled exception in coroutine", DETECTIONMANAGER);
+                }
             }
         }
 
@@ -822,7 +866,7 @@ void DetectionManager::BackgroundDetectDevices()
     /*-----------------------------------------------------*\
     | Lock detection mutex                                  |
     \*-----------------------------------------------------*/
-    DetectDevicesMutex.lock();
+    std::unique_lock<std::mutex> detection_lock(DetectDevicesMutex);
 
     /*-----------------------------------------------------*\
     | Periodic scans rebuild the same device list every few |
@@ -841,7 +885,8 @@ void DetectionManager::BackgroundDetectDevices()
     \*-----------------------------------------------------*/
     hid_device_info*    current_hid_device;
     json                detector_settings;
-    hid_device_info*    hid_devices                 = NULL;
+    std::unique_ptr<hid_device_info, decltype(&hid_free_enumeration)>
+                            hid_devices(nullptr, &hid_free_enumeration);
 
     LOG_INFO("------------------------------------------------------");
     LOG_INFO("|               Start device detection               |");
@@ -900,7 +945,7 @@ void DetectionManager::BackgroundDetectDevices()
     \*-----------------------------------------------------*/
     if(!hid_safe_mode)
     {
-        hid_devices = hid_enumerate(0, 0);
+        hid_devices.reset(hid_enumerate(0, 0));
     }
 
     /*-----------------------------------------------------*\
@@ -921,7 +966,7 @@ void DetectionManager::BackgroundDetectDevices()
     }
     else
     {
-        current_hid_device              = hid_devices;
+        current_hid_device              = hid_devices.get();
         detection_percent_hid_count     = 0;
 
         while(current_hid_device)
@@ -979,13 +1024,9 @@ void DetectionManager::BackgroundDetectDevices()
         | enumerates devices through its registration      |
         | callback, so this list has no remaining owner.    |
         \*-------------------------------------------------*/
-        if(hid_devices != nullptr)
-        {
-            hid_free_enumeration(hid_devices);
-            hid_devices = nullptr;
-        }
+        hid_devices.reset();
 #else
-        BackgroundDetectHIDDevices(hid_devices, detector_settings);
+        BackgroundDetectHIDDevices(hid_devices.get(), detector_settings);
 #endif
     }
 
@@ -994,7 +1035,7 @@ void DetectionManager::BackgroundDetectDevices()
     \*-----------------------------------------------------*/
 #ifdef __linux__
 #ifdef __GLIBC__
-    BackgroundDetectHIDDevicesWrapped(hid_devices, detector_settings);
+    BackgroundDetectHIDDevicesWrapped(hid_devices.get(), detector_settings);
 #endif
 #endif
 
@@ -1038,7 +1079,7 @@ void DetectionManager::BackgroundDetectDevices()
     /*-----------------------------------------------------*\
     | Unlock detection mutex                                |
     \*-----------------------------------------------------*/
-    DetectDevicesMutex.unlock();
+    detection_lock.unlock();
 
 #ifdef __linux__
     /*-----------------------------------------------------*\
@@ -1840,6 +1881,7 @@ void DetectionManager::PrepareDetectionResults()
     \*-----------------------------------------------------*/
     retained_rgb_controllers = std::move(rgb_controllers);
     retained_i2c_buses       = std::move(i2c_buses);
+    deferred_disconnected_rgb_controllers.clear();
     controller_list_published = false;
 
     /*-----------------------------------------------------*\
@@ -1865,6 +1907,14 @@ void DetectionManager::CommitDetectionResults()
     \*-----------------------------------------------------*/
     std::unique_lock<std::mutex> lifecycle_lock(ControllerLifecycleMutex);
 
+    const bool commit_contains_disconnects = !deferred_disconnected_rgb_controllers.empty();
+    if(commit_contains_disconnects)
+    {
+        LOG_INFO_UNSUPPRESSED("[%s] Committing detection results after %u deferred HID disconnect(s)",
+                              DETECTIONMANAGER,
+                              (unsigned int)deferred_disconnected_rgb_controllers.size());
+    }
+
     /*-----------------------------------------------------*\
     | Publish the fully built list in one callback.          |
     | Despite the legacy reason name, ResourceManager reads  |
@@ -1873,6 +1923,11 @@ void DetectionManager::CommitDetectionResults()
     \*-----------------------------------------------------*/
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_LIST_CLEARED);
     controller_list_published = true;
+
+    if(commit_contains_disconnects)
+    {
+        LOG_INFO_UNSUPPRESSED("[%s] Published controller list after deferred HID disconnect", DETECTIONMANAGER);
+    }
 
     /*-----------------------------------------------------*\
     | Reused HID controllers occur in both lists until the  |
@@ -1905,6 +1960,7 @@ void DetectionManager::CommitDetectionResults()
 
     retained_rgb_controllers.clear();
     retained_i2c_buses.clear();
+    deferred_disconnected_rgb_controllers.clear();
 
     lifecycle_lock.unlock();
 
@@ -1923,7 +1979,16 @@ void DetectionManager::CommitDetectionResults()
 
     for(RGBController* rgb_controller : controllers_to_delete)
     {
+        if(commit_contains_disconnects)
+        {
+            LOG_INFO_UNSUPPRESSED("[%s] Retiring RGB controller %s", DETECTIONMANAGER, rgb_controller->GetName().c_str());
+        }
         delete rgb_controller;
+    }
+
+    if(commit_contains_disconnects)
+    {
+        LOG_INFO_UNSUPPRESSED("[%s] Finished retiring controllers after deferred HID disconnect", DETECTIONMANAGER);
     }
 
     for(i2c_smbus_interface* bus : buses_to_delete)
@@ -1931,6 +1996,144 @@ void DetectionManager::CommitDetectionResults()
         delete bus;
     }
 
+}
+
+void DetectionManager::RollbackDetectionResults()
+{
+    std::vector<RGBController*> controllers_to_delete;
+    std::vector<i2c_smbus_interface*> buses_to_delete;
+#if(HID_HOTPLUG_ENABLED)
+    std::vector<HIDUnplugCallbackRegistration> callbacks_to_deregister;
+#endif
+
+    std::unique_lock<std::mutex> lifecycle_lock(ControllerLifecycleMutex);
+
+    /*-----------------------------------------------------*\
+    | Nothing was staged, or the replacement list was       |
+    | already published before a later callback failed.     |
+    \*-----------------------------------------------------*/
+    if(controller_list_published)
+    {
+        return;
+    }
+
+    /*-----------------------------------------------------*\
+    | Controllers created by the failed scan are not part   |
+    | of the retained snapshot and must be retired. Reused   |
+    | controllers occur in both lists and remain owned by    |
+    | the restored snapshot.                                |
+    \*-----------------------------------------------------*/
+    for(RGBController* staged_controller : rgb_controllers)
+    {
+        if(std::find(retained_rgb_controllers.begin(), retained_rgb_controllers.end(), staged_controller) == retained_rgb_controllers.end())
+        {
+            controllers_to_delete.push_back(staged_controller);
+        }
+    }
+
+    /*-----------------------------------------------------*\
+    | Restore the last published snapshot, excluding HID    |
+    | controllers that were physically disconnected while   |
+    | the failed scan was running.                           |
+    \*-----------------------------------------------------*/
+    rgb_controllers = std::move(retained_rgb_controllers);
+    for(RGBController* disconnected_controller : deferred_disconnected_rgb_controllers)
+    {
+        rgb_controllers.erase(
+            std::remove(rgb_controllers.begin(), rgb_controllers.end(), disconnected_controller),
+            rgb_controllers.end());
+
+        if(std::find(controllers_to_delete.begin(), controllers_to_delete.end(), disconnected_controller) == controllers_to_delete.end())
+        {
+            controllers_to_delete.push_back(disconnected_controller);
+        }
+    }
+
+    buses_to_delete = std::move(i2c_buses);
+    i2c_buses       = std::move(retained_i2c_buses);
+
+#if(HID_HOTPLUG_ENABLED)
+    for(RGBController* controller : controllers_to_delete)
+    {
+        CollectUnplugCallbacksLocked(controller, callbacks_to_deregister);
+    }
+#endif
+
+    retained_rgb_controllers.clear();
+    retained_i2c_buses.clear();
+    deferred_disconnected_rgb_controllers.clear();
+
+    /*-----------------------------------------------------*\
+    | Replace ResourceManager's public list before freeing  |
+    | anything it may have referenced from the old snapshot.|
+    \*-----------------------------------------------------*/
+    SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_LIST_CLEARED);
+    controller_list_published = true;
+
+    lifecycle_lock.unlock();
+
+#if(HID_HOTPLUG_ENABLED)
+    for(const HIDUnplugCallbackRegistration& registration : callbacks_to_deregister)
+    {
+        registration.wrapper->hid_hotplug_deregister_callback(registration.handle);
+    }
+#endif
+
+    for(RGBController* controller : controllers_to_delete)
+    {
+        delete controller;
+    }
+
+    for(i2c_smbus_interface* bus : buses_to_delete)
+    {
+        delete bus;
+    }
+}
+
+void DetectionManager::HandleDetectionFailure(const char* error_message)
+{
+    /*-----------------------------------------------------*\
+    | A periodic scan suppresses routine messages. End that |
+    | mode first so the failure is always visible.          |
+    \*-----------------------------------------------------*/
+    LogManager::get()->StopSuppressing(true);
+    LOG_ERROR_UNSUPPRESSED("[%s] Device detection failed: %s", DETECTIONMANAGER, error_message);
+
+    try
+    {
+        RollbackDetectionResults();
+    }
+    catch(const std::exception& rollback_error)
+    {
+        LOG_ERROR_UNSUPPRESSED("[%s] Failed to roll back detection results: %s", DETECTIONMANAGER, rollback_error.what());
+    }
+    catch(...)
+    {
+        LOG_ERROR_UNSUPPRESSED("[%s] Failed to roll back detection results: unknown exception", DETECTIONMANAGER);
+    }
+
+    detection_percent     = 100;
+    detection_string      = "Detection failed";
+    detection_in_progress = false;
+
+    /*-----------------------------------------------------*\
+    | Best-effort terminal notifications. The detection slot |
+    | is already released so a failing observer cannot leave |
+    | all subsequent rescans permanently rejected.           |
+    \*-----------------------------------------------------*/
+    try
+    {
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED);
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_COMPLETE);
+    }
+    catch(const std::exception& callback_error)
+    {
+        LOG_ERROR_UNSUPPRESSED("[%s] Failed to publish detection failure state: %s", DETECTIONMANAGER, callback_error.what());
+    }
+    catch(...)
+    {
+        LOG_ERROR_UNSUPPRESSED("[%s] Failed to publish detection failure state: unknown exception", DETECTIONMANAGER);
+    }
 }
 
 void DetectionManager::ProcessDynamicDetectors()
@@ -2410,14 +2613,12 @@ int DetectionManager::WrappedHotplugCallbackFunction(hid_hotplug_callback_handle
 \*---------------------------------------------------------*/
 void DetectionManager::SignalUpdate(unsigned int update_reason)
 {
-    DetectionCallbackMutex.lock();
+    std::lock_guard<std::mutex> callback_lock(DetectionCallbackMutex);
 
     for(std::size_t callback_idx = 0; callback_idx < DetectionCallbacks.size(); callback_idx++)
     {
         DetectionCallbacks[callback_idx](DetectionCallbackArgs[callback_idx], update_reason);
     }
-
-    DetectionCallbackMutex.unlock();
 
     LOG_TRACE("[%s] Update signalled: %d.", DETECTIONMANAGER, update_reason);
 }

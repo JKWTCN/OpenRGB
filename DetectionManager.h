@@ -238,6 +238,7 @@ private:
     \*-----------------------------------------------------*/
     std::vector<i2c_smbus_interface*>           retained_i2c_buses;
     std::vector<RGBController*>                 retained_rgb_controllers;
+    std::vector<RGBController*>                 deferred_disconnected_rgb_controllers;
 
     /*-----------------------------------------------------*\
     | Controller lifecycle synchronization                  |
@@ -368,6 +369,8 @@ private:
     | Detection processing functions                        |
     \*-----------------------------------------------------*/
     void CommitDetectionResults();
+    void RollbackDetectionResults();
+    void HandleDetectionFailure(const char* error_message);
     void PrepareDetectionResults();
     void ProcessDynamicDetectors();
     bool ProcessPreDetection();
