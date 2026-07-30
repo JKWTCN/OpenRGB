@@ -87,6 +87,15 @@ const hidapi_wrapper default_hidapi_wrapper =
 #endif
 };
 
+#if(HID_HOTPLUG_ENABLED)
+/*---------------------------------------------------------*\
+| HID_API_HOTPLUG_ENUMERATE invokes arrival callbacks from  |
+| the registration call.  Thread-local state distinguishes  |
+| those callbacks from a real arrival on the event thread.  |
+\*---------------------------------------------------------*/
+static thread_local bool hid_hotplug_registration_enumeration = false;
+#endif
+
 /*---------------------------------------------------------*\
 | BasicHIDBlock Implementation                              |
 \*---------------------------------------------------------*/
@@ -809,6 +818,18 @@ void DetectionManager::BackgroundDetectDevices()
     DetectDevicesMutex.lock();
 
     /*-----------------------------------------------------*\
+    | Periodic scans rebuild the same device list every few |
+    | seconds.  Keep the initial scan for diagnostics, but  |
+    | discard routine scan chatter.  Real hotplug messages  |
+    | explicitly bypass this suppression.                   |
+    \*-----------------------------------------------------*/
+    bool suppress_scan_logs = !initial_detection;
+    if(suppress_scan_logs)
+    {
+        LogManager::get()->StartSuppressing();
+    }
+
+    /*-----------------------------------------------------*\
     | Initialize local variables                            |
     \*-----------------------------------------------------*/
     hid_device_info*    current_hid_device;
@@ -1055,6 +1076,11 @@ void DetectionManager::BackgroundDetectDevices()
 #ifdef __linux__
         LOG_DIALOG("%s", I2C_ERR_LINUX);
 #endif
+    }
+
+    if(suppress_scan_logs)
+    {
+        LogManager::get()->StopSuppressing(false);
     }
 }
 
@@ -1867,6 +1893,7 @@ void DetectionManager::CommitDetectionResults()
     {
         delete bus;
     }
+
 }
 
 void DetectionManager::ProcessDynamicDetectors()
@@ -2129,6 +2156,8 @@ void DetectionManager::CollectUnplugCallbacksLocked(RGBController* rgb_controlle
 
 void DetectionManager::StartHIDHotplug()
 {
+    hid_hotplug_registration_enumeration = true;
+
     if(hid_hotplug_register_callback(0, 0, HID_API_HOTPLUG_EVENT_DEVICE_ARRIVED, HID_API_HOTPLUG_ENUMERATE, &DetectionManager::HotplugCallbackFunction, nullptr, &hotplug_callback_handle) != 0)
     {
         hotplug_callback_handle = -1;
@@ -2145,6 +2174,8 @@ void DetectionManager::StartHIDHotplug()
     }
 #endif
 #endif
+
+    hid_hotplug_registration_enumeration = false;
 }
 
 void DetectionManager::StopHIDHotplug()
@@ -2180,7 +2211,10 @@ int DetectionManager::HotplugCallbackFunction(hid_hotplug_callback_handle /*call
         json                detector_settings   = ResourceManager::get()->GetSettingsManager()->GetSettings("Detectors");
         DetectionManager*   dm                  = DetectionManager::get();
 
-        LOG_INFO("[%s] HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
+        if(!hid_hotplug_registration_enumeration)
+        {
+            LOG_INFO_UNSUPPRESSED("[%s] HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
+        }
 
         dm->RunHIDDetector(device, detector_settings);
         dm->RunHIDWrappedDetector(&default_hidapi_wrapper, device, detector_settings);
@@ -2215,7 +2249,7 @@ int DetectionManager::HandleUnplugCallback(hid_hotplug_callback_handle callback_
         return 1;
     }
 
-    LOG_INFO("[%s] HID device disconnected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
+    LOG_INFO_UNSUPPRESSED("[%s] HID device disconnected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
 
     if(controller->detection_path != std::string(device->path))
     {
@@ -2278,7 +2312,10 @@ int DetectionManager::WrappedHotplugCallbackFunction(hid_hotplug_callback_handle
         json                detector_settings   = ResourceManager::get()->GetSettingsManager()->GetSettings("Detectors");
         DetectionManager*   dm                  = DetectionManager::get();
 
-        LOG_INFO("[%s] libusb HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
+        if(!hid_hotplug_registration_enumeration)
+        {
+            LOG_INFO_UNSUPPRESSED("[%s] libusb HID device connected: [%04x:%04x - %s]", DETECTIONMANAGER, device->vendor_id, device->product_id, device->path);
+        }
 
         dm->RunHIDDetector(device, detector_settings);
         dm->RunHIDWrappedDetector(&DetectionManager::get()->hidapi_libusb_wrapper, device, detector_settings);

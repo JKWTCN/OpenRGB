@@ -27,7 +27,7 @@ const char* TimestampPattern = "%04d%02d%02d_%02d%02d%02d";
 | Relies on the structure of the template above             |
 \*---------------------------------------------------------*/
 const char* TimestampRegex = "[0-9]{8}_[0-9]{6}";
-const char* DailyDateRegex = "[0-9]{8}";
+const unsigned int DailyLogRetentionDays = 10;
 
 static std::string GetDailyLogBasename(const std::string& log_template)
 {
@@ -217,7 +217,7 @@ void LogManager::Configure(json config, const filesystem::path& config_dir)
             if(service_log_mode)
             {
                 daily_rollover  = true;
-                daily_log_limit = loglimit;
+                daily_log_limit = DailyLogRetentionDays;
                 daily_basename  = GetDailyLogBasename(logtemp);
 
                 filesystem::path configured_path = filesystem::u8path(logtemp);
@@ -300,7 +300,7 @@ void LogManager::OpenDailyLog(const std::string& yyyymmdd)
     filesystem::path path = log_base_dir / (basename + "_" + yyyymmdd + ".log");
     filesystem::create_directories(path.parent_path());
 
-    LogRotate(path.parent_path(), filesystem::u8path(basename + "_#.log"), daily_log_limit, DailyDateRegex);
+    RemoveExpiredDailyLogs(path.parent_path(), basename, daily_log_limit);
 
     bool file_existed = filesystem::exists(path) && filesystem::file_size(path) > 0;
     current_log_path = path;
@@ -320,6 +320,67 @@ void LogManager::OpenDailyLog(const std::string& yyyymmdd)
     }
 
     current_log_date = yyyymmdd;
+}
+
+void LogManager::RemoveExpiredDailyLogs(const filesystem::path& folder, const std::string& basename, unsigned int retention_days)
+{
+    if(retention_days < 1 || !filesystem::exists(folder))
+    {
+        return;
+    }
+
+    /*-----------------------------------------------------*\
+    | Keep today plus the preceding retention_days - 1     |
+    | calendar days.  Noon avoids crossing an extra day on  |
+    | daylight-saving transitions when mktime normalizes.   |
+    \*-----------------------------------------------------*/
+    time_t cutoff_time = time(0);
+    struct tm cutoff_tm = *localtime(&cutoff_time);
+    cutoff_tm.tm_hour = 12;
+    cutoff_tm.tm_min  = 0;
+    cutoff_tm.tm_sec  = 0;
+    cutoff_tm.tm_mday -= static_cast<int>(retention_days - 1);
+    mktime(&cutoff_tm);
+
+    char cutoff_date_buffer[16];
+    snprintf(cutoff_date_buffer, sizeof(cutoff_date_buffer), "%04d%02d%02d", 1900 + cutoff_tm.tm_year, cutoff_tm.tm_mon + 1, cutoff_tm.tm_mday);
+    std::string cutoff_date = cutoff_date_buffer;
+
+    std::string escaped_basename;
+    for(char character : basename)
+    {
+        switch(character)
+        {
+        case '.': case '^': case '$': case '(': case ')': case '{': case '}':
+        case '+': case '[': case ']': case '*': case '?': case '|': case '\\':
+            escaped_basename.push_back('\\');
+            break;
+        default:
+            break;
+        }
+        escaped_basename.push_back(character);
+    }
+
+    std::regex daily_log_regex("^" + escaped_basename + "_([0-9]{8})\\.log$");
+
+    for(const filesystem::directory_entry& entry : filesystem::directory_iterator(folder))
+    {
+        if(!entry.is_regular_file())
+        {
+            continue;
+        }
+
+        std::smatch match;
+        std::string filename = entry.path().filename().u8string();
+        if(std::regex_match(filename, match, daily_log_regex) && match[1].str() < cutoff_date)
+        {
+            std::error_code error;
+            if(!filesystem::remove(entry.path(), error))
+            {
+                LOG_WARNING("[LogManager] Failed to remove expired log file [%s]: %s", entry.path().u8string().c_str(), error.message().c_str());
+            }
+        }
+    }
 }
 
 void LogManager::SetServiceLogDirectory(const filesystem::path& config_dir)
@@ -346,7 +407,7 @@ void LogManager::SetServiceLogDirectory(const filesystem::path& config_dir)
     }
 
     daily_rollover  = true;
-    daily_log_limit = configured_log_limit;
+    daily_log_limit = DailyLogRetentionDays;
     daily_basename  = GetDailyLogBasename(configured_log_template);
     log_base_dir    = config_dir / "logs";
 
@@ -406,6 +467,7 @@ void LogManager::StartSuppressing()
 {
     std::lock_guard<std::recursive_mutex> guard(entry_mutex);
     suppress_mode = true;
+    suppressing_thread = std::this_thread::get_id();
     suppressed_messages.clear();
 }
 
@@ -413,6 +475,7 @@ void LogManager::StopSuppressing(bool flush)
 {
     std::lock_guard<std::recursive_mutex> guard(entry_mutex);
     suppress_mode = false;
+    suppressing_thread = std::thread::id();
 
     if(flush)
     {
@@ -509,14 +572,33 @@ void LogManager::LogEntry(const char* filename, int line, unsigned int level, co
     va_end(va);
 }
 
+void LogManager::LogEntryUnsuppressed(const char* filename, int line, unsigned int level, const char* fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+
+    LogEntry_va_internal(filename, line, level, fmt, va, true);
+
+    va_end(va);
+}
+
 void LogManager::LogEntry_message(PLogMessage message)
+{
+    LogEntry_message_internal(message, false);
+}
+
+void LogManager::LogEntry_message_internal(PLogMessage message, bool bypass_suppression)
 {
     /*-----------------------------------------------------*\
     | Lock the entry mutex while adding an entry            |
     \*-----------------------------------------------------*/
     std::lock_guard<std::recursive_mutex> guard(entry_mutex);
 
-    if(suppress_mode && message->level > LL_ERROR && message->level != LL_DIALOG)
+    if(suppress_mode
+    && suppressing_thread == std::this_thread::get_id()
+    && !bypass_suppression
+    && message->level != LL_FATAL
+    && message->level != LL_DIALOG)
     {
         suppressed_messages.push_back(message);
         return;
@@ -582,6 +664,11 @@ void LogManager::LogEntry_message(PLogMessage message)
 
 void LogManager::LogEntry_va(const char* filename, int line, unsigned int level, const char* fmt, va_list va)
 {
+    LogEntry_va_internal(filename, line, level, fmt, va, false);
+}
+
+void LogManager::LogEntry_va_internal(const char* filename, int line, unsigned int level, const char* fmt, va_list va, bool bypass_suppression)
+{
     /*-----------------------------------------------------*\
     | If a critical message occurs, enable source           |
     | printing and set loglevel and verbosity to highest    |
@@ -626,7 +713,7 @@ void LogManager::LogEntry_va(const char* filename, int line, unsigned int level,
         message->text.erase(std::remove(message->text.begin(), message->text.end(), '\r'), message->text.end());
     }
 
-    LogEntry_message(message);
+    LogEntry_message_internal(message, bypass_suppression);
 }
 
 /*---------------------------------------------------------*\

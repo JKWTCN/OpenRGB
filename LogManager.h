@@ -14,6 +14,7 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <thread>
 #include <nlohmann/json.hpp>
 #include "filesystem.h"
 
@@ -119,6 +120,7 @@ public:
     | Log Entry Functions                                   |
     \*-----------------------------------------------------*/
     void                                LogEntry(const char* filename, int line, unsigned int level, const char* fmt, ...);
+    void                                LogEntryUnsuppressed(const char* filename, int line, unsigned int level, const char* fmt, ...);
     void                                LogEntry_message(PLogMessage message);
     void                                LogEntry_va(const char* filename, int line, unsigned int level, const char* fmt, va_list va);
 
@@ -172,6 +174,7 @@ private:
     std::vector<PLogMessage>            all_messages;
     std::vector<PLogMessage>            suppressed_messages;
     bool                                suppress_mode;
+    std::thread::id                     suppressing_thread;
 
     /*-----------------------------------------------------*\
     | Service-mode daily log rotation                       |
@@ -194,6 +197,9 @@ private:
     \*-----------------------------------------------------*/
     void                                LogFlush();
     void                                OpenDailyLog(const std::string& yyyymmdd);
+    void                                RemoveExpiredDailyLogs(const filesystem::path& folder, const std::string& basename, unsigned int retention_days);
+    void                                LogEntry_va_internal(const char* filename, int line, unsigned int level, const char* fmt, va_list va, bool bypass_suppression);
+    void                                LogEntry_message_internal(PLogMessage message, bool bypass_suppression);
     void                                LogRotate(const filesystem::path& folder, const filesystem::path& templ, std::size_t max_count, const char* timestamp_regex);
 };
 
@@ -209,3 +215,4 @@ private:
 #define LOG_DEBUG(...)          LogAppend(LL_DEBUG,     __VA_ARGS__)
 #define LOG_TRACE(...)          LogAppend(LL_TRACE,     __VA_ARGS__)
 #define LOG_DIALOG(...)         LogAppend(LL_DIALOG,    __VA_ARGS__)
+#define LOG_INFO_UNSUPPRESSED(...) LogManager::get()->LogEntryUnsuppressed(__FILE__, __LINE__, LL_INFO, __VA_ARGS__)
