@@ -692,8 +692,10 @@ std::string ResourceManager::GetDetectionString()
     }
 }
 
-void ResourceManager::RescanDevices()
+bool ResourceManager::RescanDevices()
 {
+    bool rescan_started = false;
+
     /*-----------------------------------------------------*\
     | If automatic local connection is active, the primary  |
     | instance is the local server, so send rescan requests |
@@ -702,6 +704,7 @@ void ResourceManager::RescanDevices()
     if(auto_connection_active && (auto_connection_client != NULL) && auto_connection_client->GetLocal())
     {
         auto_connection_client->SendRequest_RescanDevices();
+        rescan_started = true;
     }
 
     /*-----------------------------------------------------*\
@@ -713,6 +716,7 @@ void ResourceManager::RescanDevices()
     else if(!detection_enabled && clients.size() == 1)
     {
         clients[0]->SendRequest_RescanDevices();
+        rescan_started = true;
     }
 
     /*-----------------------------------------------------*\
@@ -720,8 +724,10 @@ void ResourceManager::RescanDevices()
     \*-----------------------------------------------------*/
     if(detection_enabled)
     {
-        DetectionManager::get()->BeginDetection();
+        rescan_started = DetectionManager::get()->BeginDetection() || rescan_started;
     }
+
+    return rescan_started;
 }
 
 void ResourceManager::StopDeviceDetection()

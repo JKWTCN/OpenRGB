@@ -9,10 +9,10 @@
 
 /*---------------------------------------------------------*\
 | Modified by JKWTCN <jkwtcn@icloud.com>                   |
-| Date: 2026-04-02                                          |
+| Date: 2026-07-30                                          |
 | Changes:                                                  |
-|   - Added async rescan management members                |
-|   - Added RescanDevices() method declaration             |
+|   - Uses DetectionManager as the rescan state authority   |
+|   - Added RescanDevices() method declaration              |
 \*---------------------------------------------------------*/
 
 #pragma once
@@ -22,7 +22,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <future>
 #include <nlohmann/json.hpp>
 #include "RGBController.h"
 #include "ResourceManager.h"
@@ -131,9 +130,5 @@ private:
     ResourceManager*                resource_manager;
     ProfileManagerInterface*        profile_manager;
 
-    // Async rescan management
-    std::shared_future<void>        rescan_future;
-    std::mutex                      rescan_mutex;
-    bool                            rescan_in_progress = false;
     bool                            shutdown_requested = false;
 };

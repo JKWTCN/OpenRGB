@@ -675,7 +675,7 @@ void DetectionManager::AbortDetection()
     detection_string        = "Stopping";
 }
 
-void DetectionManager::BeginDetection()
+bool DetectionManager::BeginDetection()
 {
     bool detection_was_in_progress = false;
 
@@ -686,7 +686,7 @@ void DetectionManager::BeginDetection()
     \*-----------------------------------------------------*/
     if(!detection_in_progress.compare_exchange_strong(detection_was_in_progress, true))
     {
-        return;
+        return false;
     }
 
     /*-----------------------------------------------------*\
@@ -701,10 +701,12 @@ void DetectionManager::BeginDetection()
     if(detection_ready)
     {
         RunInBackgroundThread(std::bind(&DetectionManager::BackgroundDetectDevices, this));
+        return true;
     }
     else
     {
         detection_in_progress = false;
+        return false;
     }
 }
 
@@ -1012,14 +1014,17 @@ void DetectionManager::BackgroundDetectDevices()
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_PROGRESS_CHANGED);
 
     /*-----------------------------------------------------*\
-    | Clear detection in progress flag                      |
-    \*-----------------------------------------------------*/
-    detection_in_progress = false;
-
-    /*-----------------------------------------------------*\
     | Signal that detection is complete                     |
     \*-----------------------------------------------------*/
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_COMPLETE);
+
+    /*-----------------------------------------------------*\
+    | Release the detection slot only after completion has  |
+    | been published.  A request arriving while callbacks   |
+    | broadcast scanComplete joins the scan already ending  |
+    | instead of starting a new scan before that event.      |
+    \*-----------------------------------------------------*/
+    detection_in_progress = false;
 
     LOG_INFO("------------------------------------------------------");
     LOG_INFO("|                Detection completed                 |");

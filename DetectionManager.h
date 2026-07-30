@@ -209,7 +209,7 @@ public:
     | Detection state functions                             |
     \*-----------------------------------------------------*/
     void                                AbortDetection();
-    void                                BeginDetection();
+    bool                                BeginDetection();
     unsigned int                        GetDetectionPercent();
     std::string                         GetDetectionString();
     void                                WaitForDetection();

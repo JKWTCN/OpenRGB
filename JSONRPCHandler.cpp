@@ -9,11 +9,11 @@
 
 /*---------------------------------------------------------*\
 | Modified by JKWTCN <jkwtcn@icloud.com>                   |
-| Date: 2026-04-02                                          |
+| Date: 2026-07-30                                          |
 | Changes:                                                  |
-|   - Added async device rescan support                    |
-|   - Enhanced scan completion event handling              |
-|   - Added rescan state management with mutex             |
+|   - Added asynchronous device rescan support              |
+|   - Reports the real DetectionManager rescan state        |
+|   - Enhanced scan completion event handling               |
 \*---------------------------------------------------------*/
 
 #include "JSONRPCHandler.h"
@@ -334,44 +334,24 @@ nlohmann::json JSONRPCHandler::GetControllerInfo(const nlohmann::json &params)
 
 nlohmann::json JSONRPCHandler::RescanDevices(const nlohmann::json &params)
 {
-    std::lock_guard<std::mutex> lock(rescan_mutex);
-
-    // Check if a rescan is already in progress
-    if (rescan_in_progress)
+    if (!resource_manager)
     {
-        // Check if the previous rescan has completed
-        if (rescan_future.valid() &&
-            rescan_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
-        {
-            // Rescan is still in progress
-            nlohmann::json result;
-            result["success"] = false;
-            result["message"] = "Rescan already in progress";
-            return result;
-        }
-        else
-        {
-            // Previous rescan completed, reset flag
-            rescan_in_progress = false;
-        }
+        return CreateError(JSONRPCProtocol::INTERNAL_ERROR,
+                           "Resource manager is not available");
     }
 
-    if (resource_manager)
+    /*-----------------------------------------------------*\
+    | ResourceManager forwards the request to the real      |
+    | DetectionManager state machine.  The scan itself is   |
+    | asynchronous; the return value only reports whether   |
+    | this request actually reserved and started a scan.     |
+    \*-----------------------------------------------------*/
+    if (!resource_manager->RescanDevices())
     {
-        // Mark rescan as in progress
-        rescan_in_progress = true;
-
-        // Launch async rescan in background thread
-        rescan_future = std::async(std::launch::async, [this]()
-                                   {
-            resource_manager->RescanDevices();
-
-            // Reset flag when done
-            std::lock_guard<std::mutex> lock(rescan_mutex);
-            rescan_in_progress = false; });
-
-        // Detach the future to allow it to run in background
-        // The result will be communicated via scanComplete event
+        nlohmann::json result;
+        result["success"] = false;
+        result["message"] = "Rescan already in progress";
+        return result;
     }
 
     nlohmann::json result;

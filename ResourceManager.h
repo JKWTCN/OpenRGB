@@ -127,7 +127,7 @@ public:
     unsigned int                        GetDetectionPercent();
     std::string                         GetDetectionString();
     void                                StopDeviceDetection();
-    void                                RescanDevices();
+    bool                                RescanDevices();
     void                                UpdateDeviceList();
     void                                WaitForDetection();
 
