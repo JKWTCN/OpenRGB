@@ -648,6 +648,26 @@ void WebSocketServer::OnMessage(websocketpp::connection_hdl hdl, websocket_serve
         nlohmann::json response = rpc_handler->HandleRequest(request, loopback);
         bool shutdown_requested = rpc_handler->TakeShutdownRequested();
         SendToClient(hdl, response);
+
+        /*-------------------------------------------------*\
+        | device.rescan is a compatibility snapshot request.|
+        | Existing clients consume the controller list from |
+        | scanComplete, so publish it immediately after the  |
+        | RPC response without waiting for maintenance work. |
+        \*-------------------------------------------------*/
+        if(request.contains("method")
+        && request["method"].is_string()
+        && request["method"].get<std::string>() == JSONRPCProtocol::Methods::RESCAN_DEVICES
+        && response.contains("result")
+        && response["result"].contains("controllers"))
+        {
+            nlohmann::json data;
+            data["controllers"] = response["result"]["controllers"];
+            data["controllerCount"] = data["controllers"].size();
+            data["message"] = "Device list snapshot completed";
+            BroadcastNotification(JSONRPCProtocol::Events::SCAN_COMPLETE, data);
+        }
+
         if (shutdown_requested)
         {
             ScheduleShutdown();

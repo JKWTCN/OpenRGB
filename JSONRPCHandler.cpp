@@ -141,6 +141,10 @@ nlohmann::json JSONRPCHandler::CallMethod(const std::string &method,
     {
         return RescanDevices(params);
     }
+    else if (method == JSONRPCProtocol::Methods::FULL_RESCAN_DEVICES)
+    {
+        return FullRescanDevices(params);
+    }
     // Color Control
     else if (method == JSONRPCProtocol::Methods::SET_LED_COLOR)
     {
@@ -341,22 +345,34 @@ nlohmann::json JSONRPCHandler::RescanDevices(const nlohmann::json &params)
     }
 
     /*-----------------------------------------------------*\
-    | ResourceManager forwards the request to the real      |
-    | DetectionManager state machine.  The scan itself is   |
-    | asynchronous; the return value only reports whether   |
-    | this request actually reserved and started a scan.     |
+    | Preserve the polling API while avoiding a full device |
+    | rebuild every few seconds.  The current published list|
+    | is returned immediately.                              |
     \*-----------------------------------------------------*/
-    if (!resource_manager->RescanDevices())
+    nlohmann::json result = GetControllers(params);
+
+    result["success"] = true;
+    result["rescanned"] = false;
+    result["maintenanceScanStarted"] = false;
+    result["message"] = "Current device list returned";
+    return result;
+}
+
+nlohmann::json JSONRPCHandler::FullRescanDevices(const nlohmann::json &params)
+{
+    (void)params;
+
+    if (!resource_manager)
     {
-        nlohmann::json result;
-        result["success"] = false;
-        result["message"] = "Rescan already in progress";
-        return result;
+        return CreateError(JSONRPCProtocol::INTERNAL_ERROR,
+                           "Resource manager is not available");
     }
 
     nlohmann::json result;
-    result["success"] = true;
-    result["message"] = "Rescan started";
+    result["success"] = resource_manager->RescanDevices();
+    result["message"] = result["success"].get<bool>()
+                      ? "Full rescan started"
+                      : "Full rescan already in progress";
     return result;
 }
 
@@ -1291,6 +1307,8 @@ nlohmann::json JSONRPCHandler::GetServerInfo(const nlohmann::json &params)
     result["capabilities"].push_back("zoneManagement");
     result["capabilities"].push_back("profileManagement");
     result["capabilities"].push_back("eventNotifications");
+    result["capabilities"].push_back("maintainedDeviceList");
+    result["capabilities"].push_back("autonomousMaintenanceScan");
     return result;
 }
 

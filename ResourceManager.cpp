@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include "cli.h"
 #include "DetectionManager.h"
@@ -74,7 +75,10 @@ static void ResourceManagerDetectionCallback(void * this_ptr, unsigned int updat
         case DETECTIONMANAGER_UPDATE_REASON_DETECTION_COMPLETE:
             if(this_obj->GetWebSocketServer())
             {
-                this_obj->GetWebSocketServer()->ScanComplete(this_obj->GetRGBControllers().size());
+                if(!DetectionManager::get()->ConsumeScanCompleteSuppression())
+                {
+                    this_obj->GetWebSocketServer()->ScanComplete(this_obj->GetRGBControllers().size());
+                }
             }
             this_obj->SignalResourceManagerUpdate(RESOURCEMANAGER_UPDATE_REASON_DETECTION_COMPLETE);
             break;
@@ -153,6 +157,7 @@ ResourceManager::ResourceManager()
     default_server_host         = "";
     default_server_port         = 0;
     detection_enabled           = true;
+    maintenance_scan_running    = false;
     init_finished               = false;
     plugin_manager              = NULL;
     server                      = NULL;
@@ -285,6 +290,7 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
+    StopMaintenanceScanning();
     delete websocket_server;
 }
 
@@ -730,6 +736,63 @@ bool ResourceManager::RescanDevices()
     return rescan_started;
 }
 
+bool ResourceManager::MaintenanceRescanDevices()
+{
+    if(!detection_enabled)
+    {
+        return false;
+    }
+
+    return DetectionManager::get()->BeginDetection(true, true);
+}
+
+void ResourceManager::StartMaintenanceScanning()
+{
+    std::lock_guard<std::mutex> guard(maintenance_scan_mutex);
+    if(maintenance_scan_running || maintenance_scan_thread.joinable())
+    {
+        return;
+    }
+
+    maintenance_scan_running = true;
+    maintenance_scan_thread = std::thread(&ResourceManager::MaintenanceScanThreadFunction, this);
+}
+
+void ResourceManager::StopMaintenanceScanning()
+{
+    {
+        std::lock_guard<std::mutex> guard(maintenance_scan_mutex);
+        maintenance_scan_running = false;
+    }
+    maintenance_scan_wakeup.notify_all();
+
+    if(maintenance_scan_thread.joinable())
+    {
+        maintenance_scan_thread.join();
+    }
+}
+
+void ResourceManager::MaintenanceScanThreadFunction()
+{
+    const std::chrono::seconds maintenance_interval(OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS);
+    std::unique_lock<std::mutex> lock(maintenance_scan_mutex);
+
+    while(maintenance_scan_running)
+    {
+        if(maintenance_scan_wakeup.wait_for(lock, maintenance_interval, [this]()
+        {
+            return !maintenance_scan_running;
+        }))
+        {
+            break;
+        }
+
+        lock.unlock();
+        MaintenanceRescanDevices();
+        lock.lock();
+    }
+}
+
 void ResourceManager::StopDeviceDetection()
 {
     //TODO: Call DetectionManager::AbortDetection() or send SDK command if local client
@@ -1122,6 +1185,7 @@ void ResourceManager::Initialize(bool tryConnect, bool detectDevices, bool start
 
         DetectionManager::get()->RegisterDetectionCallback(ResourceManagerDetectionCallback, this);
         DetectionManager::get()->BeginDetection();
+        StartMaintenanceScanning();
     }
 
     /*-----------------------------------------------------*\

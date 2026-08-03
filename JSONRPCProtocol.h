@@ -94,6 +94,7 @@ namespace Methods
     const char* const GET_CONTROLLER_DATA       = "device.getControllerData";
     const char* const GET_CONTROLLER_INFO       = "device.getControllerInfo";
     const char* const RESCAN_DEVICES            = "device.rescan";
+    const char* const FULL_RESCAN_DEVICES       = "device.fullRescan";
 
     // Color Control
     const char* const SET_LED_COLOR             = "device.setLEDColor";

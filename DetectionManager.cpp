@@ -150,6 +150,8 @@ DetectionManager::DetectionManager()
     | Initialize variables                                  |
     \*-----------------------------------------------------*/
     detection_in_progress           = false;
+    suppress_scan_complete           = false;
+    non_hid_detection_in_progress   = false;
     detection_percent               = 100;
     detection_percent_denominator   = 0;
     detection_string                = "";
@@ -230,7 +232,7 @@ std::vector<i2c_smbus_interface*>& DetectionManager::GetI2CBuses()
 
 std::vector<RGBController*>& DetectionManager::GetRGBControllers()
 {
-    return(rgb_controllers);
+    return(published_rgb_controllers);
 }
 
 std::vector<SupportedDeviceInfo> DetectionManager::GetSupportedDeviceInfo()
@@ -575,6 +577,11 @@ void DetectionManager::RegisterRGBControllerLocked(RGBController* rgb_controller
     \*-----------------------------------------------------*/
     rgb_controllers.push_back(rgb_controller);
 
+    if(controller_list_published)
+    {
+        published_rgb_controllers.push_back(rgb_controller);
+    }
+
     /*-----------------------------------------------------*\
     | Signal Device List Update                             |
     \*-----------------------------------------------------*/
@@ -584,7 +591,7 @@ void DetectionManager::RegisterRGBControllerLocked(RGBController* rgb_controller
     }
 }
 
-void DetectionManager::RegisterRGBController(RGBController* rgb_controller)
+void DetectionManager::RegisterRGBController(RGBController* rgb_controller, bool hid_controller)
 {
     InitializeRGBController(rgb_controller);
 
@@ -594,7 +601,24 @@ void DetectionManager::RegisterRGBController(RGBController* rgb_controller)
     | insertion and ResourceManager publication.            |
     \*-----------------------------------------------------*/
     std::lock_guard<std::mutex> guard(ControllerLifecycleMutex);
+#if(HID_HOTPLUG_ENABLED)
+    if(hid_controller
+    && std::find(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), rgb_controller) == hid_rgb_controllers.end())
+    {
+        hid_rgb_controllers.push_back(rgb_controller);
+    }
+#else
+    (void)hid_controller;
+#endif
     RegisterRGBControllerLocked(rgb_controller);
+
+#if(HID_HOTPLUG_ENABLED)
+    if(hid_controller && non_hid_detection_in_progress && !controller_list_published)
+    {
+        published_rgb_controllers.push_back(rgb_controller);
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_REGISTERED);
+    }
+#endif
 }
 
 bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controller)
@@ -629,12 +653,33 @@ bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controll
             deferred_disconnected_rgb_controllers.push_back(rgb_controller);
         }
 
+#if(HID_HOTPLUG_ENABLED)
+        hid_rgb_controllers.erase(
+            std::remove(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), rgb_controller),
+            hid_rgb_controllers.end());
+#endif
+
+        published_rgb_controllers.erase(
+            std::remove(published_rgb_controllers.begin(), published_rgb_controllers.end(), rgb_controller),
+            published_rgb_controllers.end());
+
+        /*-------------------------------------------------*\
+        | ResourceManager must stop exposing the unplugged  |
+        | controller now.  GetRGBControllers() returns the  |
+        | stable published view, not the partial staging     |
+        | list, so this update is safe during detection.     |
+        \*-------------------------------------------------*/
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_UNREGISTERED);
+
         LOG_INFO("[%s] Deferring removal of disconnected RGB controller %s until detection commit", DETECTIONMANAGER, rgb_controller->GetName().c_str());
         return false;
     }
 
     if(rgb_it != rgb_controllers.end())
     {
+        const bool was_published = std::find(published_rgb_controllers.begin(),
+                                             published_rgb_controllers.end(),
+                                             rgb_controller) != published_rgb_controllers.end();
         LOG_INFO("[%s] Unregistering RGB controller %s", DETECTIONMANAGER, rgb_controller->GetName().c_str());
 
         /*-------------------------------------------------*\
@@ -644,13 +689,27 @@ bool DetectionManager::UnregisterRGBControllerLocked(RGBController* rgb_controll
 
         rgb_controllers.erase(rgb_it);
 
+        if(was_published)
+        {
+            published_rgb_controllers.erase(
+                std::remove(published_rgb_controllers.begin(), published_rgb_controllers.end(), rgb_controller),
+                published_rgb_controllers.end());
+        }
+
+
+#if(HID_HOTPLUG_ENABLED)
+        hid_rgb_controllers.erase(
+            std::remove(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), rgb_controller),
+            hid_rgb_controllers.end());
+#endif
+
         /*-------------------------------------------------*\
         | If the working list is already published,          |
         | synchronously withdraw the controller before it is |
         | destroyed.  Otherwise it is still staging and no   |
         | ResourceManager update is necessary.               |
         \*-------------------------------------------------*/
-        if(controller_list_published)
+        if(was_published)
         {
             SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_UNREGISTERED);
         }
@@ -691,11 +750,12 @@ void DetectionManager::AbortDetection()
     LOG_INFO("[%s] Detection abort requested", DETECTIONMANAGER);
 
     detection_in_progress   = false;
+    non_hid_detection_in_progress = false;
     detection_percent       = 100;
     detection_string        = "Stopping";
 }
 
-bool DetectionManager::BeginDetection()
+bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection, bool non_hid_only)
 {
     bool detection_was_in_progress = false;
 
@@ -708,6 +768,14 @@ bool DetectionManager::BeginDetection()
     {
         return false;
     }
+
+    suppress_scan_complete = suppress_scan_complete_for_detection;
+#if(HID_HOTPLUG_ENABLED)
+    non_hid_detection_in_progress = non_hid_only && hotplug_callback_handle >= 0;
+#else
+    (void)non_hid_only;
+    non_hid_detection_in_progress = false;
+#endif
 
     /*-----------------------------------------------------*\
     | Perform pre-detection setup                           |
@@ -741,8 +809,14 @@ bool DetectionManager::BeginDetection()
     else
     {
         detection_in_progress = false;
+        non_hid_detection_in_progress = false;
         return false;
     }
+}
+
+bool DetectionManager::ConsumeScanCompleteSuppression()
+{
+    return suppress_scan_complete.exchange(false);
 }
 
 unsigned int DetectionManager::GetDetectionPercent()
@@ -867,6 +941,7 @@ void DetectionManager::BackgroundDetectDevices()
     | Lock detection mutex                                  |
     \*-----------------------------------------------------*/
     std::unique_lock<std::mutex> detection_lock(DetectDevicesMutex);
+    const bool non_hid_only = non_hid_detection_in_progress.load();
 
     /*-----------------------------------------------------*\
     | Periodic scans rebuild the same device list every few |
@@ -943,7 +1018,7 @@ void DetectionManager::BackgroundDetectDevices()
     /*-----------------------------------------------------*\
     | Enumerate HID devices unless using HID safe mode      |
     \*-----------------------------------------------------*/
-    if(!hid_safe_mode)
+    if(!hid_safe_mode && !non_hid_only)
     {
         hid_devices.reset(hid_enumerate(0, 0));
     }
@@ -960,7 +1035,11 @@ void DetectionManager::BackgroundDetectDevices()
     detection_percent_i2c_dram_count    = (unsigned int)i2c_dram_device_detectors.size();
     detection_percent_i2c_pci_count     = (unsigned int)i2c_pci_device_detectors.size();
 
-    if(hid_safe_mode)
+    if(non_hid_only)
+    {
+        detection_percent_hid_count     = 0;
+    }
+    else if(hid_safe_mode)
     {
         detection_percent_hid_count     = (unsigned int)hid_generic_detectors.size() + (unsigned int)hid_specific_detectors.size();
     }
@@ -1008,7 +1087,14 @@ void DetectionManager::BackgroundDetectDevices()
     /*-----------------------------------------------------*\
     | Detect HID devices                                    |
     \*-----------------------------------------------------*/
-    if(hid_safe_mode)
+    if(non_hid_only)
+    {
+        /*-------------------------------------------------*\
+        | HID controllers remain live and are maintained by |
+        | the hotplug callbacks during this scan.            |
+        \*-------------------------------------------------*/
+    }
+    else if(hid_safe_mode)
     {
         BackgroundDetectHIDDevicesSafe(detector_settings);
     }
@@ -1035,7 +1121,10 @@ void DetectionManager::BackgroundDetectDevices()
     \*-----------------------------------------------------*/
 #ifdef __linux__
 #ifdef __GLIBC__
-    BackgroundDetectHIDDevicesWrapped(hid_devices.get(), detector_settings);
+    if(!non_hid_only)
+    {
+        BackgroundDetectHIDDevicesWrapped(hid_devices.get(), detector_settings);
+    }
 #endif
 #endif
 
@@ -1063,6 +1152,7 @@ void DetectionManager::BackgroundDetectDevices()
     | Signal that detection is complete                     |
     \*-----------------------------------------------------*/
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_DETECTION_COMPLETE);
+    non_hid_detection_in_progress = false;
 
     /*-----------------------------------------------------*\
     | Release the detection slot only after completion has  |
@@ -1442,7 +1532,7 @@ void DetectionManager::BackgroundDetectHIDDevicesSafe(json& detector_settings)
 
                     for(std::size_t detected_controller_idx = 0; detected_controller_idx < detected_controllers.size(); detected_controller_idx++)
                     {
-                        RegisterRGBController(detected_controllers[detected_controller_idx]);
+                        RegisterRGBController(detected_controllers[detected_controller_idx], true);
                     }
                 }
 
@@ -1868,7 +1958,10 @@ void DetectionManager::PrepareDetectionResults()
     WaitForDetection();
 
 #if(HID_HOTPLUG_ENABLED)
-    StopHIDHotplug();
+    if(!non_hid_detection_in_progress)
+    {
+        StopHIDHotplug();
+    }
 #endif
 
     std::lock_guard<std::mutex> guard(ControllerLifecycleMutex);
@@ -1889,6 +1982,19 @@ void DetectionManager::PrepareDetectionResults()
     \*-----------------------------------------------------*/
     rgb_controllers.clear();
     i2c_buses.clear();
+
+#if(HID_HOTPLUG_ENABLED)
+    if(non_hid_detection_in_progress)
+    {
+        for(RGBController* retained_controller : retained_rgb_controllers)
+        {
+            if(std::find(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), retained_controller) != hid_rgb_controllers.end())
+            {
+                rgb_controllers.push_back(retained_controller);
+            }
+        }
+    }
+#endif
 }
 
 void DetectionManager::CommitDetectionResults()
@@ -1921,6 +2027,7 @@ void DetectionManager::CommitDetectionResults()
     | the current DetectionManager list and atomically       |
     | replaces its public controller list.                   |
     \*-----------------------------------------------------*/
+    published_rgb_controllers = rgb_controllers;
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_LIST_CLEARED);
     controller_list_published = true;
 
@@ -1957,6 +2064,15 @@ void DetectionManager::CommitDetectionResults()
 
     controllers_to_delete = std::move(retained_rgb_controllers);
     buses_to_delete        = std::move(retained_i2c_buses);
+
+#if(HID_HOTPLUG_ENABLED)
+    for(RGBController* controller_to_delete : controllers_to_delete)
+    {
+        hid_rgb_controllers.erase(
+            std::remove(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), controller_to_delete),
+            hid_rgb_controllers.end());
+    }
+#endif
 
     retained_rgb_controllers.clear();
     retained_i2c_buses.clear();
@@ -2004,6 +2120,7 @@ void DetectionManager::RollbackDetectionResults()
     std::vector<i2c_smbus_interface*> buses_to_delete;
 #if(HID_HOTPLUG_ENABLED)
     std::vector<HIDUnplugCallbackRegistration> callbacks_to_deregister;
+    std::vector<RGBController*> live_hid_controllers_added_during_scan;
 #endif
 
     std::unique_lock<std::mutex> lifecycle_lock(ControllerLifecycleMutex);
@@ -2027,6 +2144,14 @@ void DetectionManager::RollbackDetectionResults()
     {
         if(std::find(retained_rgb_controllers.begin(), retained_rgb_controllers.end(), staged_controller) == retained_rgb_controllers.end())
         {
+#if(HID_HOTPLUG_ENABLED)
+            if(non_hid_detection_in_progress
+            && std::find(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), staged_controller) != hid_rgb_controllers.end())
+            {
+                live_hid_controllers_added_during_scan.push_back(staged_controller);
+                continue;
+            }
+#endif
             controllers_to_delete.push_back(staged_controller);
         }
     }
@@ -2037,6 +2162,15 @@ void DetectionManager::RollbackDetectionResults()
     | the failed scan was running.                           |
     \*-----------------------------------------------------*/
     rgb_controllers = std::move(retained_rgb_controllers);
+#if(HID_HOTPLUG_ENABLED)
+    for(RGBController* live_hid_controller : live_hid_controllers_added_during_scan)
+    {
+        if(std::find(rgb_controllers.begin(), rgb_controllers.end(), live_hid_controller) == rgb_controllers.end())
+        {
+            rgb_controllers.push_back(live_hid_controller);
+        }
+    }
+#endif
     for(RGBController* disconnected_controller : deferred_disconnected_rgb_controllers)
     {
         rgb_controllers.erase(
@@ -2056,6 +2190,9 @@ void DetectionManager::RollbackDetectionResults()
     for(RGBController* controller : controllers_to_delete)
     {
         CollectUnplugCallbacksLocked(controller, callbacks_to_deregister);
+        hid_rgb_controllers.erase(
+            std::remove(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), controller),
+            hid_rgb_controllers.end());
     }
 #endif
 
@@ -2067,6 +2204,7 @@ void DetectionManager::RollbackDetectionResults()
     | Replace ResourceManager's public list before freeing  |
     | anything it may have referenced from the old snapshot.|
     \*-----------------------------------------------------*/
+    published_rgb_controllers = rgb_controllers;
     SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_LIST_CLEARED);
     controller_list_published = true;
 
@@ -2115,6 +2253,7 @@ void DetectionManager::HandleDetectionFailure(const char* error_message)
     detection_percent     = 100;
     detection_string      = "Detection failed";
     detection_in_progress = false;
+    non_hid_detection_in_progress = false;
 
     /*-----------------------------------------------------*\
     | Best-effort terminal notifications. The detection slot |
@@ -2383,6 +2522,11 @@ void DetectionManager::RegisterHIDRGBController(RGBController* rgb_controller, c
     \*-----------------------------------------------------*/
     std::lock_guard<std::mutex> guard(ControllerLifecycleMutex);
 
+    if(std::find(hid_rgb_controllers.begin(), hid_rgb_controllers.end(), rgb_controller) == hid_rgb_controllers.end())
+    {
+        hid_rgb_controllers.push_back(rgb_controller);
+    }
+
     hid_hotplug_callback_handle handle = -1;
     int status = wrapper->hid_hotplug_register_callback(vendor_id,
                                                         product_id,
@@ -2406,6 +2550,12 @@ void DetectionManager::RegisterHIDRGBController(RGBController* rgb_controller, c
     }
 
     RegisterRGBControllerLocked(rgb_controller);
+
+    if(non_hid_detection_in_progress && !controller_list_published)
+    {
+        published_rgb_controllers.push_back(rgb_controller);
+        SignalUpdate(DETECTIONMANAGER_UPDATE_REASON_RGBCONTROLLER_REGISTERED);
+    }
 }
 
 void DetectionManager::CollectUnplugCallbacksLocked(RGBController* rgb_controller, std::vector<HIDUnplugCallbackRegistration>& registrations)

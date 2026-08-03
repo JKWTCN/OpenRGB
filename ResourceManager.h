@@ -17,6 +17,7 @@
 #include <vector>
 #include <functional>
 #include <thread>
+#include <condition_variable>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -28,6 +29,10 @@
 #include "find_usb_serial_port.h"
 
 using json = nlohmann::json;
+
+#ifndef OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS
+#define OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS 30
+#endif
 
 class LogManager;
 class NetworkClient;
@@ -128,6 +133,7 @@ public:
     std::string                         GetDetectionString();
     void                                StopDeviceDetection();
     bool                                RescanDevices();
+    bool                                MaintenanceRescanDevices();
     void                                UpdateDeviceList();
     void                                WaitForDetection();
 
@@ -144,6 +150,9 @@ public:
 private:
     bool                                AttemptLocalConnection();
     void                                SetupConfigurationDirectory();
+    void                                StartMaintenanceScanning();
+    void                                StopMaintenanceScanning();
+    void                                MaintenanceScanThreadFunction();
 
     /*-----------------------------------------------------*\
     | Static pointer to shared instance of ResourceManager  |
@@ -159,6 +168,15 @@ private:
     | Detection enabled flag                                |
     \*-----------------------------------------------------*/
     bool                                        detection_enabled;
+
+    /*-----------------------------------------------------*\
+    | Autonomous low-frequency discovery for controllers   |
+    | without hotplug callbacks.                            |
+    \*-----------------------------------------------------*/
+    std::thread                                 maintenance_scan_thread;
+    std::mutex                                  maintenance_scan_mutex;
+    std::condition_variable                     maintenance_scan_wakeup;
+    bool                                        maintenance_scan_running;
 
     /*-----------------------------------------------------*\
     | Auto connection active flag                           |

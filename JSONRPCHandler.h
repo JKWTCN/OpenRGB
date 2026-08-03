@@ -65,6 +65,7 @@ private:
     nlohmann::json  GetControllerData(const nlohmann::json& params);
     nlohmann::json  GetControllerInfo(const nlohmann::json& params);
     nlohmann::json  RescanDevices(const nlohmann::json& params);
+    nlohmann::json  FullRescanDevices(const nlohmann::json& params);
 
     // Color control methods
     nlohmann::json  SetLEDColor(const nlohmann::json& params);

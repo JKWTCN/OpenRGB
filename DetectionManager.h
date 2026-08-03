@@ -202,14 +202,15 @@ public:
     | Functions for registering RGBControllers from within  |
     | detectors                                             |
     \*-----------------------------------------------------*/
-    void                                RegisterRGBController(RGBController *rgb_controller);
+    void                                RegisterRGBController(RGBController *rgb_controller, bool hid_controller = false);
     void                                UnregisterRGBController(RGBController *rgb_controller);
 
     /*-----------------------------------------------------*\
     | Detection state functions                             |
     \*-----------------------------------------------------*/
     void                                AbortDetection();
-    bool                                BeginDetection();
+    bool                                BeginDetection(bool suppress_scan_complete = false, bool non_hid_only = false);
+    bool                                ConsumeScanCompleteSuppression();
     unsigned int                        GetDetectionPercent();
     std::string                         GetDetectionString();
     void                                WaitForDetection();
@@ -229,6 +230,16 @@ private:
     | List of RGBControllers managed by DetectorManager     |
     \*-----------------------------------------------------*/
     std::vector<RGBController*>                 rgb_controllers;
+
+    /*-----------------------------------------------------*\
+    | Last controller list published to ResourceManager.   |
+    |                                                       |
+    | A replacement detection uses rgb_controllers as its  |
+    | staging list.  Keeping the published view separate   |
+    | lets HID unplug callbacks withdraw a retained device  |
+    | immediately without exposing a partially built scan. |
+    \*-----------------------------------------------------*/
+    std::vector<RGBController*>                 published_rgb_controllers;
 
     /*-----------------------------------------------------*\
     | Device lists retained while a replacement scan runs   |
@@ -283,6 +294,7 @@ private:
     \*-----------------------------------------------------*/
 #if(HID_HOTPLUG_ENABLED)
     hid_hotplug_callback_handle                 hotplug_callback_handle;
+    std::vector<RGBController*>                 hid_rgb_controllers;
 
     typedef struct
     {
@@ -332,6 +344,8 @@ private:
 
     std::atomic<bool>                           background_thread_running;
     std::atomic<bool>                           detection_in_progress;
+    std::atomic<bool>                           suppress_scan_complete;
+    std::atomic<bool>                           non_hid_detection_in_progress;
     bool                                        controller_list_published;
 
     /*-----------------------------------------------------*\
