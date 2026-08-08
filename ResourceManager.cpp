@@ -1185,7 +1185,6 @@ void ResourceManager::Initialize(bool tryConnect, bool detectDevices, bool start
 
         DetectionManager::get()->RegisterDetectionCallback(ResourceManagerDetectionCallback, this);
         DetectionManager::get()->BeginDetection();
-        StartMaintenanceScanning();
     }
 
     /*-----------------------------------------------------*\
