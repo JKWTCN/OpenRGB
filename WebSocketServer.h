@@ -83,6 +83,7 @@ public:
     void                            DeviceListChanged(unsigned int controller_count);
     void                            ProfileListChanged();
     void                            ScanComplete(unsigned int device_count);
+    void                            FullScanComplete(unsigned int device_count);
 
     /*---------------------------------------------------------*\
     | Per-event notification emitters                           |
@@ -103,6 +104,7 @@ public:
     void                            SetProfileManager(ProfileManagerInterface* profile_manager);
 
 private:
+    void                            SendScanCompleteNotification(unsigned int device_count, const char* event, const char* message);
     /*---------------------------------------------------------*\
     | websocketpp handlers (run on the io thread)               |
     \*---------------------------------------------------------*/

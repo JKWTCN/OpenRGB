@@ -151,6 +151,7 @@ DetectionManager::DetectionManager()
     \*-----------------------------------------------------*/
     detection_in_progress           = false;
     suppress_scan_complete           = false;
+    full_scan_in_progress            = false;
     non_hid_detection_in_progress   = false;
     detection_percent               = 100;
     detection_percent_denominator   = 0;
@@ -755,7 +756,7 @@ void DetectionManager::AbortDetection()
     detection_string        = "Stopping";
 }
 
-bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection, bool non_hid_only)
+bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection, bool non_hid_only, bool full_scan)
 {
     bool detection_was_in_progress = false;
 
@@ -770,6 +771,7 @@ bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection,
     }
 
     suppress_scan_complete = suppress_scan_complete_for_detection;
+    full_scan_in_progress = full_scan;
 #if(HID_HOTPLUG_ENABLED)
     non_hid_detection_in_progress = non_hid_only && hotplug_callback_handle >= 0;
 #else
@@ -817,6 +819,11 @@ bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection,
 bool DetectionManager::ConsumeScanCompleteSuppression()
 {
     return suppress_scan_complete.exchange(false);
+}
+
+bool DetectionManager::ConsumeFullScanComplete()
+{
+    return full_scan_in_progress.exchange(false);
 }
 
 unsigned int DetectionManager::GetDetectionPercent()

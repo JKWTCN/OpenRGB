@@ -209,8 +209,9 @@ public:
     | Detection state functions                             |
     \*-----------------------------------------------------*/
     void                                AbortDetection();
-    bool                                BeginDetection(bool suppress_scan_complete = false, bool non_hid_only = false);
+    bool                                BeginDetection(bool suppress_scan_complete = false, bool non_hid_only = false, bool full_scan = false);
     bool                                ConsumeScanCompleteSuppression();
+    bool                                ConsumeFullScanComplete();
     unsigned int                        GetDetectionPercent();
     std::string                         GetDetectionString();
     void                                WaitForDetection();
@@ -345,6 +346,7 @@ private:
     std::atomic<bool>                           background_thread_running;
     std::atomic<bool>                           detection_in_progress;
     std::atomic<bool>                           suppress_scan_complete;
+    std::atomic<bool>                           full_scan_in_progress;
     std::atomic<bool>                           non_hid_detection_in_progress;
     bool                                        controller_list_published;
 

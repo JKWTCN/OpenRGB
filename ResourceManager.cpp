@@ -77,7 +77,14 @@ static void ResourceManagerDetectionCallback(void * this_ptr, unsigned int updat
             {
                 if(!DetectionManager::get()->ConsumeScanCompleteSuppression())
                 {
-                    this_obj->GetWebSocketServer()->ScanComplete(this_obj->GetRGBControllers().size());
+                    if(DetectionManager::get()->ConsumeFullScanComplete())
+                    {
+                        this_obj->GetWebSocketServer()->FullScanComplete(this_obj->GetRGBControllers().size());
+                    }
+                    else
+                    {
+                        this_obj->GetWebSocketServer()->ScanComplete(this_obj->GetRGBControllers().size());
+                    }
                 }
             }
             this_obj->SignalResourceManagerUpdate(RESOURCEMANAGER_UPDATE_REASON_DETECTION_COMPLETE);
@@ -698,7 +705,7 @@ std::string ResourceManager::GetDetectionString()
     }
 }
 
-bool ResourceManager::RescanDevices()
+bool ResourceManager::RescanDevices(bool full_scan)
 {
     bool rescan_started = false;
 
@@ -730,7 +737,7 @@ bool ResourceManager::RescanDevices()
     \*-----------------------------------------------------*/
     if(detection_enabled)
     {
-        rescan_started = DetectionManager::get()->BeginDetection() || rescan_started;
+        rescan_started = DetectionManager::get()->BeginDetection(false, false, full_scan) || rescan_started;
     }
 
     return rescan_started;

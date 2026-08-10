@@ -146,6 +146,7 @@ namespace Events
     const char* const CLIENT_CONNECTED          = "clientConnected";
     const char* const CLIENT_DISCONNECTED       = "clientDisconnected";
     const char* const SCAN_COMPLETE             = "scanComplete";
+    const char* const FULL_SCAN_COMPLETE        = "fullScanComplete";
 }
 
 } // namespace JSONRPCProtocol

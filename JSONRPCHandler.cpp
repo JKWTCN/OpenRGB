@@ -369,7 +369,7 @@ nlohmann::json JSONRPCHandler::FullRescanDevices(const nlohmann::json &params)
     }
 
     nlohmann::json result;
-    result["success"] = resource_manager->RescanDevices();
+    result["success"] = resource_manager->RescanDevices(true);
     result["message"] = result["success"].get<bool>()
                       ? "Full rescan started"
                       : "Full rescan already in progress";

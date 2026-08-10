@@ -398,9 +398,25 @@ void WebSocketServer::ProfileLoaded(const std::string& profileName)
 
 void WebSocketServer::ScanComplete(unsigned int device_count)
 {
+    SendScanCompleteNotification(device_count,
+                                 JSONRPCProtocol::Events::SCAN_COMPLETE,
+                                 "Device scan completed");
+}
+
+void WebSocketServer::FullScanComplete(unsigned int device_count)
+{
+    SendScanCompleteNotification(device_count,
+                                 JSONRPCProtocol::Events::FULL_SCAN_COMPLETE,
+                                 "Full device scan completed");
+}
+
+void WebSocketServer::SendScanCompleteNotification(unsigned int device_count,
+                                                   const char* event,
+                                                   const char* message)
+{
     nlohmann::json data;
     data["controllerCount"] = device_count;
-    data["message"] = "Device scan completed";
+    data["message"] = message;
 
     // Serialize the controllers under the device-list lock: this runs right
     // after a rescan finishes, concurrent with any RPC that may touch the
@@ -434,7 +450,7 @@ void WebSocketServer::ScanComplete(unsigned int device_count)
 
     LOG_VERBOSE("[WebSocketServer] Scan complete: %u devices, broadcasting notification", device_count);
 
-    BroadcastNotification(JSONRPCProtocol::Events::SCAN_COMPLETE, data);
+    BroadcastNotification(event, data);
 }
 
 void WebSocketServer::SetProfileManager(ProfileManagerInterface *profile_manager)
