@@ -440,6 +440,21 @@ void ENESMBusController::SaveMode()
 
 void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
 {
+    /*-------------------------------------------------*\
+    | Determine the write block size based on chip      |
+    | generation. V1 color regions hold 15 bytes (5     |
+    | LEDs), V2 regions hold 30 bytes (10 LEDs). This   |
+    | matches the block sizes validated by SignalRGB's  |
+    | ENE plugins and keeps each write within the       |
+    | device's contiguous color register window.        |
+    \*-------------------------------------------------*/
+    int max_block = (direct_reg == ENE_REG_COLORS_DIRECT) ? 15 : 30;
+
+    if(max_block > interface->GetMaxBlock())
+    {
+        max_block = interface->GetMaxBlock();
+    }
+
     unsigned char* color_buf   = new unsigned char[led_count * 3];
     unsigned int   bytes_sent  = 0;
 
@@ -454,9 +469,9 @@ void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
     {
         int bytes_to_send = (led_count * 3) - bytes_sent;
 
-        if(bytes_to_send > interface->GetMaxBlock())
+        if(bytes_to_send > max_block)
         {
-            bytes_to_send = interface->GetMaxBlock();
+            bytes_to_send = max_block;
         }
 
         ENERegisterWriteBlock(direct_reg + bytes_sent, &color_buf[bytes_sent], bytes_to_send);
@@ -469,6 +484,21 @@ void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
 
 void ENESMBusController::SetAllColorsEffect(RGBColor* colors)
 {
+    /*-------------------------------------------------*\
+    | Determine the write block size based on chip      |
+    | generation. V1 color regions hold 15 bytes (5     |
+    | LEDs), V2 regions hold 30 bytes (10 LEDs). This   |
+    | matches the block sizes validated by SignalRGB's  |
+    | ENE plugins and keeps each write within the       |
+    | device's contiguous color register window.        |
+    \*-------------------------------------------------*/
+    int max_block = (effect_reg == ENE_REG_COLORS_EFFECT) ? 15 : 30;
+
+    if(max_block > interface->GetMaxBlock())
+    {
+        max_block = interface->GetMaxBlock();
+    }
+
     unsigned char* color_buf   = new unsigned char[led_count * 3];
     unsigned int   bytes_sent  = 0;
 
@@ -483,9 +513,9 @@ void ENESMBusController::SetAllColorsEffect(RGBColor* colors)
     {
         int bytes_to_send = (led_count * 3) - bytes_sent;
 
-        if(bytes_to_send > interface->GetMaxBlock())
+        if(bytes_to_send > max_block)
         {
-            bytes_to_send = interface->GetMaxBlock();
+            bytes_to_send = max_block;
         }
 
         ENERegisterWriteBlock(effect_reg + bytes_sent, &color_buf[bytes_sent], bytes_to_send);
