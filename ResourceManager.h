@@ -30,8 +30,8 @@
 
 using json = nlohmann::json;
 
-#ifndef OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS
-#define OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS 30
+#ifndef OPENRGB_STARTUP_RESCAN_DELAY_SECONDS
+#define OPENRGB_STARTUP_RESCAN_DELAY_SECONDS 5
 #endif
 
 class LogManager;
@@ -134,6 +134,7 @@ public:
     void                                StopDeviceDetection();
     bool                                RescanDevices(bool full_scan = false);
     bool                                MaintenanceRescanDevices();
+    void                                ScheduleStartupMaintenanceScan();
     void                                UpdateDeviceList();
     void                                WaitForDetection();
 
@@ -150,9 +151,8 @@ public:
 private:
     bool                                AttemptLocalConnection();
     void                                SetupConfigurationDirectory();
-    void                                StartMaintenanceScanning();
-    void                                StopMaintenanceScanning();
-    void                                MaintenanceScanThreadFunction();
+    void                                StopStartupMaintenanceScan();
+    void                                StartupMaintenanceScanThreadFunction();
 
     /*-----------------------------------------------------*\
     | Static pointer to shared instance of ResourceManager  |
@@ -170,13 +170,13 @@ private:
     bool                                        detection_enabled;
 
     /*-----------------------------------------------------*\
-    | Autonomous low-frequency discovery for controllers   |
-    | without hotplug callbacks.                            |
+    | One-shot delayed discovery for controllers without    |
+    | hotplug callbacks after the initial detection.         |
     \*-----------------------------------------------------*/
-    std::thread                                 maintenance_scan_thread;
-    std::mutex                                  maintenance_scan_mutex;
-    std::condition_variable                     maintenance_scan_wakeup;
-    bool                                        maintenance_scan_running;
+    std::thread                                 startup_maintenance_scan_thread;
+    std::mutex                                  startup_maintenance_scan_mutex;
+    std::condition_variable                     startup_maintenance_scan_wakeup;
+    bool                                        startup_maintenance_scan_running;
 
     /*-----------------------------------------------------*\
     | Auto connection active flag                           |

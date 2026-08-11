@@ -73,6 +73,7 @@ static void ResourceManagerDetectionCallback(void * this_ptr, unsigned int updat
             break;
 
         case DETECTIONMANAGER_UPDATE_REASON_DETECTION_COMPLETE:
+            this_obj->ScheduleStartupMaintenanceScan();
             if(this_obj->GetWebSocketServer())
             {
                 if(!DetectionManager::get()->ConsumeScanCompleteSuppression())
@@ -164,7 +165,7 @@ ResourceManager::ResourceManager()
     default_server_host         = "";
     default_server_port         = 0;
     detection_enabled           = true;
-    maintenance_scan_running    = false;
+    startup_maintenance_scan_running = false;
     init_finished               = false;
     plugin_manager              = NULL;
     server                      = NULL;
@@ -297,7 +298,7 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
-    StopMaintenanceScanning();
+    StopStartupMaintenanceScan();
     delete websocket_server;
 }
 
@@ -753,51 +754,54 @@ bool ResourceManager::MaintenanceRescanDevices()
     return DetectionManager::get()->BeginDetection(true, true);
 }
 
-void ResourceManager::StartMaintenanceScanning()
+void ResourceManager::ScheduleStartupMaintenanceScan()
 {
-    std::lock_guard<std::mutex> guard(maintenance_scan_mutex);
-    if(maintenance_scan_running || maintenance_scan_thread.joinable())
+    std::lock_guard<std::mutex> guard(startup_maintenance_scan_mutex);
+    if(startup_maintenance_scan_running || startup_maintenance_scan_thread.joinable())
     {
         return;
     }
 
-    maintenance_scan_running = true;
-    maintenance_scan_thread = std::thread(&ResourceManager::MaintenanceScanThreadFunction, this);
+    startup_maintenance_scan_running = true;
+    startup_maintenance_scan_thread = std::thread(&ResourceManager::StartupMaintenanceScanThreadFunction, this);
 }
 
-void ResourceManager::StopMaintenanceScanning()
+void ResourceManager::StopStartupMaintenanceScan()
 {
     {
-        std::lock_guard<std::mutex> guard(maintenance_scan_mutex);
-        maintenance_scan_running = false;
+        std::lock_guard<std::mutex> guard(startup_maintenance_scan_mutex);
+        startup_maintenance_scan_running = false;
     }
-    maintenance_scan_wakeup.notify_all();
+    startup_maintenance_scan_wakeup.notify_all();
 
-    if(maintenance_scan_thread.joinable())
+    if(startup_maintenance_scan_thread.joinable())
     {
-        maintenance_scan_thread.join();
+        startup_maintenance_scan_thread.join();
     }
 }
 
-void ResourceManager::MaintenanceScanThreadFunction()
+void ResourceManager::StartupMaintenanceScanThreadFunction()
 {
-    const std::chrono::seconds maintenance_interval(OPENRGB_MAINTENANCE_SCAN_INTERVAL_SECONDS);
-    std::unique_lock<std::mutex> lock(maintenance_scan_mutex);
+    const std::chrono::seconds startup_rescan_delay(OPENRGB_STARTUP_RESCAN_DELAY_SECONDS);
+    std::unique_lock<std::mutex> lock(startup_maintenance_scan_mutex);
 
-    while(maintenance_scan_running)
+    if(startup_maintenance_scan_wakeup.wait_for(lock, startup_rescan_delay, [this]()
     {
-        if(maintenance_scan_wakeup.wait_for(lock, maintenance_interval, [this]()
-        {
-            return !maintenance_scan_running;
-        }))
-        {
-            break;
-        }
-
-        lock.unlock();
-        MaintenanceRescanDevices();
-        lock.lock();
+        return !startup_maintenance_scan_running;
+    }))
+    {
+        return;
     }
+
+    lock.unlock();
+    WaitForDetection();
+    if(MaintenanceRescanDevices())
+    {
+        WaitForDetection();
+    }
+    lock.lock();
+
+    startup_maintenance_scan_running = false;
 }
 
 void ResourceManager::StopDeviceDetection()
