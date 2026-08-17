@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <chrono>
 #include <string>
+#include <vector>
 #include "ENESMBusInterface.h"
 #include "RGBController.h"
 
@@ -149,6 +151,9 @@ private:
     ENESMBusInterface*      interface;
     ene_dev_id              dev;
     bool                    supports_mode_14;
+    std::chrono::steady_clock::time_point last_color_update;
+    std::vector<unsigned char>  last_direct_frame;
+    std::vector<unsigned char>  last_effect_frame;
     std::string             name;
     device_type             type;
 };

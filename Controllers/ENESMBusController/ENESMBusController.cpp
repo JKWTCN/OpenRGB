@@ -441,14 +441,26 @@ void ENESMBusController::SaveMode()
 void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
 {
     /*-------------------------------------------------*\
-    | Determine the write block size based on chip      |
-    | generation. V1 color regions hold 15 bytes (5     |
-    | LEDs), V2 regions hold 30 bytes (10 LEDs). This   |
-    | matches the block sizes validated by SignalRGB's  |
-    | ENE plugins and keeps each write within the       |
-    | device's contiguous color register window.        |
+    | Continuous WebSocket updates can otherwise saturate|
+    | the AMD PIIX4 bus and provoke a bus collision.     |
     \*-------------------------------------------------*/
-    int max_block = (direct_reg == ENE_REG_COLORS_DIRECT) ? 15 : 30;
+    if(type == DEVICE_TYPE_DRAM)
+    {
+        const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+        if((now - last_color_update) < std::chrono::milliseconds(50))
+        {
+            return;
+        }
+
+        last_color_update = now;
+    }
+
+    /*-------------------------------------------------*\
+    | Aura-compatible V1 and V2 RAM use 15-byte blocks. |
+    | This matches the ENE reference implementation.    |
+    \*-------------------------------------------------*/
+    int max_block = 15;
 
     if(max_block > interface->GetMaxBlock())
     {
@@ -464,6 +476,21 @@ void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
         color_buf[i + 1] = RGBGetBValue(colors[i / 3]);
         color_buf[i + 2] = RGBGetGValue(colors[i / 3]);
     }
+
+    /*-------------------------------------------------*\
+    | Skip identical frames.  The SMBus is shared with |
+    | BIOS SPD telemetry and other masters, so keeping |
+    | bus load low greatly reduces the chance of a     |
+    | collision that locks the controller.             |
+    \*-------------------------------------------------*/
+    if( last_direct_frame.size() == (led_count * 3)
+     && memcmp(last_direct_frame.data(), color_buf, led_count * 3) == 0 )
+    {
+        delete[] color_buf;
+        return;
+    }
+
+    last_direct_frame.assign(color_buf, color_buf + (led_count * 3));
 
     while(bytes_sent < (led_count * 3))
     {
@@ -485,14 +512,22 @@ void ENESMBusController::SetAllColorsDirect(RGBColor* colors)
 void ENESMBusController::SetAllColorsEffect(RGBColor* colors)
 {
     /*-------------------------------------------------*\
-    | Determine the write block size based on chip      |
-    | generation. V1 color regions hold 15 bytes (5     |
-    | LEDs), V2 regions hold 30 bytes (10 LEDs). This   |
-    | matches the block sizes validated by SignalRGB's  |
-    | ENE plugins and keeps each write within the       |
-    | device's contiguous color register window.        |
+    | Limit animated DRAM writes for the same reason as  |
+    | direct mode.                                       |
     \*-------------------------------------------------*/
-    int max_block = (effect_reg == ENE_REG_COLORS_EFFECT) ? 15 : 30;
+    if(type == DEVICE_TYPE_DRAM)
+    {
+        const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+        if((now - last_color_update) < std::chrono::milliseconds(50))
+        {
+            return;
+        }
+
+        last_color_update = now;
+    }
+
+    int max_block = 15;
 
     if(max_block > interface->GetMaxBlock())
     {
@@ -508,6 +543,21 @@ void ENESMBusController::SetAllColorsEffect(RGBColor* colors)
         color_buf[i + 1] = RGBGetBValue(colors[i / 3]);
         color_buf[i + 2] = RGBGetGValue(colors[i / 3]);
     }
+
+    /*-------------------------------------------------*\
+    | Skip identical frames.  The SMBus is shared with |
+    | BIOS SPD telemetry and other masters, so keeping |
+    | bus load low greatly reduces the chance of a     |
+    | collision that locks the controller.             |
+    \*-------------------------------------------------*/
+    if( last_effect_frame.size() == (led_count * 3)
+     && memcmp(last_effect_frame.data(), color_buf, led_count * 3) == 0 )
+    {
+        delete[] color_buf;
+        return;
+    }
+
+    last_effect_frame.assign(color_buf, color_buf + (led_count * 3));
 
     while(bytes_sent < (led_count * 3))
     {
@@ -531,6 +581,13 @@ void ENESMBusController::SetAllColorsEffect(RGBColor* colors)
 
 void ENESMBusController::SetDirect(unsigned char direct)
 {
+    /*-------------------------------------------------*\
+    | Mode changed - drop cached frames so the next    |
+    | update is always sent to the device.             |
+    \*-------------------------------------------------*/
+    last_direct_frame.clear();
+    last_effect_frame.clear();
+
     ENERegisterWrite(ENE_REG_DIRECT, direct);
     ENERegisterWrite(ENE_REG_APPLY, ENE_APPLY_VAL);
 }
@@ -553,6 +610,13 @@ void ENESMBusController::SetLEDColorEffect(unsigned int led, unsigned char red, 
 
 void ENESMBusController::SetMode(unsigned char mode, unsigned char speed, unsigned char direction)
 {
+    /*-------------------------------------------------*\
+    | Mode changed - drop cached frames so the next    |
+    | update is always sent to the device.             |
+    \*-------------------------------------------------*/
+    last_direct_frame.clear();
+    last_effect_frame.clear();
+
     ENERegisterWrite(ENE_REG_MODE,      mode);
     ENERegisterWrite(ENE_REG_SPEED,     speed);
     ENERegisterWrite(ENE_REG_DIRECTION, direction);

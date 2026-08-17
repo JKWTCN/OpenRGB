@@ -117,6 +117,16 @@ public:
     virtual s32 i2c_smbus_xfer(u8 addr, char read_write, u8 command, int size, i2c_smbus_data* data) = 0;
     virtual s32 i2c_xfer(u8 addr, char read_write, int* size, u8* data) = 0;
 
+    /*-------------------------------------------------*\
+    | Attempt to recover a stuck bus.  Default is no-  |
+    | op; drivers with a recovery path (e.g. PawnIO    |
+    | module reload) override this.  Only call this    |
+    | when a known-good device stopped answering -     |
+    | bus scans probing empty addresses must not       |
+    | trigger it.                                      |
+    \*-------------------------------------------------*/
+    virtual void RecoverBus() { }
+
 private:
     std::mutex              i2c_smbus_xfer_mutex;
 

@@ -38,6 +38,22 @@ public:
 
     static HRESULT start_pawnio(std::string filename, PHANDLE phandle);
 
+    /*-------------------------------------------------*\
+    | Remember the bus port selected during detection  |
+    | so RecoverBus() can re-select it after the       |
+    | module has been reloaded.                        |
+    \*-------------------------------------------------*/
+    void        SetRecoveryPort(int port) { recovery_port = port; }
+
+    /*-------------------------------------------------*\
+    | Reload the PawnIO module to re-initialize the    |
+    | SMBus controller (recovery path for a stuck      |
+    | bus).  Never triggered automatically from        |
+    | transfer failures - device detection probes      |
+    | empty addresses and expects failures.           |
+    \*-------------------------------------------------*/
+    void        RecoverBus();
+
 private:
     s32 pawnio_read(u8 addr, char read_write, u8 command, int size, i2c_smbus_data *data);
     s32 pawnio_write(u8 addr, char read_write, u8 command, int size, i2c_smbus_data *data);
@@ -47,4 +63,5 @@ private:
     HANDLE      global_smbus_access_handle;
     std::string name;
     HANDLE      handle;
+    int         recovery_port;
 };

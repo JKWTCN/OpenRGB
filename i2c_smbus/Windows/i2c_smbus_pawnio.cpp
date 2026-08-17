@@ -77,8 +77,9 @@ i2c_smbus_pawnio::i2c_smbus_pawnio(HANDLE handle, std::string name)
     | TODO: Remove name field once all drivers use the same |
     | ioctl names                                           |
     \*-----------------------------------------------------*/
-    this->handle    = handle;
-    this->name      = name;
+    this->handle                = handle;
+    this->name                  = name;
+    this->recovery_port         = -1;
 
     /*-----------------------------------------------------*\
     | Get driver settings                                   |
@@ -222,6 +223,18 @@ s32 i2c_smbus_pawnio::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
     }
 
     /*-----------------------------------------------------*\
+    | If the PawnIO driver returned an error, convert it to |
+    | the appropriate i2c_smbus error instead.  Failure is  |
+    | expected when probing empty addresses during device   |
+    | detection, so recovery is NOT triggered here - only   |
+    | the device layer knows whether a failure is abnormal. |
+    \*-----------------------------------------------------*/
+    if(status != 0)
+    {
+        status = -1;
+    }
+
+    /*-----------------------------------------------------*\
     | Unlock SMBus mutex                                    |
     \*-----------------------------------------------------*/
     if(global_smbus_access_handle != NULL)
@@ -229,16 +242,74 @@ s32 i2c_smbus_pawnio::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
         ReleaseMutex(global_smbus_access_handle);
     }
 
+    return(status);
+}
+
+void i2c_smbus_pawnio::RecoverBus()
+{
+    LOG_WARNING("[PawnIO] RecoverBus requested for '%s', reloading module", name.c_str());
+
     /*-----------------------------------------------------*\
-    | If the PawnIO driver returned an error, convert it to |
-    | the appropriate i2c_smbus error instead               |
+    | Serialize with in-flight transfers so the handle     |
+    | swap below cannot race an ioctl on the old handle    |
     \*-----------------------------------------------------*/
-    if(status != 0)
+    if(global_smbus_access_handle != NULL)
     {
-        status = -1;
+        WaitForSingleObject(global_smbus_access_handle, 10000);
     }
 
-    return(status);
+    /*-----------------------------------------------------*\
+    | Pick the module binary matching this bus             |
+    \*-----------------------------------------------------*/
+    std::string bin = "SmbusPIIX4.bin";
+
+    if(name == "i801")
+    {
+        bin = "SmbusI801.bin";
+    }
+    else if(name == "NCT6793")
+    {
+        bin = "SmbusNCT6793.bin";
+    }
+    else if(name == "Intel Skylake IMC")
+    {
+        bin = "SmbusIntelSkylakeIMC.bin";
+    }
+
+    HANDLE new_handle = INVALID_HANDLE_VALUE;
+
+    if(start_pawnio(bin, &new_handle) == S_OK)
+    {
+        /*-------------------------------------------------*\
+        | The freshly loaded module starts on its default  |
+        | port, so re-select the port this bus was created |
+        | with.                                            |
+        \*-------------------------------------------------*/
+        if(name == "piix4" && recovery_port >= 0)
+        {
+            piix4_port_sel(new_handle, recovery_port);
+        }
+        else if(name == "Intel Skylake IMC" && recovery_port >= 0)
+        {
+            imc_index_sel(new_handle, recovery_port);
+        }
+
+        HANDLE old_handle = handle;
+        handle             = new_handle;
+
+        pawnio_close(old_handle);
+
+        LOG_WARNING("[PawnIO] Bus '%s' reloaded", name.c_str());
+    }
+    else
+    {
+        LOG_ERROR("[PawnIO] Failed to reload bus '%s'", name.c_str());
+    }
+
+    if(global_smbus_access_handle != NULL)
+    {
+        ReleaseMutex(global_smbus_access_handle);
+    }
 }
 
 s32 i2c_smbus_pawnio::i2c_xfer(u8 /*addr*/, char /*read_write*/, int* /*size*/, u8* /*data*/)
@@ -362,7 +433,7 @@ bool i2c_smbus_pawnio_detect()
         return(false);
     }
 
-    i2c_smbus_interface *   bus;
+    i2c_smbus_pawnio *      bus;
     HANDLE                  pawnio_handle;
     bool                    bus_detected;
 
@@ -396,6 +467,7 @@ bool i2c_smbus_pawnio_detect()
         piix4_port_sel(pawnio_handle, 0);
 
         bus = new i2c_smbus_pawnio(pawnio_handle, "piix4");
+        bus->SetRecoveryPort(0);
         DetectionManager::get()->RegisterI2CBus(bus);
     }
 
@@ -412,6 +484,7 @@ bool i2c_smbus_pawnio_detect()
         piix4_port_sel(pawnio_handle, 1);
 
         bus = new i2c_smbus_pawnio(pawnio_handle, "piix4");
+        bus->SetRecoveryPort(1);
         DetectionManager::get()->RegisterI2CBus(bus);
     }
 
@@ -436,6 +509,7 @@ bool i2c_smbus_pawnio_detect()
         imc_index_sel(pawnio_handle, 0);
 
         bus = new i2c_smbus_pawnio(pawnio_handle, "Intel Skylake IMC");
+        bus->SetRecoveryPort(0);
         DetectionManager::get()->RegisterI2CBus(bus);
     }
 
@@ -449,6 +523,7 @@ bool i2c_smbus_pawnio_detect()
         imc_index_sel(pawnio_handle, 1);
 
         bus = new i2c_smbus_pawnio(pawnio_handle, "Intel Skylake IMC");
+        bus->SetRecoveryPort(1);
         DetectionManager::get()->RegisterI2CBus(bus);
     }
 

@@ -304,6 +304,16 @@ void RGBController_ENESMBus::DeviceUpdateLEDs()
 
 void RGBController_ENESMBus::DeviceUpdateZoneLEDs(int zone)
 {
+    /*---------------------------------------------------------*\
+    | Some ENE DRAM controllers lock up on three-byte block     |
+    | writes.  Always send a complete DRAM frame instead.       |
+    \*---------------------------------------------------------*/
+    if(controller->GetType() == DEVICE_TYPE_DRAM)
+    {
+        DeviceUpdateLEDs();
+        return;
+    }
+
     for(std::size_t led_idx = 0; led_idx < zones[zone].leds_count; led_idx++)
     {
         int           led   = zones[zone].leds[led_idx].value;
@@ -325,6 +335,15 @@ void RGBController_ENESMBus::DeviceUpdateZoneLEDs(int zone)
 
 void RGBController_ENESMBus::DeviceUpdateSingleLED(int led)
 {
+    /*---------------------------------------------------------*\
+    | Never use the three-byte single-LED path for ENE DRAM.    |
+    \*---------------------------------------------------------*/
+    if(controller->GetType() == DEVICE_TYPE_DRAM)
+    {
+        DeviceUpdateLEDs();
+        return;
+    }
+
     RGBColor color    = colors[led];
     unsigned char red = RGBGetRValue(color);
     unsigned char grn = RGBGetGValue(color);
