@@ -423,12 +423,7 @@ void WebSocketServer::SendScanCompleteNotification(unsigned int device_count,
     // list, so we must not iterate the vector without it.
     nlohmann::json controllers_array = nlohmann::json::array();
     auto controller_to_scan_complete_json = [this](RGBController *controller) {
-        if (controller->GetDeviceType() == DEVICE_TYPE_KEYBOARD)
-        {
-            return rpc_handler->ControllerToScanCompleteJSON(controller);
-        }
-
-        return rpc_handler->ControllerToJSON(controller);
+        return rpc_handler->ControllerToScanCompleteJSON(controller);
     };
 
     if (resource_manager)
@@ -436,14 +431,18 @@ void WebSocketServer::SendScanCompleteNotification(unsigned int device_count,
         std::lock_guard<std::mutex> lock(resource_manager->GetDeviceListChangeMutex());
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(controller_to_scan_complete_json(controllers[i]));
+            nlohmann::json controller_obj = controller_to_scan_complete_json(controllers[i]);
+            controller_obj["index"] = i;
+            controllers_array.push_back(controller_obj);
         }
     }
     else
     {
         for (unsigned int i = 0; i < controllers.size(); i++)
         {
-            controllers_array.push_back(controller_to_scan_complete_json(controllers[i]));
+            nlohmann::json controller_obj = controller_to_scan_complete_json(controllers[i]);
+            controller_obj["index"] = i;
+            controllers_array.push_back(controller_obj);
         }
     }
     data["controllers"] = controllers_array;

@@ -266,7 +266,9 @@ nlohmann::json JSONRPCHandler::GetControllers(const nlohmann::json &params)
 
     for (unsigned int i = 0; i < controllers.size(); i++)
     {
-        controllers_array.push_back(ControllerToJSON(controllers[i]));
+        nlohmann::json controller_obj = ControllerToJSON(controllers[i]);
+        controller_obj["index"] = i;
+        controllers_array.push_back(controller_obj);
     }
 
     result["controllers"] = controllers_array;
@@ -1586,12 +1588,8 @@ nlohmann::json JSONRPCHandler::ModeToJSON(RGBController *controller, int mode_id
 nlohmann::json JSONRPCHandler::LEDToScanCompleteJSON(RGBController *controller, unsigned int led_idx,
                                                      unsigned int x, unsigned int y)
 {
-    nlohmann::json json_obj;
-    const led &l = controller->leds[led_idx];
-
-    json_obj["name"]            = l.name;
-    json_obj["position"]        = nlohmann::json::array({x, y});
-    json_obj["protocolAddress"] = led_idx;
+    nlohmann::json json_obj = LEDToJSON(controller, static_cast<int>(led_idx));
+    json_obj["position"] = nlohmann::json::array({x, y});
 
     return json_obj;
 }
@@ -1630,15 +1628,12 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
     nlohmann::json json_obj;
     const led &l = controller->leds[led_idx];
 
-    json_obj["name"]            = l.name;
-    json_obj["protocolAddress"] = led_idx;
+    json_obj["index"] = led_idx;
+    json_obj["name"]  = l.name;
 
-    for(const zone& z : controller->zones)
+    for(std::size_t zone_idx = 0; zone_idx < controller->zones.size(); zone_idx++)
     {
-        if(z.type != ZONE_TYPE_MATRIX || z.matrix_map.map.empty())
-        {
-            continue;
-        }
+        const zone& z = controller->zones[zone_idx];
 
         if((unsigned int)led_idx < z.start_idx || (unsigned int)led_idx >= (z.start_idx + z.leds_count))
         {
@@ -1646,6 +1641,20 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
         }
 
         unsigned int zone_led_idx = led_idx - z.start_idx;
+        json_obj["protocolChannel"] = zone_idx;
+        json_obj["protocolAddress"] = zone_led_idx;
+
+        /*-------------------------------------------------*\
+        | Linear zones use the LED offset as X and the zone |
+        | index as Y.  This gives RGB controllers the same  |
+        | explicit layout metadata as matrix keyboards.     |
+        \*-------------------------------------------------*/
+        json_obj["position"] = nlohmann::json::array({zone_led_idx, zone_idx});
+
+        if(z.type != ZONE_TYPE_MATRIX || z.matrix_map.map.empty())
+        {
+            return json_obj;
+        }
 
         for(unsigned int y = 0; y < z.matrix_map.height; y++)
         {
@@ -1658,7 +1667,16 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
                 }
             }
         }
+
+        return json_obj;
     }
+
+    /*-----------------------------------------------------*\
+    | A controller should normally assign every LED to a    |
+    | zone.  Keep a usable global address for malformed or  |
+    | legacy controller descriptions that do not.           |
+    \*-----------------------------------------------------*/
+    json_obj["protocolAddress"] = led_idx;
 
     return json_obj;
 }
