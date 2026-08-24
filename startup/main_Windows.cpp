@@ -48,21 +48,6 @@ static int  StartServiceCommand(int argc, char* argv[]);
 
 static char                  service_name[]             = APP_NAME;
 /*---------------------------------------------------------*\
-| Service start delay                                       |
-|                                                           |
-| During early boot the BIOS/AGESA is still accessing the   |
-| SMBus (DDR5 memory-training telemetry, SPD temperature    |
-| polling, RGB initialization).  Scanning the bus in that   |
-| window can collide with the BIOS and lock the bus or the  |
-| ENE controller, freezing DRAM and motherboard lighting    |
-| until a power cycle.  Delay the service start - and with  |
-| it device detection and the device-list scan - until      |
-| boot-time bus activity has settled.                       |
-\*---------------------------------------------------------*/
-#define SERVICE_START_DELAY_SECONDS     30
-
-
-/*---------------------------------------------------------*\
 | service_name_w                                            |
 |                                                           |
 |   Wide-character copy of APP_NAME for the Unicode (W)     |
@@ -960,6 +945,22 @@ static SC_HANDLE EnsureServiceInstalled(SC_HANDLE service_control_manager, int a
         printf("%s service installed.\n", service_name);
     }
 
+    /*-----------------------------------------------------*\
+    | Let Windows defer automatic starts during boot so     |
+    | early BIOS/AGESA SMBus activity has time to settle.    |
+    | Manual install/start/restart commands are unaffected, |
+    | avoiding an unconditional delay on every start.       |
+    \*-----------------------------------------------------*/
+    SERVICE_DELAYED_AUTO_START_INFO delayed_start_info = {};
+    delayed_start_info.fDelayedAutostart = TRUE;
+
+    if(!ChangeServiceConfig2W(service, SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &delayed_start_info))
+    {
+        PrintWindowsError("ChangeServiceConfig2", GetLastError());
+        CloseServiceHandle(service);
+        return NULL;
+    }
+
     if(port_specified)
     {
         SaveConfiguredServicePort(requested_port);
@@ -1621,18 +1622,6 @@ static void WINAPI ServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     | Report service status start pending                   |
     \*-----------------------------------------------------*/
     ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 30000);
-
-     /*-----------------------------------------------------*\
-    | Wait out the boot-time SMBus activity window before   |
-    | device detection touches the bus.  Keep reporting     |
-    | progress so the SCM does not time the start out, and  |
-    | bail out early if a stop request arrives.             |
-    \*-----------------------------------------------------*/
-    for(int i = 0; (i < SERVICE_START_DELAY_SECONDS) && !service_stop_requested; i++)
-    {
-        Sleep(1000);
-        ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 30000);
-    }
 
     /*-----------------------------------------------------*\
     | Perform common main processing                        |
