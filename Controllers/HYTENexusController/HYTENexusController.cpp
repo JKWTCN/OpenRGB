@@ -87,16 +87,28 @@ HYTENexusController::HYTENexusController(char* port, unsigned short pid, std::st
         }
     }
 
-    keepalive_thread_run = true;
-    keepalive_thread = std::thread(&HYTENexusController::KeepaliveThreadFunction, this);
+    keepalive_thread_run = false;
 }
 
 HYTENexusController::~HYTENexusController()
 {
     keepalive_thread_run = false;
-    keepalive_thread.join();
+    if(keepalive_thread.joinable())
+    {
+        keepalive_thread.join();
+    }
 
     serialport->serial_close();
+}
+
+void HYTENexusController::StartKeepalive()
+{
+    std::call_once(keepalive_start_once, [this]()
+    {
+        last_update_time     = std::chrono::steady_clock::now();
+        keepalive_thread_run = true;
+        keepalive_thread     = std::thread(&HYTENexusController::KeepaliveThreadFunction, this);
+    });
 }
 
 std::string HYTENexusController::GetFirmwareVersion()
@@ -166,6 +178,8 @@ std::string HYTENexusController::GetDeviceName(unsigned int device_type)
 
 void HYTENexusController::LEDStreaming(unsigned char channel, unsigned short led_count, RGBColor* colors)
 {
+    StartKeepalive();
+
     /*-----------------------------------------------------*\
     | Send LED Streaming command                            |
     | Byte 0:   FF                                          |

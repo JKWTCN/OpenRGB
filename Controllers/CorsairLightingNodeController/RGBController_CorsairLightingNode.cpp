@@ -29,7 +29,7 @@ RGBController_CorsairLightingNode::RGBController_CorsairLightingNode(CorsairLigh
     name        = controller->GetNameString();
     vendor      = "Corsair";
     description = "Corsair Lighting Node Device";
-    type        = DEVICE_TYPE_LEDSTRIP;
+    type        = DEVICE_TYPE_RGB_CONTROL;
     version     = controller->GetFirmwareString();
     location    = controller->GetLocationString();
     serial      = controller->GetSerialString();

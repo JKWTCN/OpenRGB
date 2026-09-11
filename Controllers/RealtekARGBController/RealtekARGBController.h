@@ -17,6 +17,7 @@
 #include <cstring>
 #include <vector>
 #include <thread>
+#include <mutex>
 #include <hidapi.h>
 
 #include "RGBController.h"
@@ -150,6 +151,8 @@ private:
     std::atomic<bool>                                   keepalive_thread_run;
     std::thread*                                        keepalive_thread;
     unsigned char custled[16] = {0};
+    bool control_active = false;
+    std::once_flag control_start_once;
 
     void KeepaliveThreadFunction();
 
@@ -158,6 +161,7 @@ private:
     int usb_hid_get_report(int data_len, int* id);
 
     void device_init();
+    void StartControl();
     int set_write_unlock();
     int set_appctl(unsigned char grp_num, unsigned char ctl_sts);
     int set_argbctl_data(unsigned char* data, int data_len, int offset);

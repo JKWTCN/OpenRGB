@@ -36,7 +36,7 @@ RGBController_HYTENexus::RGBController_HYTENexus(HYTENexusController* controller
     name                = controller->GetName();
     vendor              = "HYTE";
     description         = "HYTE Nexus Device";
-    type                = DEVICE_TYPE_LEDSTRIP;
+    type                = DEVICE_TYPE_RGB_CONTROL;
     location            = controller->GetLocation();
     version             = controller->GetFirmwareVersion();
 

@@ -28,7 +28,7 @@ RGBController_HuePlus::RGBController_HuePlus(HuePlusController* controller_ptr)
 
     name        = "NZXT Hue+";
     vendor      = "NZXT";
-    type        = DEVICE_TYPE_LEDSTRIP;
+    type        = DEVICE_TYPE_RGB_CONTROL;
     description = "NZXT Hue+ Device";
     location    = controller->GetLocation();
 

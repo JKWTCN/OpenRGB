@@ -29,7 +29,7 @@ RGBController_LianLiStrimerLConnect::RGBController_LianLiStrimerLConnect(LianLiS
 
     name                        = "Lian Li Strimer L Connect";
     vendor                      = "Lian Li";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     description                 = controller->GetDeviceName();
     serial                      = controller->GetSerial();
     location                    = controller->GetLocation();

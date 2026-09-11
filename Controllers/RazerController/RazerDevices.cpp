@@ -8667,7 +8667,7 @@ static const razer_device chromaargb_device =
 {
     "Razer Chroma Addressable RGB Controller",
     RAZER_CHROMA_ADDRESSABLE_RGB_CONTROLLER_PID,
-    DEVICE_TYPE_LEDSTRIP,
+    DEVICE_TYPE_RGB_CONTROL,
     RAZER_MATRIX_TYPE_EXTENDED_ARGB,
     0x3F,
     6,
@@ -8738,7 +8738,7 @@ static const razer_device chromahdk_device =
 {
     "Razer Chroma HDK",
     RAZER_CHROMA_HDK_PID,
-    DEVICE_TYPE_LEDSTRIP,
+    DEVICE_TYPE_RGB_CONTROL,
     RAZER_MATRIX_TYPE_EXTENDED,
     0x3F,
     4,
@@ -8785,7 +8785,7 @@ static const razer_device chroma_pc_case_lighting_kit_device =
 {
     "Razer Chroma PC Case Lighting Kit",
     RAZER_CHROMA_PC_CASE_LIGHTING_KIT_PID,
-    DEVICE_TYPE_LEDSTRIP,
+    DEVICE_TYPE_RGB_CONTROL,
     RAZER_MATRIX_TYPE_EXTENDED,
     0x3F,
     2,

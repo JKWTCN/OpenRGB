@@ -31,7 +31,7 @@ RGBController_CMSmallARGBController::RGBController_CMSmallARGBController(CMSmall
 
     name                        = cm_small_argb_header_data[0].name;
     vendor                      = "Cooler Master";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     description                 = controller->GetDeviceName();
     version                     = "2.0 for FW0012";
     serial                      = controller->GetSerial();

@@ -16,6 +16,7 @@
 #pragma once
 
 #include <chrono>
+#include <mutex>
 #include <vector>
 #include <hidapi.h>
 #include "RGBController.h"
@@ -131,11 +132,13 @@ private:
     std::string             firmware_version;
     std::string             location;
     std::string             name;
-    std::thread*            keepalive_thread;
-    std::atomic<bool>       keepalive_thread_run;
+    std::thread*            keepalive_thread = nullptr;
+    std::atomic<bool>       keepalive_thread_run = false;
+    std::once_flag          control_start_once;
     std::chrono::time_point<std::chrono::steady_clock> last_commit_time;
 
     void            SendFirmwareRequest();
+    void            StartControl();
 
     void            SendDirect
                         (

@@ -60,12 +60,15 @@ RealtekARGBController::~RealtekARGBController()
 
     if(hdev)
     {
-        for(int i = 0; i < REALTEK_ARGB_NUM_ARGB_GRP; i++)
+        if(control_active)
         {
-            int ret = set_appctl(i, REALTEK_ARGB_LED_CTL_FW);
-            if(!ret)
+            for(int i = 0; i < REALTEK_ARGB_NUM_ARGB_GRP; i++)
             {
-                appctl[i] = REALTEK_ARGB_LED_CTL_FW;
+                int ret = set_appctl(i, REALTEK_ARGB_LED_CTL_FW);
+                if(!ret)
+                {
+                    appctl[i] = REALTEK_ARGB_LED_CTL_FW;
+                }
             }
         }
         hid_close(hdev);
@@ -164,17 +167,23 @@ int RealtekARGBController::usb_hid_get_report(int data_len, int* id)
 
 void RealtekARGBController::device_init()
 {
+    /*-----------------------------------------------------*\
+    | Keep the read-only discovery sequence during scan so  |
+    | zones can be populated.  Lighting ownership remains   |
+    | deferred until StartControl().                         |
+    \*-----------------------------------------------------*/
     set_write_unlock();
     get_argbctl_hdr();
     get_argbctl_data();
-    for(int i = 0; i < REALTEK_ARGB_NUM_ARGB_GRP; i++)
+}
+
+void RealtekARGBController::StartControl()
+{
+    std::call_once(control_start_once, [this]()
     {
-        int ret = set_appctl(i, REALTEK_ARGB_LED_CTL_FW);
-        if(!ret)
-        {
-            appctl[i] = REALTEK_ARGB_LED_CTL_FW;
-        }
-    }
+        set_write_unlock();
+        control_active = true;
+    });
 }
 
 int RealtekARGBController::set_write_unlock()
@@ -360,6 +369,8 @@ int RealtekARGBController::get_argb_brightness(int grp_num)
 
 int RealtekARGBController::set_argb_brightness(int grp_num, unsigned short bright)
 {
+    StartControl();
+
     memcpy(&argbctl_hdr[42 + grp_num * sizeof(bright)], &bright, sizeof(bright));
     set_argbctl_hdr();
     return 0;
@@ -564,6 +575,8 @@ int RealtekARGBController::set_flash_argbctl_hdr(unsigned int offset, unsigned i
 
 int RealtekARGBController::set_argb_direct(int grp_num, std::vector<RGBColor> color_buf, unsigned short brightness)
 {
+    StartControl();
+
     int ret = -1;
     size_t color_num = color_buf.size();
     size_t buf_len = color_num * REALTEK_ARGB_COLOR_DEPTH;
@@ -614,6 +627,8 @@ exit:
 
 int RealtekARGBController::set_argb_effect(int grp_num, uint8_t mode, std::vector<RGBColor> color_buf, struct RealtekARGBControllerSetEffParam* param)
 {
+    StartControl();
+
     int ret = -1;
     int cycle = MathUtils::IntInterpolate(REALTEK_ARGB_CYCLE_MAX, REALTEK_ARGB_CYCLE_MIN, 0, REALTEK_ARGB_SPEED_MAX, param->speed);
     std::lock_guard<std::mutex> lock(my_mutex);
@@ -651,6 +666,8 @@ int RealtekARGBController::set_argb_effect(int grp_num, uint8_t mode, std::vecto
 
 int RealtekARGBController::set_argb_num(int grp_num, unsigned short new_num)
 {
+    StartControl();
+
     memcpy(&argbctl_hdr[32 + grp_num * sizeof(new_num)], &new_num, sizeof(new_num));
     set_flash_argbctl_hdr(32 + grp_num * sizeof(new_num), sizeof(new_num));
     return 0;

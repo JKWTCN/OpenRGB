@@ -30,7 +30,7 @@ RGBController_SRGBmodsPico::RGBController_SRGBmodsPico(SRGBmodsPicoController* c
     name                = controller->GetNameString();
     vendor              = "SRGBmods.net";
     description         = "SRGBmods Pico LED Controller Device";
-    type                = DEVICE_TYPE_LEDSTRIP;
+    type                = DEVICE_TYPE_RGB_CONTROL;
     location            = controller->GetLocationString();
     serial              = controller->GetSerialString();
 

@@ -29,7 +29,7 @@ RGBController_SRGBmodsLEDControllerV1::RGBController_SRGBmodsLEDControllerV1(SRG
     name                        = controller->GetNameString();
     vendor                      = "SRGBmods.net";
     description                 = "SRGBmods LED Controller V1 Device";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     location                    = controller->GetLocationString();
     serial                      = controller->GetSerialString();
 

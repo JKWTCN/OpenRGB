@@ -31,7 +31,7 @@ RGBController_Nollie::RGBController_Nollie(NollieController* controller_ptr)
     name                = controller->GetNameString();
     vendor              = "Nollie";
     description         = "Nollie Controller Device";
-    type                = DEVICE_TYPE_LEDSTRIP;
+    type                = DEVICE_TYPE_RGB_CONTROL;
     location            = controller->GetLocationString();
     serial              = controller->GetSerialString();
 

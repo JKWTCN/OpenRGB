@@ -28,24 +28,29 @@ CorsairLightingNodeController::CorsairLightingNodeController(hid_device* dev_han
 
     SendFirmwareRequest();
 
-    /*-----------------------------------------------------*\
-    | The Corsair Lighting Node Pro requires a packet within|
-    | 20 seconds of sending the lighting change in order    |
-    | to not revert back into rainbow mode.  Start a thread |
-    | to continuously send a keepalive packet every 5s      |
-    \*-----------------------------------------------------*/
-    keepalive_thread_run = 1;
-    keepalive_thread = new std::thread(&CorsairLightingNodeController::KeepaliveThread, this);
 }
 
 CorsairLightingNodeController::~CorsairLightingNodeController()
 {
     keepalive_thread_run = 0;
-    keepalive_thread->join();
-    delete keepalive_thread;
+    if(keepalive_thread != nullptr)
+    {
+        keepalive_thread->join();
+        delete keepalive_thread;
+    }
 
     hid_close(dev);
     delete guard_manager_ptr;
+}
+
+void CorsairLightingNodeController::StartControl()
+{
+    std::call_once(control_start_once, [this]()
+    {
+        last_commit_time     = std::chrono::steady_clock::now();
+        keepalive_thread_run = true;
+        keepalive_thread     = new std::thread(&CorsairLightingNodeController::KeepaliveThread, this);
+    });
 }
 
 void CorsairLightingNodeController::KeepaliveThread()
@@ -90,6 +95,8 @@ std::string CorsairLightingNodeController::GetSerialString()
 
 void CorsairLightingNodeController::SetBrightness(unsigned char brightness)
 {
+    StartControl();
+
     for(unsigned int channel = 0; channel < CORSAIR_LIGHTING_NODE_NUM_CHANNELS; channel++)
     {
         SendBrightness(channel, brightness);
@@ -113,6 +120,8 @@ void CorsairLightingNodeController::SetChannelEffect(unsigned char channel,
                                                 unsigned char blu3
                                                )
 {
+    StartControl();
+
     /*-----------------------------------------------------*\
     | Send Reset packet                                     |
     \*-----------------------------------------------------*/
@@ -162,6 +171,8 @@ void CorsairLightingNodeController::SetChannelEffect(unsigned char channel,
 
 void CorsairLightingNodeController::SetChannelLEDs(unsigned char channel, RGBColor * colors, unsigned int num_colors)
 {
+    StartControl();
+
     unsigned char   red_color_data[50];
     unsigned char   grn_color_data[50];
     unsigned char   blu_color_data[50];

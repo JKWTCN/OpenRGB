@@ -419,12 +419,12 @@ RGBController_GaiZhongGaiKeyboard::RGBController_GaiZhongGaiKeyboard(GaiZhongGai
             break;
 
         case GAIZHONGGAI_RGB_HUB_GREEN_PID:
-            type        = DEVICE_TYPE_LEDSTRIP;
+            type        = DEVICE_TYPE_RGB_CONTROL;
             description = "https://oshwhub.com/yangzen/album/gai-zhong-gai-jian-pan-ge-ji/";
             break;
 
         case GAIZHONGGAI_RGB_HUB_BLUE_PID:
-            type        = DEVICE_TYPE_LEDSTRIP;
+            type        = DEVICE_TYPE_RGB_CONTROL;
             description = "https://oshwhub.com/yangzen/album/gai-zhong-gai-jian-pan-ge-ji/";
             break;
 

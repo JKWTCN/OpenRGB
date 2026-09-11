@@ -20,10 +20,6 @@ CMARGBGen2A1controller::CMARGBGen2A1controller(hid_device* dev_handle, const hid
     location            = info.path;
     name                = dev_name;
 
-    /*---------------------------------------------*\
-    | Setup direct mode on start                    |
-    \*---------------------------------------------*/
-    SetupDirectMode();
 }
 
 CMARGBGen2A1controller::~CMARGBGen2A1controller()

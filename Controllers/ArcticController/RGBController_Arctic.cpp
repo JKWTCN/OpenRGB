@@ -37,7 +37,7 @@ RGBController_Arctic::RGBController_Arctic(ArcticController* controller_ptr)
     vendor      = "Arctic";
     description = "Arctic 4-Channel RGB Controller";
     location    = controller->GetLocation();
-    type        = DEVICE_TYPE_LEDSTRIP;
+    type        = DEVICE_TYPE_RGB_CONTROL;
 
     mode DirectMode;
     DirectMode.name         = "Direct";

@@ -28,7 +28,7 @@ RGBController_EKController::RGBController_EKController(EKController* controller_
 
     name        = controller->GetDeviceName();
     vendor      = "EK";
-    type        = DEVICE_TYPE_LEDSTRIP;
+    type        = DEVICE_TYPE_RGB_CONTROL;
     description = controller->GetDeviceName();
     serial      = controller->GetSerial();
     location    = controller->GetLocation();

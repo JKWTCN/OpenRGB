@@ -151,10 +151,13 @@ GaiZhongGaiKeyboardController::~GaiZhongGaiKeyboardController()
     /*-----------------------------------------------------*\
     | Restore built-in light effect                         |
     \*-----------------------------------------------------*/
-    uint8_t usb_buf[65];
-    memset(usb_buf, 0x00, sizeof(usb_buf));
-    usb_buf[1] = 0xFF;
-    hid_write(dev, usb_buf, 65);
+    if(control_active)
+    {
+        uint8_t usb_buf[65];
+        memset(usb_buf, 0x00, sizeof(usb_buf));
+        usb_buf[1] = 0xFF;
+        hid_write(dev, usb_buf, 65);
+    }
 
     hid_close(dev);
 }
@@ -198,6 +201,8 @@ void GaiZhongGaiKeyboardController::SendColors
     unsigned int    color_data_size/*color_data_size*/
     )
 {
+    control_active = true;
+
     uint8_t usb_buf[65];
 
     memset(usb_buf, 0x00, sizeof(usb_buf));

@@ -97,6 +97,7 @@ void RGBController_Debug::SetupDevice()
         else if(device_type == "gpu")           type = DEVICE_TYPE_GPU;
         else if(device_type == "cooler")        type = DEVICE_TYPE_COOLER;
         else if(device_type == "led_strip")     type = DEVICE_TYPE_LEDSTRIP;
+        else if(device_type == "rgb_controller") type = DEVICE_TYPE_RGB_CONTROL;
         else if(device_type == "keyboard")      type = DEVICE_TYPE_KEYBOARD;
         else if(device_type == "mouse")         type = DEVICE_TYPE_MOUSE;
         else if(device_type == "mousemat")      type = DEVICE_TYPE_MOUSEMAT;
@@ -141,7 +142,7 @@ void RGBController_Debug::SetupDevice()
         else if(type_setting == "argb")
         {
             name_value                  = "Debug ARGB Controller";
-            type                        = DEVICE_TYPE_LEDSTRIP;
+            type                        = DEVICE_TYPE_RGB_CONTROL;
         }
 
         /*---------------------------------------------------------*\

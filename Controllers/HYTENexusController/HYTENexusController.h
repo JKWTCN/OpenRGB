@@ -76,8 +76,10 @@ private:
     std::chrono::time_point<std::chrono::steady_clock>  last_update_time;
     std::atomic<bool>                                   keepalive_thread_run;
     std::thread                                         keepalive_thread;
+    std::once_flag                                      keepalive_start_once;
 
     void KeepaliveThreadFunction();
+    void StartKeepalive();
 
     void ReadChannelInfo(unsigned char channel);
     void ReadDeviceInfo();

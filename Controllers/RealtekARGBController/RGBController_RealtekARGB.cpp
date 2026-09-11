@@ -31,7 +31,7 @@ RGBController_RealtekARGB::RGBController_RealtekARGB(RealtekARGBController* cont
     serial      = controller_ptr->get_sn();
     version     = controller_ptr->get_fw_ver();
     description = vendor + "ARGB Device";
-    type        = DEVICE_TYPE_LEDSTRIP;
+    type        = DEVICE_TYPE_RGB_CONTROL;
     std::fill(std::begin(ready_to_reboot), std::end(ready_to_reboot), false);
 
     SetupModes();

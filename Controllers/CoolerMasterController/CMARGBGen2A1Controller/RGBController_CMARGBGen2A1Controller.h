@@ -34,4 +34,7 @@ public:
 
 private:
     CMARGBGen2A1controller*   controller;
+    bool                      direct_mode_initialized = false;
+
+    void EnsureDirectMode();
 };

@@ -21,23 +21,28 @@ SRGBmodsPicoController::SRGBmodsPicoController(hid_device* dev_handle, const cha
     location    = path;
     name        = dev_name;
 
-    /*-----------------------------------------------------*\
-    | The SRGBmods Pico controller requires a packet within |
-    | 10 seconds of sending the lighting change in order    |
-    | to not revert back into hardware mode.  Start a thread|
-    | to continuously send a keepalive packet every 5s      |
-    \*-----------------------------------------------------*/
-    keepalive_thread_run = 1;
-    keepalive_thread     = new std::thread(&SRGBmodsPicoController::KeepaliveThread, this);
 }
 
 SRGBmodsPicoController::~SRGBmodsPicoController()
 {
     keepalive_thread_run = 0;
-    keepalive_thread->join();
-    delete keepalive_thread;
+    if(keepalive_thread != nullptr)
+    {
+        keepalive_thread->join();
+        delete keepalive_thread;
+    }
 
     hid_close(dev);
+}
+
+void SRGBmodsPicoController::StartControl()
+{
+    std::call_once(control_start_once, [this]()
+    {
+        last_commit_time     = std::chrono::steady_clock::now();
+        keepalive_thread_run = true;
+        keepalive_thread     = new std::thread(&SRGBmodsPicoController::KeepaliveThread, this);
+    });
 }
 
 void SRGBmodsPicoController::KeepaliveThread()
@@ -77,6 +82,8 @@ std::string SRGBmodsPicoController::GetSerialString()
 
 void SRGBmodsPicoController::SetChannelLEDs(unsigned char channel, RGBColor* colors, unsigned int num_colors)
 {
+    StartControl();
+
     unsigned int num_packets    = (num_colors / 20) + ((num_colors % 20) > 0);
     unsigned int color_idx      = 0;
 

@@ -65,4 +65,5 @@ private:
     std::string             version;
     unsigned short          usb_pid;
     uint8_t                 data_flash[128];
+    bool                    control_active = false;
 };

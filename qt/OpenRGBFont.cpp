@@ -64,6 +64,7 @@ int OpenRGBFont::GetIconIDFromDeviceType(device_type type)
     case DEVICE_TYPE_COOLER:
         icon = OpenRGBFont::cooler;
         break;
+    case DEVICE_TYPE_RGB_CONTROL:
     case DEVICE_TYPE_LEDSTRIP:
         icon = OpenRGBFont::ledstrip;
         break;

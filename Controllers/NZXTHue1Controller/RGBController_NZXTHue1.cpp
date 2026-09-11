@@ -33,7 +33,7 @@ RGBController_NZXTHue1::RGBController_NZXTHue1(NZXTHue1Controller* controller_pt
 
     name                        = controller->GetName();
     vendor                      = "NZXT";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     description                 = "NZXT Hue 1 Device";
     version                     = controller->GetFirmwareVersion();
     location                    = controller->GetLocation();

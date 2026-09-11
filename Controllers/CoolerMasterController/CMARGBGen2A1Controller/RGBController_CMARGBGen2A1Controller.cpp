@@ -38,7 +38,7 @@ RGBController_CMARGBGen2A1Controller::RGBController_CMARGBGen2A1Controller(CMARG
 
     name                        = controller->GetNameString();
     vendor                      = "CoolerMaster";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     description                 = "CoolerMaster LED Controller A1 Device";
     location                    = controller->GetDeviceLocation();
     serial                      = controller->GetSerialString();
@@ -191,6 +191,15 @@ RGBController_CMARGBGen2A1Controller::~RGBController_CMARGBGen2A1Controller()
     delete controller;
 }
 
+void RGBController_CMARGBGen2A1Controller::EnsureDirectMode()
+{
+    if(!direct_mode_initialized)
+    {
+        controller->SetupDirectMode();
+        direct_mode_initialized = true;
+    }
+}
+
 void RGBController_CMARGBGen2A1Controller::SetupZones()
 {
     unsigned int total_leds = 0;
@@ -262,6 +271,8 @@ void RGBController_CMARGBGen2A1Controller::DeviceUpdateLEDs()
 
 void RGBController_CMARGBGen2A1Controller::DeviceUpdateZoneLEDs(int zone)
 {
+    EnsureDirectMode();
+
     if(zones[zone].leds_count > 0)
     {
         unsigned int start = zones[zone].start_idx;
@@ -275,6 +286,8 @@ void RGBController_CMARGBGen2A1Controller::DeviceUpdateZoneLEDs(int zone)
 
 void RGBController_CMARGBGen2A1Controller::UpdateSegmentLEDs(int zone, int subchannel)
 {
+    EnsureDirectMode();
+
     if(zones[zone].leds_count <= 0)
     {
         return;
@@ -314,7 +327,7 @@ void RGBController_CMARGBGen2A1Controller::DeviceUpdateMode()
 
     if(active.value == CM_ARGB_GEN2_A1_DIRECT_MODE)
     {
-        controller->SetupDirectMode();
+        EnsureDirectMode();
     }
     else
     {

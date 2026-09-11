@@ -29,7 +29,7 @@ RGBController_ZalmanZSync::RGBController_ZalmanZSync(ZalmanZSyncController* cont
     name                    = controller->GetNameString();
     vendor                  = "Zalman";
     description             = "Zalman Z Sync Device";
-    type                    = DEVICE_TYPE_LEDSTRIP;
+    type                    = DEVICE_TYPE_RGB_CONTROL;
     version                 = controller->GetFirmwareString();
     location                = controller->GetLocationString();
     serial                  = controller->GetSerialString();

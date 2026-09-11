@@ -62,7 +62,7 @@ RGBController_CMRGBController::RGBController_CMRGBController(CMRGBController* co
 
     name                        = "Cooler Master RGB Controller";
     vendor                      = "Cooler Master";
-    type                        = DEVICE_TYPE_LEDSTRIP;
+    type                        = DEVICE_TYPE_RGB_CONTROL;
     description                 = controller->GetDeviceName();
     serial                      = controller->GetSerial();
     location                    = controller->GetLocation();
