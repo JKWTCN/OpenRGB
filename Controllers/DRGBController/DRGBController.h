@@ -12,6 +12,7 @@
 #pragma once
 
 #include <chrono>
+#include <mutex>
 #include <vector>
 #include <hidapi.h>
 #include "DRGBDevices.h"
@@ -47,11 +48,14 @@ public:
     void            KeepaliveThread();
 
 private:
+    void                    StartKeepalive();
+
     hid_device*             dev;
     std::string             location;
     std::string             name;
-    std::thread*            keepalive_thread;
-    std::atomic<bool>       keepalive_thread_run;
+    std::thread*            keepalive_thread = nullptr;
+    std::atomic<bool>       keepalive_thread_run = false;
+    std::once_flag          keepalive_start_once;
     std::chrono::time_point<std::chrono::steady_clock> last_commit_time;
     unsigned char           version[4] = {0, 0, 0,0};
     unsigned int            device_index;

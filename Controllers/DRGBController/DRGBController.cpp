@@ -36,20 +36,33 @@ DRGBController::DRGBController(hid_device* dev_handle, const char* path, unsigne
         }
     }
 
-    /*-----------------------------------------------------*\
-    | Exit hardware effects.  Start a thread to continuously|
-    | send a keepalive packet every 500ms                   |
-    \*-----------------------------------------------------*/
-    keepalive_thread_run = 1;
-    keepalive_thread     = new std::thread(&DRGBController::KeepaliveThread, this);
 }
 
 DRGBController::~DRGBController()
 {
-    keepalive_thread_run = 0;
-    keepalive_thread->join();
-    delete keepalive_thread;
+    keepalive_thread_run = false;
+
+    if(keepalive_thread != nullptr)
+    {
+        keepalive_thread->join();
+        delete keepalive_thread;
+    }
+
     hid_close(dev);
+}
+
+void DRGBController::StartKeepalive()
+{
+    std::call_once(keepalive_start_once, [this]()
+    {
+        /*-------------------------------------------------*\
+        | Do not take control of the device during          |
+        | enumeration.  Keepalive starts on first output.   |
+        \*-------------------------------------------------*/
+        last_commit_time     = std::chrono::steady_clock::now();
+        keepalive_thread_run = true;
+        keepalive_thread     = new std::thread(&DRGBController::KeepaliveThread, this);
+    });
 }
 
 std::string DRGBController::GetFirmwareString()
@@ -184,6 +197,8 @@ void DRGBController::SetChannelLEDs(unsigned char /*channel*/, RGBColor* /*color
 
 void DRGBController::SendPacket(unsigned char* colors, unsigned int buf_packets , unsigned int LEDtotal)
 {
+    StartKeepalive();
+
     unsigned char   usb_buf[1025];
     unsigned int    buf_idx = 0;
     memset(usb_buf, 0x00, sizeof(usb_buf));
@@ -217,6 +232,8 @@ void DRGBController::SendPacket(unsigned char* colors, unsigned int buf_packets 
 
 void DRGBController::SendPacketFS(unsigned char* colors, unsigned int buf_packets , unsigned int Array)
 {
+    StartKeepalive();
+
     unsigned char usb_buf[65] = {0};
     unsigned int current_index = 0;
 
