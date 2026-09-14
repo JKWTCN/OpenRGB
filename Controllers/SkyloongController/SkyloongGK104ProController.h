@@ -38,6 +38,7 @@ public:
     std::string     GetDeviceLocation();
     std::string     GetDeviceName();
 
+    void            SendInitialize();
     void            Ping();
     void            SetMode(int mode);
     void            SendCommand(char command, char sub_command);
@@ -47,6 +48,7 @@ private:
     hid_device*     dev;
     std::string     location;
     std::string     name;
+    bool            initialized = false;
 
     uint16_t        Crc16CcittFalse(const uint8_t *buffer, uint16_t size);
     void            SetLEDefine(int address, unsigned char *le_data, int le_data_length);

@@ -54,6 +54,11 @@ RGBController_SkyloongGK104Pro::RGBController_SkyloongGK104Pro(SkyloongGK104ProC
 {
     controller                  = controller_ptr;
 
+    SetDeviceInitializer([this]()
+    {
+        controller->SendInitialize();
+    });
+
     name                        = controller->GetDeviceName();
     vendor                      = "Skyloong";
     description                 = "Skyloong GK104 Pro Keyboard";

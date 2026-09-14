@@ -26,15 +26,15 @@ SkyloongGK104ProController::SkyloongGK104ProController(hid_device* dev_handle, c
     dev         = dev_handle;
     location    = path;
     name        = dev_name;
-
-    SendCommand(command::ping, SUBCOMMAND_NONE);
-    SendCommand(command::mode, MODE_ONLINE);
-    SendCommand(command::ping, SUBCOMMAND_NONE);
 }
 
 SkyloongGK104ProController::~SkyloongGK104ProController()
 {
-    SendCommand(command::mode, MODE_OFFLINE);
+    if(initialized)
+    {
+        SendCommand(command::mode, MODE_OFFLINE);
+    }
+
     hid_close(dev);
 }
 
@@ -46,6 +46,15 @@ std::string SkyloongGK104ProController::GetDeviceLocation()
 std::string SkyloongGK104ProController::GetDeviceName()
 {
     return(name);
+}
+
+void SkyloongGK104ProController::SendInitialize()
+{
+    SendCommand(command::ping, SUBCOMMAND_NONE);
+    SendCommand(command::mode, MODE_ONLINE);
+    SendCommand(command::ping, SUBCOMMAND_NONE);
+
+    initialized = true;
 }
 
 void SkyloongGK104ProController::SendCommand(char command, char sub_command)
