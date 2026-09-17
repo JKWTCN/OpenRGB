@@ -29,25 +29,6 @@ const char* TimestampPattern = "%04d%02d%02d_%02d%02d%02d";
 const char* TimestampRegex = "[0-9]{8}_[0-9]{6}";
 const unsigned int DailyLogRetentionDays = 10;
 
-static std::string GetDailyLogBasename(const std::string& log_template)
-{
-    filesystem::path log_path = filesystem::u8path(log_template);
-    std::string basename = log_path.stem().generic_u8string();
-    std::size_t marker = basename.find("#");
-
-    if(marker != basename.npos)
-    {
-        basename.erase(marker);
-    }
-
-    while(!basename.empty() && (basename.back() == '_' || basename.back() == '-' || basename.back() == '.' || basename.back() == ' '))
-    {
-        basename.pop_back();
-    }
-
-    return(basename.empty() ? "OpenRGB" : basename);
-}
-
 /*---------------------------------------------------------*\
 | LogManager name for log entries                           |
 \*---------------------------------------------------------*/
@@ -90,7 +71,6 @@ LogManager::LogManager()
     log_has_entries     = false;
     configured_log_limit = 10;
     daily_log_limit     = 10;
-    configured_log_template = "OpenRGB_#.log";
     verbosity           = LL_WARNING;
 }
 
@@ -201,7 +181,6 @@ void LogManager::Configure(json config, const filesystem::path& config_dir)
         | The # symbol is replaced with a timestamp         |
         \*-------------------------------------------------*/
         std::string logtemp = JsonUtils::JsonGetString(config, "logfile", "OpenRGB_#.log", false);
-        configured_log_template = logtemp;
 
         if(log_file_enabled)
         {
@@ -218,7 +197,7 @@ void LogManager::Configure(json config, const filesystem::path& config_dir)
             {
                 daily_rollover  = true;
                 daily_log_limit = DailyLogRetentionDays;
-                daily_basename  = GetDailyLogBasename(logtemp);
+                daily_basename  = "RGBServer";
 
                 filesystem::path configured_path = filesystem::u8path(logtemp);
                 if(configured_path.is_absolute() && configured_path.has_parent_path())
@@ -296,7 +275,7 @@ void LogManager::Configure(json config, const filesystem::path& config_dir)
 
 void LogManager::OpenDailyLog(const std::string& yyyymmdd)
 {
-    std::string basename = daily_basename.empty() ? "OpenRGB" : daily_basename;
+    std::string basename = daily_basename.empty() ? "RGBServer" : daily_basename;
     filesystem::path path = log_base_dir / (basename + "_" + yyyymmdd + ".log");
     filesystem::create_directories(path.parent_path());
 
@@ -313,7 +292,7 @@ void LogManager::OpenDailyLog(const std::string& yyyymmdd)
         struct tm* tmp = localtime(&t);
         char time_string[64];
         snprintf(time_string, sizeof(time_string), TimestampPattern, 1900 + tmp->tm_year, tmp->tm_mon + 1, tmp->tm_mday, tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
-        log_stream << "    OpenRGB v" << VERSION_STRING << std::endl;
+        log_stream << "    RGBServer v" << VERSION_STRING << std::endl;
         log_stream << "    Commit: " << GIT_COMMIT_ID << " from " << GIT_COMMIT_DATE << std::endl;
         log_stream << "    Launched: " << time_string << std::endl;
         log_stream << "====================================================================================================" << std::endl << std::endl;
@@ -408,7 +387,7 @@ void LogManager::SetServiceLogDirectory(const filesystem::path& config_dir)
 
     daily_rollover  = true;
     daily_log_limit = DailyLogRetentionDays;
-    daily_basename  = GetDailyLogBasename(configured_log_template);
+    daily_basename  = "RGBServer";
     log_base_dir    = config_dir / "logs";
 
     time_t t = time(0);

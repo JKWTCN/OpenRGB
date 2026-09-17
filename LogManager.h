@@ -185,7 +185,6 @@ private:
     bool                                log_has_entries;
     int                                 configured_log_limit;
     int                                 daily_log_limit;
-    std::string                         configured_log_template;
     std::string                         daily_basename;
     std::string                         current_log_date;
     filesystem::path                    current_log_path;
