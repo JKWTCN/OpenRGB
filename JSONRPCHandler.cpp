@@ -19,6 +19,8 @@
 #include "JSONRPCHandler.h"
 #include "WebSocketServer.h"
 #include <algorithm>
+#include <mutex>
+#include <shared_mutex>
 #include <sstream>
 
 JSONRPCHandler::JSONRPCHandler(std::vector<RGBController *> &controllers,
@@ -511,6 +513,14 @@ nlohmann::json JSONRPCHandler::SetZoneMultipleLed(const nlohmann::json &params)
                            "Zone index out of range");
     }
 
+    // Publish the complete frame under the same mutex used by the device
+    // thread. Force may also reallocate the buffer and its zone pointers.
+    std::unique_lock<std::shared_mutex> frame_lock(controller->AccessMutex, std::defer_lock);
+    if (force)
+    {
+        frame_lock.lock();
+    }
+
     zone &target_zone = controller->zones[zone_idx];
     if (parsed_colors.size() != target_zone.leds_count)
     {
@@ -523,7 +533,8 @@ nlohmann::json JSONRPCHandler::SetZoneMultipleLed(const nlohmann::json &params)
             for (std::size_t controller_zone_idx = 0;
                  controller_zone_idx < controller->zones.size(); ++controller_zone_idx)
             {
-                total_led_count += controller->GetLEDsInZone(static_cast<unsigned int>(controller_zone_idx));
+                // AccessMutex is already held exclusively by frame_lock.
+                total_led_count += controller->LEDsInZone(static_cast<unsigned int>(controller_zone_idx));
             }
             controller->leds.resize(total_led_count);
             controller->SetupColors();
@@ -544,10 +555,17 @@ nlohmann::json JSONRPCHandler::SetZoneMultipleLed(const nlohmann::json &params)
         }
     }
 
+    // ResizeZone takes AccessMutex internally, so acquire it afterwards
+    // on the non-Force path.
+    if (!frame_lock.owns_lock())
+    {
+        frame_lock.lock();
+    }
     for (std::size_t led_idx = 0; led_idx < parsed_colors.size(); ++led_idx)
     {
         controller->zones[zone_idx].colors[led_idx] = parsed_colors[led_idx];
     }
+    frame_lock.unlock();
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -628,6 +646,7 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
                                : "The number of zone color arrays must match the device zone count");
     }
 
+    std::unique_lock<std::shared_mutex> frame_lock(controller->AccessMutex, std::defer_lock);
     if (!force)
     {
         for (std::size_t zone_idx = 0; zone_idx < parsed_zone_colors.size(); ++zone_idx)
@@ -658,6 +677,7 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
     }
     else
     {
+        frame_lock.lock();
         std::vector<std::vector<RGBColor> > original_zone_colors;
         original_zone_colors.reserve(controller->zones.size());
         for (std::size_t zone_idx = 0; zone_idx < controller->zones.size(); ++zone_idx)
@@ -685,7 +705,8 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
         std::size_t total_led_count = 0;
         for (std::size_t zone_idx = 0; zone_idx < controller->zones.size(); ++zone_idx)
         {
-            total_led_count += controller->GetLEDsInZone(static_cast<unsigned int>(zone_idx));
+            // AccessMutex is already held exclusively by frame_lock.
+            total_led_count += controller->LEDsInZone(static_cast<unsigned int>(zone_idx));
         }
         controller->leds.resize(total_led_count);
         controller->SetupColors();
@@ -705,6 +726,10 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
         }
     }
 
+    if (!frame_lock.owns_lock())
+    {
+        frame_lock.lock();
+    }
     nlohmann::json led_counts = nlohmann::json::array();
     for (std::size_t zone_idx = 0; zone_idx < parsed_zone_colors.size(); ++zone_idx)
     {
@@ -719,6 +744,7 @@ nlohmann::json JSONRPCHandler::SetMultipleZoneMultipleLed(const nlohmann::json &
         }
         led_counts.push_back(parsed_zone_colors[zone_idx].size());
     }
+    frame_lock.unlock();
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -751,7 +777,10 @@ nlohmann::json JSONRPCHandler::SetAllColors(const nlohmann::json &params)
 
     RGBController *controller = controllers[device_idx];
 
-    controller->SetAllColors(color);
+    {
+        std::unique_lock<std::shared_mutex> frame_lock(controller->AccessMutex);
+        std::fill(controller->colors.begin(), controller->colors.end(), color);
+    }
     controller->UpdateLEDs();
 
     nlohmann::json result;
@@ -787,6 +816,7 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
 
     RGBController *controller = controllers[device_idx];
 
+    std::unique_lock<std::shared_mutex> frame_lock(controller->AccessMutex);
     for (const auto &color_item : colors)
     {
         if (!color_item.contains("ledIndex") || !color_item.contains("color"))
@@ -795,13 +825,14 @@ nlohmann::json JSONRPCHandler::SetMultipleColors(const nlohmann::json &params)
         }
 
         unsigned int led_idx = color_item["ledIndex"];
-        if (led_idx < controller->leds.size())
+        if (led_idx < controller->leds.size() && led_idx < controller->colors.size())
         {
             RGBColor color = ParseColor(color_item["color"]);
-            controller->SetColor(led_idx, color);
+            controller->colors[led_idx] = color;
         }
     }
 
+    frame_lock.unlock();
     controller->UpdateLEDs();
 
     nlohmann::json result;

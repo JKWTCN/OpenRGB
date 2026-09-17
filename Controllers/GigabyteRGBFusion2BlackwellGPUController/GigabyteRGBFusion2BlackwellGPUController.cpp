@@ -51,7 +51,15 @@ void RGBFusion2BlackwellGPUController::SaveConfig()
 
 void RGBFusion2BlackwellGPUController::SetMode(uint8_t type, uint8_t zone, uint8_t mode, fusion2_config zone_config)
 {
-    if(zone_config.numberOfColors == 0 && zone < RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES)
+    if(zone >= RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES || zone_config.numberOfColors > 8)
+    {
+        LOG_WARNING("[%s] Invalid zone/color count: zone %u, colors %u", name.c_str(),
+                    static_cast<unsigned int>(zone), static_cast<unsigned int>(zone_config.numberOfColors));
+        return;
+    }
+
+    if(zone_config.numberOfColors == 0 || mode == RGB_FUSION2_BLACKWELL_GPU_MODE_DIRECT
+       || mode == RGB_FUSION2_BLACKWELL_GPU_MODE_STATIC)
         this->zone_color[zone] = zone_config.colors[0];
 
     /************************************************************************************\
@@ -87,7 +95,96 @@ void RGBFusion2BlackwellGPUController::SetMode(uint8_t type, uint8_t zone, uint8
         }
     }
 
-    bus->i2c_write_block(dev, sizeof(zone_pkt), zone_pkt);
+    const bool aorus_5080_zone = gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5080_LAYOUT
+                                 && zone < RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES;
+
+    int result = bus->i2c_write_block(dev, sizeof(zone_pkt), zone_pkt);
+    const bool retried = result < 0 && aorus_5080_zone;
+
+    if(result < 0 && aorus_5080_zone)
+    {
+        std::this_thread::sleep_for(9ms);
+        result = bus->i2c_write_block(dev, sizeof(zone_pkt), zone_pkt);
+
+        if(result >= 0)
+        {
+            LOG_INFO("[%s] I2C write retry succeeded for zone %u",
+                     name.c_str(), static_cast<unsigned int>(zone));
+        }
+    }
+
+    // Trace actual outgoing logo colors, not only the initial mode. Keep
+    // output bounded when the frontend streams a different color every frame.
+    if(aorus_5080_zone && zone >= 3)
+    {
+        StreamTrace& trace = logo_trace[zone - 3];
+        const auto now = std::chrono::steady_clock::now();
+        const RGBColor color = ToRGBColor(zone_pkt[5], zone_pkt[6], zone_pkt[7]);
+        if(!trace.valid)
+        {
+            trace.start = now;
+            trace.last = now;
+        }
+        const long long gap = std::chrono::duration_cast<std::chrono::milliseconds>(now - trace.last).count();
+        if(gap > trace.max_gap_ms)
+            trace.max_gap_ms = gap;
+        ++trace.writes;
+        trace.retries += retried ? 1 : 0;
+        trace.failures += result < 0 ? 1 : 0;
+        if(!trace.valid || color != trace.color)
+        {
+            ++trace.changes;
+            if(trace.changes <= 12)
+            {
+                LOG_INFO("[%s] Logo TX zone %u: RGB %02X%02X%02X, gap %lld ms, result %d",
+                         name.c_str(), static_cast<unsigned int>(zone),
+                         static_cast<unsigned int>(zone_pkt[5]), static_cast<unsigned int>(zone_pkt[6]),
+                         static_cast<unsigned int>(zone_pkt[7]), gap, result);
+            }
+        }
+        trace.color = color;
+        trace.last = now;
+        trace.valid = true;
+        const long long elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - trace.start).count();
+        if(elapsed >= 5000)
+        {
+            LOG_INFO("[%s] Logo stream zone %u: %lld ms, writes %u, changes %u, retries %u, failures %u, max gap %lld ms",
+                     name.c_str(), static_cast<unsigned int>(zone), elapsed, trace.writes,
+                     trace.changes, trace.retries, trace.failures, trace.max_gap_ms);
+            trace.start = now;
+            trace.writes = trace.changes = trace.retries = trace.failures = 0;
+            trace.max_gap_ms = 0;
+        }
+    }
+
+    if(zone < RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES)
+    {
+        if(aorus_5080_zone && (!zone_first_write_logged[zone]
+           || zone_last_type[zone] != type || zone_last_mode[zone] != mode))
+        {
+            LOG_INFO("[%s] I2C state instance %p zone %u: type 0x%02X, mode 0x%02X, speed 0x%02X, colors %u, RGB %02X%02X%02X, brightness %u, result %d",
+                     name.c_str(), static_cast<void*>(this), static_cast<unsigned int>(zone), static_cast<unsigned int>(type),
+                     static_cast<unsigned int>(mode), static_cast<unsigned int>(zone_config.speed),
+                     static_cast<unsigned int>(zone_config.numberOfColors), static_cast<unsigned int>(zone_pkt[5]),
+                     static_cast<unsigned int>(zone_pkt[6]), static_cast<unsigned int>(zone_pkt[7]),
+                     static_cast<unsigned int>(zone_config.brightness), result);
+            zone_first_write_logged[zone] = true;
+            zone_last_type[zone] = type;
+            zone_last_mode[zone] = mode;
+        }
+
+        if(result < 0 && !zone_write_failed[zone])
+        {
+            LOG_WARNING("[%s] I2C write failed for zone %u (result %d)", name.c_str(), static_cast<unsigned int>(zone), result);
+            zone_write_failed[zone] = true;
+        }
+        else if(result >= 0 && zone_write_failed[zone])
+        {
+            LOG_INFO("[%s] I2C writes resumed for zone %u", name.c_str(), static_cast<unsigned int>(zone));
+            zone_write_failed[zone] = false;
+        }
+    }
+
 }
 
 void RGBFusion2BlackwellGPUController::SetZone(uint8_t zone, uint8_t mode, fusion2_config zone_config)

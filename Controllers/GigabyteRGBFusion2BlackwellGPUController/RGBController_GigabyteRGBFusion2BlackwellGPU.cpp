@@ -54,6 +54,13 @@ RGBController_RGBFusion2BlackwellGPU::RGBController_RGBFusion2BlackwellGPU(RGBFu
     Direct.brightness               = RGB_FUSION2_BLACKWELL_GPU_BRIGHTNESS_MAX;
     modes.push_back(Direct);
 
+    // Maintenance detection replaces I2C controllers. Start this streaming
+    // device in Direct again instead of silently reverting to Static (index 0).
+    if(gpu_layout == RGB_FUSION2_BLACKWELL_GPU_AORUS_MASTER_5080_LAYOUT)
+    {
+        active_mode = static_cast<unsigned int>(modes.size() - 1);
+    }
+
     mode Breathing;
     Breathing.name                  = "Pulse";
     Breathing.value                 = RGB_FUSION2_BLACKWELL_GPU_MODE_BREATHING;
@@ -443,17 +450,6 @@ void RGBController_RGBFusion2BlackwellGPU::SetupZones()
 
 void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
 {
-    fusion2_config zone_config;
-    zone_config.brightness      = modes[active_mode].brightness;
-    zone_config.speed           = modes[active_mode].speed;
-    zone_config.direction       = modes[active_mode].direction;
-    zone_config.numberOfColors  = 0;
-
-    if(modes[active_mode].color_mode == MODE_COLORS_MODE_SPECIFIC)
-    {
-        zone_config.numberOfColors = (uint8_t)modes[active_mode].colors.size();
-    }
-
     uint8_t gpu_zones;
     switch(gpu_layout) // replicating GCC that sends more packets even when there is less zones
     {
@@ -488,6 +484,12 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
 
     for(uint8_t zone_idx = 0; zone_idx < gpu_zones; zone_idx++)
     {
+        // Each zone owns its payload; a multicolor fan must not leak its
+        // color count or trailing colors into the following logo zones.
+        fusion2_config zone_config = {};
+        zone_config.brightness = modes[active_mode].brightness;
+        zone_config.speed = modes[active_mode].speed;
+        zone_config.direction = modes[active_mode].direction;
         /*---------------------------------------------------------*\
         | For AORUS WATERFORCE layout, map UI zones to hardware    |
         | UI zone 0 -> HW zone 1 (Bottom Logo)                     |
@@ -541,7 +543,8 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
             | If not all led are the same color, then we must pass all  |
             | led colors in the i2c write.                              |
             \*---------------------------------------------------------*/
-            if(!std::all_of(zone_config.colors, zone_config.colors + zones[ui_zone_idx].leds_count, [first = zone_config.colors[0]](RGBColor x) { return x == first; }))
+            if(modes[active_mode].color_mode != MODE_COLORS_MODE_SPECIFIC
+               && !std::all_of(zone_config.colors, zone_config.colors + zones[ui_zone_idx].leds_count, [first = zone_config.colors[0]](RGBColor x) { return x == first; }))
             {
                 zone_config.numberOfColors = zones[ui_zone_idx].leds_count;
             }
@@ -549,6 +552,7 @@ void RGBController_RGBFusion2BlackwellGPU::DeviceUpdateLEDs()
 
         if(modes[active_mode].color_mode == MODE_COLORS_MODE_SPECIFIC)
         {
+            zone_config.numberOfColors = static_cast<uint8_t>((std::min)(modes[active_mode].colors.size(), sizeof(zone_config.colors) / sizeof(zone_config.colors[0])));
             for(uint8_t i = 0; i < zone_config.numberOfColors; i++) // specific for MODE_COLORS_MODE_SPECIFIC
             {
                 zone_config.colors[i] = modes[active_mode].colors[i];

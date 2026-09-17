@@ -10,6 +10,7 @@
 #pragma once
 
 #include <string>
+#include <chrono>
 #include "i2c_smbus.h"
 #include "RGBController.h"
 #include "GigabyteRGBFusion2BlackwellGPUDefinitions.h"
@@ -76,7 +77,7 @@ public:
     RGBFusion2BlackwellGPUController(i2c_smbus_interface* bus, rgb_fusion_dev_id dev, std::string dev_name, int gpu_layout);
     ~RGBFusion2BlackwellGPUController();
 
-    RGBColor        zone_color[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES];
+    RGBColor        zone_color[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES] = {};
 
     std::string     GetDeviceLocation();
     std::string     GetDeviceName();
@@ -91,5 +92,22 @@ private:
     rgb_fusion_dev_id       dev;
     std::string             name;
     int                     gpu_layout;
+    bool                    zone_write_failed[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES] = {};
+    bool                    zone_first_write_logged[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES] = {};
+    uint8_t                 zone_last_type[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES] = {};
+    uint8_t                 zone_last_mode[RGB_FUSION_2_BLACKWELL_GPU_NUMBER_OF_ZONES] = {};
+    struct StreamTrace
+    {
+        std::chrono::steady_clock::time_point start = {};
+        std::chrono::steady_clock::time_point last = {};
+        RGBColor color = 0;
+        unsigned int writes = 0;
+        unsigned int changes = 0;
+        unsigned int failures = 0;
+        unsigned int retries = 0;
+        long long max_gap_ms = 0;
+        bool valid = false;
+    };
+    StreamTrace logo_trace[3];
 
 };
