@@ -527,6 +527,11 @@ void WebSocketServer::OnOpen(websocketpp::connection_hdl hdl)
 
     LOG_INFO("[WebSocketServer] Client connected: %s (total: %u)", ip.c_str(), client_count);
 
+    if(resource_manager)
+    {
+        resource_manager->StartServiceDetectionOnClient();
+    }
+
     // Broadcast the client-connected notification
     nlohmann::json data;
     data["clientIP"] = ip;
@@ -557,6 +562,11 @@ void WebSocketServer::OnClose(websocketpp::connection_hdl hdl)
     BroadcastNotification(JSONRPCProtocol::Events::CLIENT_DISCONNECTED, data);
 
     NotifyClientInfoCallbacks();
+
+    if(remaining == 0 && resource_manager)
+    {
+        resource_manager->StopServiceDetectionOnLastClient();
+    }
 }
 
 void WebSocketServer::OnFail(websocketpp::connection_hdl hdl)

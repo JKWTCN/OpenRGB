@@ -756,6 +756,33 @@ void DetectionManager::AbortDetection()
     detection_string        = "Stopping";
 }
 
+void DetectionManager::ReleaseAllControllers()
+{
+    /* Wait for any scan already in flight, then reserve its slot so a new
+       scan cannot publish controllers while they are being released. */
+    bool expected = false;
+    while(!detection_in_progress.compare_exchange_weak(expected, true))
+    {
+        WaitForDetection();
+        std::this_thread::sleep_for(5ms);
+        expected = false;
+    }
+
+    try
+    {
+        PrepareDetectionResults();
+        CommitDetectionResults();
+    }
+    catch(...)
+    {
+        RollbackDetectionResults();
+        detection_in_progress = false;
+        throw;
+    }
+
+    detection_in_progress = false;
+}
+
 bool DetectionManager::BeginDetection(bool suppress_scan_complete_for_detection, bool non_hid_only, bool full_scan)
 {
     bool detection_was_in_progress = false;

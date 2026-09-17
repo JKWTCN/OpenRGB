@@ -14,6 +14,7 @@
 #pragma once
 
 #include <memory>
+#include <atomic>
 #include <vector>
 #include <functional>
 #include <thread>
@@ -133,6 +134,8 @@ public:
     std::string                         GetDetectionString();
     void                                StopDeviceDetection();
     bool                                RescanDevices(bool full_scan = false);
+    void                                StartServiceDetectionOnClient();
+    void                                StopServiceDetectionOnLastClient();
     bool                                MaintenanceRescanDevices();
     void                                ScheduleStartupMaintenanceScan();
     void                                UpdateDeviceList();
@@ -168,6 +171,7 @@ private:
     | Detection enabled flag                                |
     \*-----------------------------------------------------*/
     bool                                        detection_enabled;
+    std::atomic<bool>                           service_detection_started{false};
 
     /*-----------------------------------------------------*\
     | One-shot delayed discovery for controllers without    |

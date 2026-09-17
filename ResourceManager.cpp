@@ -31,6 +31,7 @@
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include "WebSocketServer.h"
+#include "startup/startup.h"
 #include "filesystem.h"
 
 /*---------------------------------------------------------*\
@@ -744,6 +745,29 @@ bool ResourceManager::RescanDevices(bool full_scan)
     return rescan_started;
 }
 
+void ResourceManager::StartServiceDetectionOnClient()
+{
+    if(!startup_is_service_mode() || !detection_enabled || service_detection_started.exchange(true))
+    {
+        return;
+    }
+
+    LOG_INFO("[%s] First WebSocket client connected; starting device detection", RESOURCEMANAGER);
+    DetectionManager::get()->BeginDetection();
+}
+
+void ResourceManager::StopServiceDetectionOnLastClient()
+{
+    if(!startup_is_service_mode() || !service_detection_started.exchange(false))
+    {
+        return;
+    }
+
+    LOG_INFO("[%s] Last WebSocket client disconnected; releasing device controllers", RESOURCEMANAGER);
+    StopStartupMaintenanceScan();
+    DetectionManager::get()->ReleaseAllControllers();
+}
+
 bool ResourceManager::MaintenanceRescanDevices()
 {
     if(!detection_enabled)
@@ -1195,7 +1219,10 @@ void ResourceManager::Initialize(bool tryConnect, bool detectDevices, bool start
         LOG_DEBUG("[%s] Local OpenRGB server not found, running in standalone mode", RESOURCEMANAGER);
 
         DetectionManager::get()->RegisterDetectionCallback(ResourceManagerDetectionCallback, this);
-        DetectionManager::get()->BeginDetection();
+        if(!startup_is_service_mode())
+        {
+            DetectionManager::get()->BeginDetection();
+        }
     }
 
     /*-----------------------------------------------------*\

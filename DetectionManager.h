@@ -210,6 +210,7 @@ public:
     \*-----------------------------------------------------*/
     void                                AbortDetection();
     bool                                BeginDetection(bool suppress_scan_complete = false, bool non_hid_only = false, bool full_scan = false);
+    void                                ReleaseAllControllers();
     bool                                ConsumeScanCompleteSuppression();
     bool                                ConsumeFullScanComplete();
     unsigned int                        GetDetectionPercent();
