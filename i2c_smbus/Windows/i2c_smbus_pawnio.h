@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <atomic>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 
@@ -64,4 +66,18 @@ private:
     std::string name;
     HANDLE      handle;
     int         recovery_port;
+
+    /*-------------------------------------------------*\
+    | Shared SMBus mutex discipline                    |
+    |                                                   |
+    | lock_timeout_ms bounds how long a transfer       |
+    | waits for the cross-process SMBus mutex before   |
+    | skipping the frame (0 waits forever).  The      |
+    | counters and throttle timestamp feed the       |
+    | contention warnings.                            |
+    \*-------------------------------------------------*/
+    unsigned int                            lock_timeout_ms;
+    std::atomic<unsigned long>              lock_timeouts;
+    std::atomic<unsigned long>              lock_abandoned;
+    std::chrono::steady_clock::time_point   lock_warn_after;
 };

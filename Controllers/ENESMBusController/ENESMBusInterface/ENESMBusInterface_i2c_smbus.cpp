@@ -12,6 +12,7 @@
 #include "ENESMBusInterface_i2c_smbus.h"
 #include "LogManager.h"
 #include <chrono>
+#include <errno.h>
 #include <mutex>
 #include <unordered_map>
 
@@ -44,9 +45,41 @@ static std::unordered_map<i2c_smbus_interface*, ENEBusRecoveryState> ene_bus_rec
 static std::mutex                                                    ene_bus_recovery_mutex;
 
 /*---------------------------------------------------------*\
+| Rate-limited warning for shared SMBus lock contention.   |
+| Contention is not a bus fault, so callers skip the       |
+| transfer without entering the failure backoff; transfers |
+| resume on their own once the other application releases  |
+| the mutex.                                                |
+\*---------------------------------------------------------*/
+static void ENEReportLockContention()
+{
+    std::lock_guard<std::mutex> lock(ene_bus_recovery_mutex);
+
+    static unsigned long                           contention_events = 0;
+    static std::chrono::steady_clock::time_point   next_warning{};
+
+    contention_events++;
+
+    const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+    if(now >= next_warning)
+    {
+        next_warning = now + std::chrono::seconds(5);
+
+        LOG_WARNING("[ENE SMBus] Shared SMBus lock contention - %lu transfers skipped while another application holds the bus", contention_events);
+    }
+}
+
+/*---------------------------------------------------------*\
 | Probe the device with a register read (device-name byte). |
 | Reads are safer than writes while the device state is     |
 | unknown.  Returns true when the bus answers.              |
+|                                                           |
+| -EBUSY means the shared cross-process SMBus mutex is     |
+| held by another application, not that the bus is dead -  |
+| report it as contention and treat the bus as ready so    |
+| recovery does not escalate to a module reload over a     |
+| mere lock conflict.                                       |
 \*---------------------------------------------------------*/
 static bool ENEProbeBus(i2c_smbus_interface* bus, ene_dev_id dev)
 {
@@ -55,6 +88,12 @@ static bool ENEProbeBus(i2c_smbus_interface* bus, ene_dev_id dev)
     if(result >= 0)
     {
         result = bus->i2c_smbus_read_byte_data(dev, 0x81);
+    }
+
+    if(result == -EBUSY)
+    {
+        ENEReportLockContention();
+        return(true);
     }
 
     return(result >= 0);
@@ -181,6 +220,12 @@ unsigned char ENESMBusInterface_i2c_smbus::ENERegisterRead(ene_dev_id dev, ene_r
         result = bus->i2c_smbus_read_byte_data(dev, 0x81);
     }
 
+    if(result == -EBUSY)
+    {
+        ENEReportLockContention();
+        return(0);
+    }
+
     if(result < 0)
     {
         ENEMarkBusFailure(bus, dev);
@@ -204,6 +249,12 @@ void ENESMBusInterface_i2c_smbus::ENERegisterWrite(ene_dev_id dev, ene_register 
     if(result >= 0)
     {
         result = bus->i2c_smbus_write_byte_data(dev, 0x01, val);
+    }
+
+    if(result == -EBUSY)
+    {
+        ENEReportLockContention();
+        return;
     }
 
     if(result < 0)
@@ -234,7 +285,16 @@ void ENESMBusInterface_i2c_smbus::ENERegisterWriteBlock(ene_dev_id dev, ene_regi
     | is followed by writes through command 0x01.       |
     | Enter backoff instead - the bus layer will reload |
     | the SMBus module and the next probe resumes.      |
+    |                                                   |
+    | -EBUSY is mere lock contention, not a bus fault - |
+    | skip the frame and let the next one retry.        |
     \*-------------------------------------------------*/
+    if(result == -EBUSY)
+    {
+        ENEReportLockContention();
+        return;
+    }
+
     if(result < 0)
     {
         ENEMarkBusFailure(bus, dev);

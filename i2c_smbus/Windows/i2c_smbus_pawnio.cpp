@@ -9,6 +9,8 @@
 |   SPDX-License-Identifier: GPL-2.0-or-later               |
 \*---------------------------------------------------------*/
 
+#include <chrono>
+#include <errno.h>
 #include <string>
 #include "DetectionManager.h"
 #include "i2c_smbus_pawnio.h"
@@ -19,6 +21,23 @@
 #include "wmi.h"
 
 std::unordered_map<std::string, int> i2c_smbus_pawnio::using_handle;
+
+/*---------------------------------------------------------*\
+| Shared SMBus mutex timing constants                       |
+|                                                           |
+|   DEFAULT_TIMEOUT - how long a transfer waits for the    |
+|                     cross-process mutex before skipping  |
+|                     the frame (setting: 0 waits forever) |
+|   MAX_TIMEOUT     - upper clamp for the setting          |
+|   SLOW_MS         - acquisition/hold time considered     |
+|                     pathological, logged throttled        |
+|   LOG_INTERVAL    - minimum spacing between contention   |
+|                     warnings                              |
+\*---------------------------------------------------------*/
+#define SMBUS_LOCK_DEFAULT_TIMEOUT_MS    1000
+#define SMBUS_LOCK_MAX_TIMEOUT_MS        600000
+#define SMBUS_LOCK_SLOW_MS               250
+#define SMBUS_LOG_INTERVAL_MS            5000
 
 s32 imc_index_sel(HANDLE pawnio_handle, s32 index)
 {
@@ -80,6 +99,10 @@ i2c_smbus_pawnio::i2c_smbus_pawnio(HANDLE handle, std::string name)
     this->handle                = handle;
     this->name                  = name;
     this->recovery_port         = -1;
+
+    this->lock_timeout_ms       = SMBUS_LOCK_DEFAULT_TIMEOUT_MS;
+    this->lock_timeouts         = 0;
+    this->lock_abandoned        = 0;
 
     /*-----------------------------------------------------*\
     | Get driver settings                                   |
@@ -150,11 +173,33 @@ i2c_smbus_pawnio::i2c_smbus_pawnio(HANDLE handle, std::string name)
     set_sleep_mode(handle, smbus_sleep_mode);
 
     /*-----------------------------------------------------*\
+    | Get shared SMBus lock timeout setting                 |
+    | Time to wait for the cross-process SMBus mutex       |
+    | before skipping the transfer.  A process that is    |
+    | stuck while holding the mutex would otherwise       |
+    | block this bus forever.  0 waits forever.            |
+    \*-----------------------------------------------------*/
+    if(drivers_settings.contains("smbus_lock_timeout_ms"))
+    {
+        lock_timeout_ms = drivers_settings["smbus_lock_timeout_ms"].get<unsigned int>();
+    }
+
+    if(lock_timeout_ms > SMBUS_LOCK_MAX_TIMEOUT_MS)
+    {
+        lock_timeout_ms = SMBUS_LOCK_MAX_TIMEOUT_MS;
+    }
+
+    /*-----------------------------------------------------*\
     | Create global SMBus mutex if enabled                  |
     \*-----------------------------------------------------*/
     if(shared_smbus_access)
     {
         global_smbus_access_handle = CreateMutexA(NULL, FALSE, GLOBAL_SMBUS_MUTEX_NAME);
+
+        if(global_smbus_access_handle == NULL)
+        {
+            LOG_ERROR("Failed to open shared SMBus mutex '%s' (error %lu), continuing without shared bus access", GLOBAL_SMBUS_MUTEX_NAME, GetLastError());
+        }
     }
 
     using_handle[name]++;
@@ -181,12 +226,73 @@ i2c_smbus_pawnio::~i2c_smbus_pawnio()
 
 s32 i2c_smbus_pawnio::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int size, i2c_smbus_data* data)
 {
+    const std::chrono::steady_clock::time_point    lock_start   = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point          lock_acquired;
+    bool                                            locked       = false;
+
     /*-----------------------------------------------------*\
     | Lock SMBus mutex                                      |
+    |                                                       |
+    | Wait a bounded time for the shared mutex rather      |
+    | than forever.  Another process that hangs while      |
+    | holding it would otherwise freeze this bus          |
+    | permanently.  On timeout the transfer is skipped     |
+    | with -EBUSY so the device layer retries on the       |
+    | next frame instead of deadlocking.                   |
     \*-----------------------------------------------------*/
     if(global_smbus_access_handle != NULL)
     {
-        WaitForSingleObject(global_smbus_access_handle, INFINITE);
+        const DWORD wait_result = WaitForSingleObject(global_smbus_access_handle, (lock_timeout_ms == 0) ? INFINITE : lock_timeout_ms);
+
+        if(wait_result == WAIT_OBJECT_0 || wait_result == WAIT_ABANDONED)
+        {
+            locked         = true;
+            lock_acquired  = std::chrono::steady_clock::now();
+
+            if(wait_result == WAIT_ABANDONED)
+            {
+                lock_abandoned++;
+
+                LOG_WARNING("[PawnIO] Bus '%s': acquired '%s' after the previous owner terminated abnormally", name.c_str(), GLOBAL_SMBUS_MUTEX_NAME);
+            }
+            else
+            {
+                const signed long long wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(lock_acquired - lock_start).count();
+
+                if(wait_ms >= SMBUS_LOCK_SLOW_MS)
+                {
+                    const auto now = std::chrono::steady_clock::now();
+
+                    if(now >= lock_warn_after)
+                    {
+                        lock_warn_after = now + std::chrono::milliseconds(SMBUS_LOG_INTERVAL_MS);
+
+                        LOG_WARNING("[PawnIO] Bus '%s': took %lld ms to acquire '%s' - another application is holding the SMBus lock for long periods", name.c_str(), wait_ms, GLOBAL_SMBUS_MUTEX_NAME);
+                    }
+                }
+            }
+        }
+        else if(wait_result == WAIT_TIMEOUT)
+        {
+            lock_timeouts++;
+
+            const auto now = std::chrono::steady_clock::now();
+
+            if(now >= lock_warn_after)
+            {
+                lock_warn_after = now + std::chrono::milliseconds(SMBUS_LOG_INTERVAL_MS);
+
+                LOG_WARNING("[PawnIO] Bus '%s': timed out after %u ms waiting for '%s' - another application is holding the SMBus lock, skipping transfer (%lu skipped so far)", name.c_str(), lock_timeout_ms, GLOBAL_SMBUS_MUTEX_NAME, lock_timeouts.load());
+            }
+
+            return(-EBUSY);
+        }
+        else
+        {
+            LOG_ERROR("[PawnIO] Bus '%s': WaitForSingleObject on '%s' failed with error %lu", name.c_str(), GLOBAL_SMBUS_MUTEX_NAME, GetLastError());
+
+            return(-1);
+        }
     }
 
     /*-----------------------------------------------------*\
@@ -236,9 +342,28 @@ s32 i2c_smbus_pawnio::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int s
 
     /*-----------------------------------------------------*\
     | Unlock SMBus mutex                                    |
+    |                                                       |
+    | Only release when the lock was actually acquired,    |
+    | and surface pathologically long hold times -        |
+    | every other application is blocked while we        |
+    | hold it.                                              |
     \*-----------------------------------------------------*/
-    if(global_smbus_access_handle != NULL)
+    if(locked)
     {
+        const signed long long hold_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - lock_acquired).count();
+
+        if(hold_ms >= SMBUS_LOCK_SLOW_MS)
+        {
+            const auto now = std::chrono::steady_clock::now();
+
+            if(now >= lock_warn_after)
+            {
+                lock_warn_after = now + std::chrono::milliseconds(SMBUS_LOG_INTERVAL_MS);
+
+                LOG_WARNING("[PawnIO] Bus '%s': held '%s' for %lld ms - slow SMBus access blocks every other application", name.c_str(), GLOBAL_SMBUS_MUTEX_NAME, hold_ms);
+            }
+        }
+
         ReleaseMutex(global_smbus_access_handle);
     }
 
@@ -249,13 +374,29 @@ void i2c_smbus_pawnio::RecoverBus()
 {
     LOG_WARNING("[PawnIO] RecoverBus requested for '%s', reloading module", name.c_str());
 
+    bool recovery_locked = false;
+
     /*-----------------------------------------------------*\
     | Serialize with in-flight transfers so the handle     |
-    | swap below cannot race an ioctl on the old handle    |
+    | swap below cannot race an ioctl on the old handle.   |
+    | If the lock cannot be taken something is still in    |
+    | flight (or stuck) - defer the reload to the next     |
+    | recovery cycle rather than swapping handles under a  |
+    | pending ioctl.                                       |
     \*-----------------------------------------------------*/
     if(global_smbus_access_handle != NULL)
     {
-        WaitForSingleObject(global_smbus_access_handle, 10000);
+        const DWORD wait_result = WaitForSingleObject(global_smbus_access_handle, 10000);
+
+        if(wait_result == WAIT_OBJECT_0 || wait_result == WAIT_ABANDONED)
+        {
+            recovery_locked = true;
+        }
+        else
+        {
+            LOG_WARNING("[PawnIO] Could not lock '%s' for recovery of bus '%s', deferring reload", GLOBAL_SMBUS_MUTEX_NAME, name.c_str());
+            return;
+        }
     }
 
     /*-----------------------------------------------------*\
@@ -306,7 +447,7 @@ void i2c_smbus_pawnio::RecoverBus()
         LOG_ERROR("[PawnIO] Failed to reload bus '%s'", name.c_str());
     }
 
-    if(global_smbus_access_handle != NULL)
+    if(recovery_locked)
     {
         ReleaseMutex(global_smbus_access_handle);
     }
