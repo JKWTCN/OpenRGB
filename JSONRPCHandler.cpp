@@ -1661,6 +1661,9 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
 
     json_obj["index"] = led_idx;
     json_obj["name"]  = l.name;
+    // Zero-based index into the controller's zones array; null if unassigned.
+    json_obj["zone"]  = nullptr;
+    json_obj["zoneIndex"] = nullptr;
 
     for(std::size_t zone_idx = 0; zone_idx < controller->zones.size(); zone_idx++)
     {
@@ -1672,6 +1675,8 @@ nlohmann::json JSONRPCHandler::LEDToJSON(RGBController *controller, int led_idx)
         }
 
         unsigned int zone_led_idx = led_idx - z.start_idx;
+        json_obj["zone"] = zone_idx;
+        json_obj["zoneIndex"] = zone_led_idx;
         json_obj["protocolChannel"] = zone_idx;
         json_obj["protocolAddress"] = zone_led_idx;
 
