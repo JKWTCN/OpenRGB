@@ -53,7 +53,11 @@ static std::mutex                                                    ene_bus_rec
 \*---------------------------------------------------------*/
 static void ENEReportLockContention()
 {
-    std::lock_guard<std::mutex> lock(ene_bus_recovery_mutex);
+    /* ENEProbeBus can report contention while ENEBusReady holds
+       ene_bus_recovery_mutex. Keep warning counters on a separate
+       mutex so recovery cannot deadlock by locking itself again. */
+    static std::mutex contention_mutex;
+    std::lock_guard<std::mutex> lock(contention_mutex);
 
     static unsigned long                           contention_events = 0;
     static std::chrono::steady_clock::time_point   next_warning{};
