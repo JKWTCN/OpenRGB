@@ -16,12 +16,12 @@
 
 /**------------------------------------------------------------------*\
     @name ENE SMBus Device
-    @category RAM,Motherboard,GPU,Storage
+    @category Motherboard,GPU,Storage
     @type SMBus
     @save :white_check_mark:
     @direct :white_check_mark:
     @effects :white_check_mark:
-    @detectors DetectENESMBusDRAMControllers,DetectENESMBusMotherboardControllers,DetectENESMBusGPUControllers
+    @detectors DetectENESMBusMotherboardControllers,DetectENESMBusGPUControllers
     @comment
 \*-------------------------------------------------------------------*/
 

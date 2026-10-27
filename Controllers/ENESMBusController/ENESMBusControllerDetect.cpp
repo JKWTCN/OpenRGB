@@ -34,32 +34,6 @@ using namespace std::chrono_literals;
 
 /*---------------------------------------------------------*\
 | This list contains the available SMBus addresses for      |
-| mapping ENE RAM                                           |
-\*---------------------------------------------------------*/
-#define ENE_RAM_ADDRESS_COUNT  (sizeof(ene_ram_addresses) / sizeof(ene_ram_addresses[0]))
-
-static const unsigned char ene_ram_addresses[] =
-{
-    0x70,
-    0x71,
-    0x72,
-    0x73,
-    0x74,
-    0x75,
-    0x76,
-    0x77,
-    0x4F,
-    0x66,
-    0x67,
-    0x39,
-    0x3A,
-    0x3B,
-    0x3C,
-    0x3D
-};
-
-/*---------------------------------------------------------*\
-| This list contains the available SMBus addresses for      |
 | mapping Aura motherboards                                 |
 \*---------------------------------------------------------*/
 #define AURA_MOBO_ADDRESS_COUNT (sizeof(aura_mobo_addresses) / sizeof(aura_mobo_addresses[0]))
@@ -78,15 +52,6 @@ static unsigned char ENERegisterRead(i2c_smbus_interface* bus, ene_dev_id dev, e
 
     //Read ENE value
     return(bus->i2c_smbus_read_byte_data(dev, 0x81));
-}
-
-static void ENERegisterWrite(i2c_smbus_interface* bus, ene_dev_id dev, ene_register reg, unsigned char val)
-{
-    //Write ENE register
-    bus->i2c_smbus_write_word_data(dev, 0x00, ((reg << 8) & 0xFF00) | ((reg >> 8) & 0x00FF));
-
-    //Write ENE value
-    bus->i2c_smbus_write_byte_data(dev, 0x01, val);
 }
 
 bool TestForENESMBusController(i2c_smbus_interface* bus, unsigned char address)
@@ -144,73 +109,6 @@ bool TestForENESMBusController(i2c_smbus_interface* bus, unsigned char address)
     }
 
     return(pass);
-}
-
-DetectedControllers DetectENESMBusDRAMControllers(std::vector<i2c_smbus_interface*> &buses)
-{
-    DetectedControllers detected_controllers;
-
-    for(unsigned int bus = 0; bus < buses.size(); bus++)
-    {
-        int address_list_idx = -1;
-
-        IF_DRAM_SMBUS(buses[bus]->info.pci_vendor, buses[bus]->info.pci_device)
-        {
-            LOG_DEBUG("[ENE SMBus DRAM] Remapping ENE SMBus RAM modules on 0x77");
-
-            for(unsigned int slot = 0; slot < 8; slot++)
-            {
-                int res = buses[bus]->i2c_smbus_read_byte(0x77);
-
-                if(res < 0)
-                {
-                    LOG_DEBUG("[ENE SMBus DRAM] No device detected at 0x77, aborting remap");
-                    break;
-                }
-
-                do
-                {
-                    address_list_idx++;
-
-                    if(address_list_idx < (int)ENE_RAM_ADDRESS_COUNT)
-                    {
-                        LOG_DEBUG("[ENE SMBus DRAM] Testing address %02X to see if there is a device there", ene_ram_addresses[address_list_idx]);
-
-                        res = buses[bus]->i2c_smbus_read_byte(ene_ram_addresses[address_list_idx]);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                } while(res >= 0);
-
-                if(address_list_idx < (int)ENE_RAM_ADDRESS_COUNT)
-                {
-                    LOG_DEBUG("[ENE SMBus DRAM] Remapping slot %d to address %02X", slot, ene_ram_addresses[address_list_idx]);
-
-                    ENERegisterWrite(buses[bus], 0x77, ENE_REG_SLOT_INDEX, slot);
-                    ENERegisterWrite(buses[bus], 0x77, ENE_REG_I2C_ADDRESS, (ene_ram_addresses[address_list_idx] << 1));
-                }
-            }
-
-            // Add ENE controllers at their remapped addresses
-            for(unsigned int address_list_idx = 0; address_list_idx < ENE_RAM_ADDRESS_COUNT; address_list_idx++)
-            {
-                if(TestForENESMBusController(buses[bus], ene_ram_addresses[address_list_idx]))
-                {
-                    ENESMBusInterface_i2c_smbus* interface      = new ENESMBusInterface_i2c_smbus(buses[bus]);
-                    ENESMBusController*          controller     = new ENESMBusController(interface, ene_ram_addresses[address_list_idx], "ENE DRAM", DEVICE_TYPE_DRAM);
-                    RGBController_ENESMBus*      rgb_controller = new RGBController_ENESMBus(controller);
-
-                    detected_controllers.push_back(rgb_controller);
-                }
-
-                std::this_thread::sleep_for(1ms);
-            }
-        }
-    }
-
-    return(detected_controllers);
 }
 
 DetectedControllers DetectENESMBusMotherboardControllers(std::vector<i2c_smbus_interface*> &buses)
@@ -272,10 +170,7 @@ DetectedControllers DetectENESMBusGPUControllers(i2c_smbus_interface* bus, uint8
     return(detected_controllers);
 }
 
-/*---------------------------------------------------------*\
-| ENE RAM                                                   |
-\*---------------------------------------------------------*/
-REGISTER_I2C_DETECTOR("ENE SMBus DRAM",                 DetectENESMBusDRAMControllers);
+// ENE DRAM discovery, address remapping, and control are owned by SyncRGBService.
 
 /*---------------------------------------------------------*\
 | ASUS Motherboards                                         |
